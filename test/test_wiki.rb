@@ -537,8 +537,6 @@ context "Renames directory traversal" do
   setup do
     @path = cloned_testpath("examples/revert.git")
     @wiki = Gollum::Wiki.new(@path)
-    Precious::App.set(:gollum_path, @path)
-    Precious::App.set(:wiki_options, {})
   end
 
   teardown do

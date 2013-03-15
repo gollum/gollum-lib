@@ -1,5 +1,4 @@
 require 'rubygems'
-require 'rack/test'
 require 'test/unit'
 require 'shoulda'
 require 'mocha/setup'
@@ -10,8 +9,7 @@ $LOAD_PATH.unshift(File.join(dir, '..', 'lib'))
 $LOAD_PATH.unshift(dir)
 
 ENV['RACK_ENV'] = 'test'
-require 'gollum'
-require 'gollum/frontend/app'
+require 'gollum-lib'
 
 # Disable the metadata feature
 $METADATA = false
