@@ -2,7 +2,7 @@ gollum -- A wiki built on top of Git
 ====================================
 
 [![Build Status](https://travis-ci.org/gollum/gollum-lib.png)](https://travis-ci.org/gollum/gollum-lib)
-[![Dependency Status](https://gemnasium.com/gollum/gollum.png)](https://gemnasium.com/gollum/gollum)
+[![Dependency Status](https://gemnasium.com/gollum/gollum-lib.png)](https://gemnasium.com/gollum/gollum-lib)
 
 ## DESCRIPTION
 
