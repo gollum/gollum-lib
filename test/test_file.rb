@@ -25,3 +25,21 @@ context "File" do
     assert_nil @wiki.file("Mordor")
   end
 end
+
+context "File with checkout" do
+  setup do
+    @path = cloned_testpath("examples/lotr.git")
+    @wiki = Gollum::Wiki.new(@path)
+  end
+
+  teardown do
+    FileUtils.rm_rf(@path)
+  end
+
+  test "symbolic link" do
+    commit = @wiki.repo.commits.first
+    file   = @wiki.file("Data-Two.csv")
+
+    assert_match /^FirstName,LastName\n/, file.raw_data
+  end
+end

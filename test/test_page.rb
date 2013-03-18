@@ -197,6 +197,26 @@ context "Page" do
   end
 end
 
+context "with a checkout" do
+  setup do
+    @path = cloned_testpath("examples/lotr.git")
+    @wiki = Gollum::Wiki.new(@path)
+  end
+
+  teardown do
+    FileUtils.rm_rf(@path)
+  end
+
+  test "get existing page with symbolic link" do
+    page = @wiki.page("Hobbit")
+    assert_equal Gollum::Page, page.class
+    assert page.raw_data =~ /^# Bilbo Baggins\n\nBilbo Baggins/
+    assert page.formatted_data =~ %r{<h1>Bilbo Baggins<a class="anchor" id="Bilbo-Baggins" href="#Bilbo-Baggins"></a></h1>\n\n<p>Bilbo Baggins}
+    assert_equal 'Hobbit.md', page.path
+    assert_equal :markdown, page.format
+  end
+end
+
 context "within a sub-directory" do
   setup do
     @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"), { :page_file_dir => 'Rivendell' })
