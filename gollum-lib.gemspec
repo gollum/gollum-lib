@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
 
   s.name              = 'gollum-lib'
   s.version           = '0.0.1'
-  s.date              = '2013-03-13'
+  s.date              = '2013-03-19'
   s.rubyforge_project = 'gollum-lib'
 
   s.summary     = "A simple, Git-powered wiki."
@@ -57,6 +57,7 @@ Gem::Specification.new do |s|
     lib/gollum-lib/file_view.rb
     lib/gollum-lib/git_access.rb
     lib/gollum-lib/gitcode.rb
+    lib/gollum-lib/grit_ext.rb
     lib/gollum-lib/helpers.rb
     lib/gollum-lib/markup.rb
     lib/gollum-lib/markups.rb
