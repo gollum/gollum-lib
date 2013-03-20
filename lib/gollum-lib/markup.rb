@@ -462,15 +462,15 @@ module Gollum
     #           Acceptable formats:
     #              ```language:local-file.ext```
     #              ```language:/abs/other-file.ext```
-    #              ```language:gollum/gollum/master/somefile.txt```
+    #              ```language:github:gollum/gollum/master/somefile.txt```
     #
     #########################################################################
 
     def extract_gitcode data
-      data.gsub /^[ \t]*``` ?([^:\n\r]+):([^`\n\r]+)```/ do
+      data.gsub /^[ \t]*``` ?([^:\n\r]+):(?:(github:))?([^`\n\r]+)```/ do
         contents = ''
         # Use empty string if $2 is nil.
-        uri = $2 || ''
+        uri = $3 || ''
         # Detect local file.
         if uri[0..6] != 'gollum/'
             if file = self.find_file(uri, @wiki.ref)
