@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
 
   s.name              = 'gollum-lib'
   s.version           = '0.0.1'
-  s.date              = '2013-03-19'
+  s.date              = '2013-03-22'
   s.rubyforge_project = 'gollum-lib'
 
   s.summary     = "A simple, Git-powered wiki."
@@ -47,7 +47,6 @@ Gem::Specification.new do |s|
     LICENSE
     README.md
     Rakefile
-    config.rb
     docs/sanitization.md
     gollum-lib.gemspec
     lib/gollum-lib.rb
