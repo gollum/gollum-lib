@@ -124,11 +124,13 @@ allowed.
 
 ## TITLES
 
-The first defined `h1` will override the default header on a page. There are two ways to set a page title. The metadata syntax:
+The first defined `h1` will override the default header on a page. There are
+two ways to set a page title. The metadata syntax:
 
-`<!-- --- title: New Title -->`
+    <!-- --- title: New Title -->
 
-The first `h1` tag can be set to always override the page title, without needing to use the metadata syntax. Start gollum with the `--h1-title` flag.
+The first `h1` tag can be set to always override the page title, without
+needing to use the metadata syntax. Start gollum with the `--h1-title` flag.
 
 ## BRACKET TAGS
 
