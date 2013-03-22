@@ -1,3 +1,4 @@
+# ~*~ encoding: utf-8 ~*~
 class WikiFactory
   def self.create p, opt={}
     path = testpath "examples/test.git"

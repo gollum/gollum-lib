@@ -1,3 +1,4 @@
+# ~*~ encoding: utf-8 ~*~
 module Gollum
   class Markup
     register(:markdown,  "Markdown", :regexp => /md|mkdn?|mdown|markdown/)
