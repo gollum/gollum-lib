@@ -4,7 +4,7 @@ Sanitization Rules
 Gollum uses the [Sanitize](http://wonko.com/post/sanitize) gem for HTML
 sanitization.
 
-See `lib/gollum.rb` for actual settings.
+See `lib/gollum-lib/sanitization.rb` for actual settings.
 
 ## ALLOWED TAGS
 
@@ -28,5 +28,6 @@ valign, value, vspace, width
 
 ## ALLOWED PROTOCOLS
 
-a href: http, https, mailto
+a href: http, https, mailto, ftp, irc, apt
 img src: http, https
+form action: http, https
