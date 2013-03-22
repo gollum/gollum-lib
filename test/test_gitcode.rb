@@ -20,7 +20,7 @@ context "gitcode" do
 
   test 'that the rendered output is correctly fetched and rendered as html code' do
     # given
-    p = page_with_content "a\n\n```html:github:gollum/gollum/master/test/file_view/1_file.txt```\n\nb"
+    p = page_with_content "a\n\n```html:github:gollum/gollum-lib/master/test/file_view/1_file.txt```\n\nb"
 
     # when rendering the page
     rendered = Gollum::Markup.new(p).render
@@ -31,9 +31,10 @@ context "gitcode" do
   end
 
   test 'contents' do
-    g = Gollum::Gitcode.new 'gollum/gollum/master/test/file_view/1_file.txt'
+    g = Gollum::Gitcode.new 'gollum/gollum-lib/master/test/file_view/1_file.txt'
 
-    assert_equal g.contents, %{<ol class=\"tree\">\n  <li class=\"file\">\n    <a href=\"0\"><span class=\"icon\"></span>0</a>\n  </li>\n</ol>\n}
+    expected = %{<ol class=\"tree\">\n  <li class=\"file\">\n    <a href=\"0\"><span class=\"icon\"></span>0</a>\n  </li>\n</ol>\n}
+    assert_equal expected, g.contents
   end
 
   test "gitcode relative local file" do
