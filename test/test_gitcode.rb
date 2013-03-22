@@ -6,7 +6,7 @@ context "gitcode" do
 
   def page_with_content c
     index = @wiki.repo.index
-    index.add 'Sample-Html.md', c 
+    index.add 'Sample-Html.md', c
     index.commit 'adding file html sample'
 
     page = @wiki.page 'Sample Html'

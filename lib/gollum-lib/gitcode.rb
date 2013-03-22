@@ -9,9 +9,9 @@ module Gollum
     def initialize path
       raise(ArgumentError, 'path is nil or empty') if path.nil? or path.empty?
 
-      @uri = URI::HTTP.build({ 
-        :path   => self.unchomp(path), 
-        :host   => 'raw.github.com', 
+      @uri = URI::HTTP.build({
+        :path   => self.unchomp(path),
+        :host   => 'raw.github.com',
         :scheme => 'https',
         :port   => 443 })
     end
