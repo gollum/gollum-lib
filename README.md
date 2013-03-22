@@ -1,40 +1,33 @@
-gollum -- A wiki built on top of Git
-====================================
+gollum lib -- A wiki built on top of Git
+========================================
 
 [![Build Status](https://travis-ci.org/gollum/gollum-lib.png)](https://travis-ci.org/gollum/gollum-lib)
 [![Dependency Status](https://gemnasium.com/gollum/gollum-lib.png)](https://gemnasium.com/gollum/gollum-lib)
 
 ## DESCRIPTION
 
-Gollum is a simple wiki system built on top of Git that powers GitHub Wikis.
+[Gollum](https://github.com/gollum/gollum) is a simple wiki system built on
+top of Git that powers GitHub Wikis.
 
-Gollum wikis are simply Git repositories that adhere to a specific format.
-Gollum pages may be written in a variety of formats and can be edited in a
-number of ways depending on your needs. You can edit your wiki locally:
+Gollum-lib is the Ruby API that allows you to retrieve raw or formatted wiki
+content from a Git repository, write new content to the repository, and collect
+various meta data about the wiki as a whole.
 
-* With your favorite text editor or IDE (changes will be visible after committing).
-* With the built-in web interface.
-* With the Gollum Ruby API.
-
-Gollum follows the rules of [Semantic Versioning](http://semver.org/) and uses
+Gollum-lib follows the rules of [Semantic Versioning](http://semver.org/) and uses
 [TomDoc](http://tomdoc.org/) for inline documentation.
 
 ## SYSTEM REQUIREMENTS
+
 - Python 2.5+ (2.7.3 recommended)
 - Ruby 1.8.7+ (1.9.3 recommended)
 - Unix like operating system (OS X, Ubuntu, Debian, and more)
 - Will not work on Windows (because of [grit](https://github.com/github/grit))
 
-## SECURITY
-
-Don't enable `--custom-css` or `--custom-js` unless you trust every user who has the ability to edit the wiki.
-A better solution with more security is being tracked in [#665](https://github.com/gollum/gollum/issues/665).
-
 ## INSTALLATION
 
-The best way to install Gollum is with RubyGems:
+The best way to install Gollum-lib is with RubyGems:
 
-    $ [sudo] gem install gollum
+    $ [sudo] gem install gollum-lib
 
 If you're installing from source, you can use [Bundler][bundler] to pick up all the
 gems:
@@ -57,30 +50,6 @@ to install the dependencies for the formats that you plan to use.
 * [MediaWiki](http://www.mediawiki.org/wiki/Help:Formatting) -- `gem install wikicloth`
 
 [bundler]: http://gembundler.com/
-
-## RUNNING
-
-To view and edit your Gollum repository locally via the built in web
-interface, simply install the Gollum gem, navigate to your repository via the
-command line, and run the executable:
-
-    $ gollum
-
-This will start up a web server running the Gollum frontend and you can view
-and edit your wiki at http://localhost:4567. To get help on the command line
-utility, you can run it like so:
-
-    $ gollum --help
-
-Note that the gollum server will not run on Windows because of [an issue](https://github.com/rtomayko/posix-spawn/issues/9) with posix-spawn (which is used by Grit).
-
-## REPO STRUCTURE
-
-A Gollum repository's contents are designed to be human editable. Page content
-is written in `page files` and may be organized into directories any way you
-choose. Special footers can be created in `footer files`. Other content
-(images, PDFs, etc) may also be present and organized in the same way.
-
 
 ## PAGE FILES
 
@@ -121,7 +90,7 @@ automatically generated table of contents will be shown instead.
 
 ## SIDEBAR FILES
 
-Sidebar files allow you to add a simple sidebar to your wiki.  Sidebar files
+Sidebar files allow you to add a simple sidebar to your wiki. Sidebar files
 are named `_Sidebar.ext` where the extension is one of the supported formats.
 Sidebars affect all pages in their directory and any subdirectories that do not
 have a sidebar file of their own.
@@ -154,6 +123,7 @@ The first defined `h1` will override the default header on a page. There are two
 `<!-- --- title: New Title -->`
 
 The first `h1` tag can be set to always override the page title, without needing to use the metadata syntax. Start gollum with the `--h1-title` flag.
+
 ## BRACKET TAGS
 
 A variety of Gollum tags use a double bracket syntax. For example:
@@ -322,7 +292,7 @@ This is useful for writing about the link syntax in your wiki pages.
 
 ## TABLE OF CONTENTS
 
-Gollum has a special tag to insert a table of contents (new in v2.1)
+Gollum has a special tag to insert a table of contents:
 
     [[_TOC_]]
 
@@ -330,12 +300,9 @@ This tag is case sensitive, use all upper case.  The TOC tag can be inserted
 into the `_Header`, `_Footer` or `_Sidebar` files too.
 
 There is also a wiki option `:universal_toc` which will display a
-table of contents at the top of all your wiki pages if it is enabled.
-The `:universal_toc` is not enabled by default.  To set the option,
-add the option to the `:wiki_options` hash before starting the
-frontend app:
+table of contents at the top of all your wiki pages if it is enabled:
 
-    Precious::App.set(:wiki_options, {:universal_toc => true})
+    Gollum::Wiki.new("my-gollum-repo.git", {:universal_toc => true})
 
 ## SYNTAX HIGHLIGHTING
 
@@ -369,9 +336,9 @@ As an extra feature, you can syntax highlight a file from your repository, allow
 you keep some of your sample code in the main repository. The code-snippet is
 updated when the wiki is rebuilt. You include github code like this:
 
-    ```html:github:gollum/gollum/master/test/file_view/1_file.txt```
+    ```html:github:gollum/gollum-lib/master/test/file_view/1_file.txt```
 
-This will make the builder look at the **gollum user**, in the **gollum project**,
+This will make the builder look at the **gollum user**, in the **gollum-lib project**,
 in the **master branch**, at path **test/file_view/1_file.txt**. It will be
 rewritten to:
 
@@ -381,7 +348,7 @@ rewritten to:
     </ol>
     ```
 
-Which will be parsed as HTML code during the Pygments run, and thereby coloured 
+Which will be parsed as HTML code during the Pygments run, and thereby coloured
 appropriately.
 
 ## MATHEMATICAL EQUATIONS
@@ -413,37 +380,25 @@ You can replace the string "blue-modern" with any supported style.
 
 ## API DOCUMENTATION
 
-The Gollum API allows you to retrieve raw or formatted wiki content from a Git
-repository, write new content to the repository, and collect various meta data
-about the wiki as a whole.
-
-Initialize the Gollum::Repo object:
+Initialize the `Gollum::Repo` object:
 
     # Require rubygems if necessary
     require 'rubygems'
 
     # Require the Gollum library
-    require 'gollum'
+    require 'gollum-lib'
 
     # Create a new Gollum::Wiki object by initializing it with the path to the
     # Git repository.
     wiki = Gollum::Wiki.new("my-gollum-repo.git")
     # => <Gollum::Wiki>
 
-By default, internal wiki links are all absolute from the root. To specify a different base path, you can specify the `:base_path` option:
+By default, internal wiki links are all absolute from the root. To specify a different
+base path, you can specify the `:base_path` option:
 
     wiki = Gollum::Wiki.new("my-gollum-repo.git", :base_path => "/wiki")
 
-Note that base_path just modifies the links. To map gollum to a non-root location:
-
-- Use the gollum binary: `gollum path/to/wiki --base-path mywiki`
-- Define config.ru with `map`. See [#532](https://github.com/gollum/gollum/issues/532) for an example.
-
-> :base_path     - String base path for all Wiki links.
->
-> The String base path to prefix to internal links. For example, when set
-> to "/wiki", the page "Hobbit" will be linked as "/wiki/Hobbit". Defaults
-> to "/".
+Note that base_path just modifies the links.
 
 Get the latest version of the given human or canonical page name:
 
@@ -469,7 +424,7 @@ Get the footer (if any) for a given page:
 
     page.footer
     # => <Gollum::Page>
-    
+
 Get the header (if any) for a given page:
 
     page.header
@@ -534,42 +489,16 @@ To delete a page and commit the change:
 
     wiki.delete_page(page, commit)
 
-### RACK
-
-You can also run gollum with any rack-compatible server by placing this config.ru
-file inside your wiki repository. This allows you to utilize any Rack middleware
-like Rack::Auth, OmniAuth, etc.
-
-    #!/usr/bin/env ruby
-    require 'rubygems'
-    require 'gollum/frontend/app'
-
-    gollum_path = File.expand_path(File.dirname(__FILE__)) # CHANGE THIS TO POINT TO YOUR OWN WIKI REPO
-    Precious::App.set(:gollum_path, gollum_path)
-    Precious::App.set(:default_markup, :markdown) # set your favorite markup language
-    Precious::App.set(:wiki_options, {:universal_toc => false})
-    run Precious::App
-
-Your Rack middleware can pass author details to Gollum in a Hash in the session under the 'gollum.author' key.
 
 ## WINDOWS FILENAME VALIDATION
+
 Note that filenames on windows must not contain any of the following characters `\ / : * ? " < > |`. See [this support article](http://support.microsoft.com/kb/177506) for details.
-
-## CONFIG FILE
-
-Gollum optionally takes a `--config file`. See [config.rb](https://github.com/gollum/gollum/blob/master/config.rb) for an example.
-
-## CUSTOM CSS/JS
-
-The `--css` flag will inject `custom.css` from the root of your git repository into each page. `custom.css` must be commited to git or you will get a 302 redirect to the create page.
-
-The `--js` flag will inject `custom.js` from the root of your git repository into each page. `custom.js` must be commited to git or you will get a 302 redirect to the create page.
 
 ## CONTRIBUTE
 
-If you'd like to hack on Gollum, start by forking the repo on GitHub:
+If you'd like to hack on Gollum-lib, start by forking the repo on GitHub:
 
-http://github.com/gollum/gollum
+http://github.com/gollum/gollum-lib
 
 To get all of the dependencies, install the gem first. The best way to get
 your changes merged back into core is as follows:
@@ -582,35 +511,40 @@ your changes merged back into core is as follows:
 1. Do not change the version number, I will do that on my end
 1. If necessary, rebase your commits into logical chunks, without errors
 1. Push the branch up to GitHub
-1. Send a pull request to the gollum/gollum project.
+1. Send a pull request to the gollum/gollum-lib project.
 
 ## RELEASING
+
+Gollum-lib uses [Semantic Versioning](http://semver.org/).
+
     x.y.z
 
-    For z releases:
+For z releases:
+
     $ rake bump
     $ rake release
 
-    For x.y releases:
-    Update VERSION in lib/gollum.rb
+For x.y releases:
+
     $ rake gemspec
     $ rake release
-    
+
 ## BUILDING THE GEM FROM MASTER
-    $ gem uninstall -aIx gollum
-    $ git clone https://github.com/gollum/gollum.git
-    $ cd gollum
-    gollum$ rake build
-    gollum$ gem install --no-ri --no-rdoc pkg/gollum*.gem
-    
+
+    $ gem uninstall -aIx gollum-lib
+    $ git clone https://github.com/gollum/gollum-lib.git
+    $ cd gollum-lib
+    gollum-lib$ rake build
+    gollum-lib$ gem install --no-ri --no-rdoc pkg/gollum-lib*.gem
+
 ## RUN THE TESTS
 
-    bundle install
-    bundle exec rake test
+    $ bundle install
+    $ bundle exec rake test
 
 ## WORK WITH TEST REPOS
 
-An example of how to add a test file to the bare repository lotr.git.
+An example of how to add a test file to the bare repository `lotr.git`.
 
 ```bash
 $ mkdir tmp; cd tmp
