@@ -5,7 +5,7 @@ require 'pygments'
 require 'base64'
 
 require File.expand_path '../helpers', __FILE__
-require File.expand_path '../gitcode', __FILE__
+require File.expand_path '../remote_code', __FILE__
 
 # initialize Pygments
 Pygments.start
@@ -78,7 +78,7 @@ module Gollum
 
       data = @data.dup
       data = extract_metadata(data)
-      data = extract_gitcode(data)
+      data = extract_remote_code(data)
       data = extract_code(data)
       data = extract_wsd(data)
       data = extract_tags(data)
@@ -138,7 +138,7 @@ module Gollum
           node = Nokogiri::XML::Node.new('ul', doc)
           tail = tail.add_child(node)
           tail_level += 1
-        end          
+        end
         while tail_level > level
           tail = tail.parent
           tail_level -= 1
@@ -457,33 +457,34 @@ module Gollum
 
     #########################################################################
     #
-    # Gitcode - fetch code from github search path and replace the contents
-    #           to a code-block that gets run the next parse.
+    # Remote code - fetch code from url and replace the contents to a
+    #               code-block that gets run the next parse.
     #           Acceptable formats:
     #              ```language:local-file.ext```
     #              ```language:/abs/other-file.ext```
-    #              ```language:github:gollum/gollum/master/somefile.txt```
+    #              ```language:https://example.com/somefile.txt```
     #
     #########################################################################
 
-    def extract_gitcode data
-      data.gsub /^[ \t]*``` ?([^:\n\r]+):(?:(github:))?([^`\n\r]+)```/ do
-        contents = ''
-        # Use empty string if $2 is nil.
-        uri = $3 || ''
-        # Detect local file.
-        if uri[0..6] != 'gollum/'
-            if file = self.find_file(uri, @wiki.ref)
-              contents = file.raw_data
-            else
-              # How do we communicate a render error?
-              next "File not found: #{CGI::escapeHTML(uri)}"
-            end
+    def extract_remote_code data
+      data.gsub /^[ \t]*``` ?([^:\n\r]+):((http)?[^`\n\r]+)```/ do
+        language = $1
+        uri = $2
+        protocol = $3
+
+        # Detect local file
+        if protocol.nil?
+          if file = self.find_file(uri, @wiki.ref)
+            contents = file.raw_data
+          else
+            # How do we communicate a render error?
+            next "File not found: #{CGI::escapeHTML(uri)}"
+          end
         else
-          contents = Gollum::Gitcode.new(uri).contents
+          contents = Gollum::RemoteCode.new(uri).contents
         end
 
-        "```#{$1}\n#{contents}\n```\n"
+        "```#{language}\n#{contents}\n```\n"
       end
     end
 
