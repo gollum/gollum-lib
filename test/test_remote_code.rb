@@ -2,7 +2,7 @@
 require File.expand_path( '../helper', __FILE__ )
 require File.expand_path( '../wiki_factory', __FILE__ )
 
-context "gitcode" do
+context "remote_code" do
 
   def page_with_content c
     index = @wiki.repo.index
@@ -20,7 +20,7 @@ context "gitcode" do
 
   test 'that the rendered output is correctly fetched and rendered as html code' do
     # given
-    p = page_with_content "a\n\n```html:github:gollum/gollum-lib/master/test/file_view/1_file.txt```\n\nb"
+    p = page_with_content "a\n\n```html:https://raw.github.com/gollum/gollum-lib/master/test/file_view/1_file.txt```\n\nb"
 
     # when rendering the page
     rendered = Gollum::Markup.new(p).render
@@ -31,13 +31,13 @@ context "gitcode" do
   end
 
   test 'contents' do
-    g = Gollum::Gitcode.new 'gollum/gollum-lib/master/test/file_view/1_file.txt'
+    g = Gollum::RemoteCode.new 'https://raw.github.com/gollum/gollum-lib/master/test/file_view/1_file.txt'
 
     expected = %{<ol class=\"tree\">\n  <li class=\"file\">\n    <a href=\"0\"><span class=\"icon\"></span>0</a>\n  </li>\n</ol>\n}
     assert_equal expected, g.contents
   end
 
-  test "gitcode relative local file" do
+  test "remote_code relative local file" do
     @wiki.write_page("Bilbo Baggins", :markdown, "a\n```python:file-exists.py```\nb", commit_details)
     page = @wiki.page('Bilbo Baggins')
 
@@ -51,7 +51,7 @@ context "gitcode" do
     assert_equal %Q{<p>a\n</p><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sys</span>\n\n<span class="k">print</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxint</span>\n</pre></div>\n\n<p>b</p>}, output
   end
 
-  test "gitcode relative local file in subdir" do
+  test "remote_code relative local file in subdir" do
     index = @wiki.repo.index
     index.add("foo/file-exists.py", "import sys\n\nprint sys.maxint\n")
     index.commit("Add file-exists.py")
@@ -63,14 +63,14 @@ context "gitcode" do
     assert_equal %Q{<p>a\n</p><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sys</span>\n\n<span class="k">print</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxint</span>\n</pre></div>\n\n<p>b</p>}, output
   end
 
-  test "gitcode relative no file" do
+  test "remote_code relative no file" do
     @wiki.write_page("Bilbo Baggins", :markdown, "a\n```python:no-file-exists.py```\nb", commit_details)
     page = @wiki.page('Bilbo Baggins')
     output = page.formatted_data
     assert_equal %Q{<p>a\nFile not found: no-file-exists.py\nb</p>}, output
   end
 
-  test "gitcode absolute local file" do
+  test "remote_code absolute local file" do
     @wiki.write_page("Bilbo Baggins", :markdown, "a\n```python:/monkey/file-exists.py```\nb", commit_details)
     page = @wiki.page('Bilbo Baggins')
 
@@ -83,14 +83,14 @@ context "gitcode" do
     assert_equal %Q{<p>a\n</p><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sys</span>\n\n<span class="k">print</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span>\n</pre></div>\n\n<p>b</p>}, output
   end
 
-  test "gitcode absolute no file" do
+  test "remote_code absolute no file" do
     @wiki.write_page("Bilbo Baggins", :markdown, "a\n```python:/monkey/no-file-exists.py```\nb", commit_details)
     page = @wiki.page('Bilbo Baggins')
     output = page.formatted_data
     assert_equal %Q{<p>a\nFile not found: /monkey/no-file-exists.py\nb</p>}, output
   end
 
-  test "gitcode error generates santized html" do
+  test "remote_code error generates santized html" do
     @wiki.write_page("Bilbo Baggins", :markdown, "a\n```python:<script>foo</script>```\nb", commit_details)
     page = @wiki.page('Bilbo Baggins')
     output = page.formatted_data
