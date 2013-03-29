@@ -1,10 +1,17 @@
 # ~*~ encoding: utf-8 ~*~
-require 'rubygems'
+
+# stdlib
 require 'test/unit'
+require 'fileutils'
+
+# external
+require 'rubygems'
 require 'shoulda'
 require 'mocha/setup'
-require 'fileutils'
 require 'minitest/reporters'
+
+# internal
+require File.expand_path('../assertions', __FILE__)
 
 MiniTest::Reporters.use!
 

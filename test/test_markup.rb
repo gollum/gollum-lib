@@ -172,28 +172,28 @@ context "Markup" do
     @wiki.write_page("Bilbo Baggins", :markdown, "a [[http://example.com]] b", commit_details)
 
     page = @wiki.page("Bilbo Baggins")
-    assert_equal "<p>a <a href=\"http://example.com\">http://example.com</a> b</p>", page.formatted_data
+    assert_html_equal "<p>a <a href=\"http://example.com\">http://example.com</a> b</p>", page.formatted_data
   end
 
   test "page link with different text" do
     @wiki.write_page("Potato", :markdown, "a [[Potato Heaad|Potato]] ", commit_details)
     page = @wiki.page("Potato")
     output = page.formatted_data
-    assert_equal "<p>a<aclass=\"internalpresent\"href=\"/Potato\">PotatoHeaad</a></p>", normal(output)
+    assert_html_equal "<p>a<aclass=\"internalpresent\"href=\"/Potato\">PotatoHeaad</a></p>", normal(output)
   end
 
   test "page link with different text on mediawiki" do
     @wiki.write_page("Potato", :mediawiki, "a [[Potato|Potato Heaad]] ", commit_details)
     page = @wiki.page("Potato")
     output = page.formatted_data
-    assert_equal normal("<p>\na <a class=\"internal present\" href=\"/Potato\">Potato Heaad</a> </p>
+    assert_html_equal normal("<p>\na <a class=\"internal present\" href=\"/Potato\">Potato Heaad</a> </p>
 "), normal(output)
   end
 
   test "wiki link within inline code block" do
     @wiki.write_page("Potato", :markdown, "`sed -i '' 's/[[:space:]]*$//'`", commit_details)
     page = @wiki.page("Potato")
-    assert_equal "<p><code>sed -i '' 's/[[:space:]]*$//'</code></p>", page.formatted_data
+    assert_html_equal "<p><code>sed -i '' 's/[[:space:]]*$//'</code></p>", page.formatted_data
   end
 
   test "regexp gsub! backref (#383)" do
@@ -209,7 +209,7 @@ context "Markup" do
       ), commit_details)
     output = @wiki.page(page).formatted_data
     expected = %Q{<pre><code>      <div class=\"highlight\"><pre><span class=\"n\">rot13</span><span class=\"o\">=</span><span class=\"err\">'</span><span class=\"n\">tr</span> <span class=\"sc\">'\\''</span><span class=\"n\">A</span><span class=\"o\">-</span><span class=\"n\">Za</span><span class=\"o\">-</span><span class=\"n\">z</span><span class=\"sc\">'\\''</span> <span class=\"sc\">'\\''</span><span class=\"n\">N</span><span class=\"o\">-</span><span class=\"n\">ZA</span><span class=\"o\">-</span><span class=\"n\">Mn</span><span class=\"o\">-</span><span class=\"n\">za</span><span class=\"o\">-</span><span class=\"n\">m</span><span class=\"err\">'\\'</span>\n</pre></div>\n</code></pre>}
-    assert_equal expected, output
+    assert_html_equal expected, output
   end
 
   # Issue #568
@@ -222,7 +222,7 @@ context "Markup" do
       ), commit_details)
     output = @wiki.page(page).formatted_data
     expected = %Q{<div class=\"highlight\"><pre><span class=\"err\">'</span><span class=\"n\">hi</span><span class=\"err\">'</span>\n</pre></div>}
-    assert_equal expected, output
+    assert_html_equal expected, output
   end
 
   test "tilde code blocks #537" do
@@ -234,7 +234,7 @@ context "Markup" do
       ), commit_details)
     output = @wiki.page(page).formatted_data
     expected = %Q{<div class=\"highlight\"><pre><span class=\"s1\">'hi'</span>\n</pre></div>}
-    assert_equal expected, output
+    assert_html_equal expected, output
   end
 
   # Issue #537
@@ -247,7 +247,7 @@ context "Markup" do
       ), commit_details)
     output = @wiki.page(page).formatted_data
     expected = %Q{<div class=\"highlight\"><pre><span class=\"s1\">'hi'</span>\n</pre></div>}
-    assert_equal expected, output
+    assert_html_equal expected, output
   end
 
   # Issue #537
@@ -261,7 +261,7 @@ context "Markup" do
       ), commit_details)
     output = @wiki.page(page).formatted_data
     expected = %Q{<div class=\"highlight\"><pre><span class=\"o\">~~</span>\n<span class=\"s1\">'hi'</span><span class=\"o\">~</span>\n</pre></div>}
-    assert_equal expected, output
+    assert_html_equal expected, output
   end
 
   test "four space indented code block" do
@@ -271,19 +271,19 @@ context "Markup" do
     test), commit_details)
     output = @wiki.page(page).formatted_data
     expected = %(<pre><code>test\ntest\n</code></pre>)
-    assert_equal expected, output
+    assert_html_equal expected, output
   end
 
   test "wiki link within code block" do
     @wiki.write_page("Potato", :markdown, "    sed -i '' 's/[[:space:]]*$//'", commit_details)
     page = @wiki.page("Potato")
-    assert_equal "<pre><code>sed -i '' 's/[[:space:]]*$//'\n</code></pre>", page.formatted_data
+    assert_html_equal "<pre><code>sed -i '' 's/[[:space:]]*$//'\n</code></pre>", page.formatted_data
   end
 
   test "piped wiki link within code block" do
     @wiki.write_page("Potato", :markdown, "`make a link [[home|sweet home]]`", commit_details)
     page = @wiki.page("Potato")
-    assert_equal "<p><code>make a link [[home|sweet home]]</code></p>", page.formatted_data
+    assert_html_equal "<p><code>make a link [[home|sweet home]]</code></p>", page.formatted_data
   end
 
   #########################################################################
@@ -299,7 +299,7 @@ context "Markup" do
 
       page = @wiki.page(name)
       output = page.formatted_data
-      assert_equal %{<p>a <img src=\"#{scheme}://example.com/bilbo.jpg\" /> b</p>}, output
+      assert_html_equal %{<p>a <img src=\"#{scheme}://example.com/bilbo.jpg\" /> b</p>}, output
     end
   end
 
@@ -310,7 +310,7 @@ context "Markup" do
 
       page = @wiki.page(name)
       output = page.formatted_data
-      assert_equal %{<p>a <img src=\"#{scheme}://example.com/bilbo.JPG\" /> b</p>}, output
+      assert_html_equal %{<p>a <img src=\"#{scheme}://example.com/bilbo.JPG\" /> b</p>}, output
     end
   end
 
@@ -322,7 +322,7 @@ context "Markup" do
     @wiki.write_page("Bilbo Baggins", :markdown, "a [[/alpha.jpg]] [[a | /alpha.jpg]] b", commit_details)
 
     page = @wiki.page("Bilbo Baggins")
-    assert_equal %{<p>a <img src=\"/wiki/alpha.jpg\" /><a href=\"/wiki/alpha.jpg\">a</a> b</p>}, page.formatted_data
+    assert_html_equal %{<p>a <img src=\"/wiki/alpha.jpg\" /><a href=\"/wiki/alpha.jpg\">a</a> b</p>}, page.formatted_data
   end
 
   test "image with relative path on root" do
@@ -333,7 +333,7 @@ context "Markup" do
     index.commit("Add alpha.jpg")
 
     page = @wiki.page("Bilbo Baggins")
-    assert_equal %Q{<p>a <img src=\"/wiki/alpha.jpg\" /><a href=\"/wiki/alpha.jpg\">a</a> b</p>}, page.formatted_data
+    assert_html_equal %Q{<p>a <img src=\"/wiki/alpha.jpg\" /><a href=\"/wiki/alpha.jpg\">a</a> b</p>}, page.formatted_data
   end
 
   test "image with relative path" do
@@ -345,7 +345,7 @@ context "Markup" do
 
     page = @wiki.page("Bilbo Baggins")
     output = page.formatted_data
-    assert_equal %{<p>a <img src=\"/wiki/greek/alpha.jpg\" /><a href=\"/wiki/greek/alpha.jpg\">a</a> b</p>}, output
+    assert_html_equal %{<p>a <img src=\"/wiki/greek/alpha.jpg\" /><a href=\"/wiki/greek/alpha.jpg\">a</a> b</p>}, output
   end
 
   test "image with absolute path on a preview" do
@@ -355,7 +355,7 @@ context "Markup" do
     index.commit("Add alpha.jpg")
 
     page = @wiki.preview_page("Test", "a [[/alpha.jpg]] b", :markdown)
-    assert_equal %{<p>a <img src=\"/wiki/alpha.jpg\" /> b</p>}, page.formatted_data
+    assert_html_equal %{<p>a <img src=\"/wiki/alpha.jpg\" /> b</p>}, page.formatted_data
   end
 
   test "image with relative path on a preview" do
@@ -366,7 +366,7 @@ context "Markup" do
     index.commit("Add alpha.jpg")
 
     page = @wiki.preview_page("Test", "a [[alpha.jpg]] [[greek/alpha.jpg]] b", :markdown)
-    assert_equal %{<p>a <img src=\"/wiki/alpha.jpg\" /><img src=\"/wiki/greek/alpha.jpg\" /> b</p>}, page.formatted_data
+    assert_html_equal %{<p>a <img src=\"/wiki/alpha.jpg\" /><img src=\"/wiki/greek/alpha.jpg\" /> b</p>}, page.formatted_data
   end
 
   test "image with alt" do
@@ -455,7 +455,7 @@ context "Markup" do
 
     page = @wiki.page("Bilbo Baggins")
     output = Gollum::Markup.new(page).render
-    assert_equal %{<p>a <a href="/alpha.jpg">Alpha</a> b</p>}, output
+    assert_html_equal %{<p>a <a href="/alpha.jpg">Alpha</a> b</p>}, output
   end
 
   test "file link with relative path" do
@@ -466,7 +466,7 @@ context "Markup" do
 
     page = @wiki.page("Bilbo Baggins")
     output = Gollum::Markup.new(page).render
-    assert_equal %{<p>a <a href="/greek/alpha.jpg">Alpha</a> b</p>}, output
+    assert_html_equal %{<p>a <a href="/greek/alpha.jpg">Alpha</a> b</p>}, output
   end
 
   test "file link with external path" do
@@ -475,7 +475,7 @@ context "Markup" do
     index.commit("Add alpha.jpg")
 
     page = @wiki.page("Bilbo Baggins")
-    assert_equal %{<p>a <a href="http://example.com/alpha.jpg">Alpha</a> b</p>}, page.formatted_data
+    assert_html_equal %{<p>a <a href="http://example.com/alpha.jpg">Alpha</a> b</p>}, page.formatted_data
   end
 
   #########################################################################
@@ -494,7 +494,7 @@ context "Markup" do
 
     page = @wiki.page("Bilbo Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_equal output, rendered
+    assert_html_equal output, rendered
   end
 
   test "code blocks with carriage returns" do
@@ -507,7 +507,7 @@ context "Markup" do
 
     page = @wiki.page("Bilbo Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_equal output, rendered
+    assert_html_equal output, rendered
   end
 
   test "code blocks with two-space indent" do
@@ -537,7 +537,7 @@ context "Markup" do
 
     page = @wiki.page("Bilbo Baggins")
     rendered = Gollum::Markup.new(page).render(false, 'utf-8')
-    assert_equal output, rendered
+    assert_html_equal output, rendered
   end
 
   test "code blocks with ascii characters" do
@@ -586,7 +586,7 @@ np.array([[2,2],[1,3]],np.float)
 
     page = @wiki.page("a")
     output = page.formatted_data
-    assert_equal %Q{<p>a\nFile not found: /base</p>}, output
+    assert_html_equal %Q{<p>a\nFile not found: /base</p>}, output
   end
 
   test "embed code page relative link" do
@@ -595,7 +595,7 @@ np.array([[2,2],[1,3]],np.float)
 
     page = @wiki.page("a")
     output = page.formatted_data
-    assert_equal %Q{<p>a\nFile not found: base</p>}, output
+    assert_html_equal %Q{<p>a\nFile not found: base</p>}, output
   end
 
   test "code block in unsupported language" do
@@ -603,7 +603,7 @@ np.array([[2,2],[1,3]],np.float)
 
     page = @wiki.page("a")
     output = page.formatted_data
-    assert_equal %Q{<p>a\ncode\nb</p>}, output
+    assert_html_equal %Q{<p>a\ncode\nb</p>}, output
   end
 
   #########################################################################
@@ -642,7 +642,7 @@ if $METADATA  ##################################################################
 
     page = @wiki.page("Bilbo Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_equal output, rendered 
+    assert_html_equal output, rendered
     assert_equal result, page.metadata
   end
 
@@ -657,7 +657,7 @@ if $METADATA  ##################################################################
 
     page = @wiki.page("Bilbo Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_equal output, rendered 
+    assert_html_equal output, rendered
     assert_equal result, page.metadata
   end
 
@@ -672,7 +672,7 @@ if $METADATA  ##################################################################
 
     page = @wiki.page("Bilbo Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_equal output, rendered 
+    assert_html_equal output, rendered
     assert_equal result, page.metadata
   end
 end # if $METADATA
@@ -775,11 +775,11 @@ if ENV['ASCIIDOC']
   # Asciidoc
   #########################################################################
 
-  test "asciidoc header" do 
+  test "asciidoc header" do
     compare("= Book Title\n\n== Heading", '<div class="sect1"><h2 id="wiki-_heading">Heading<a class="anchor" id="Heading" href="#Heading"></a></h2><div class="sectionbody"></div></div>', 'asciidoc')
   end
 
-  test "internal links with asciidoc" do 
+  test "internal links with asciidoc" do
     compare("= Book Title\n\n[[anid]]\n== Heading", '<div class="sect1"><h2 id="wiki-anid">Heading<a class="anchor" id="Heading" href="#Heading"></a></h2><div class="sectionbody"></div></div>', 'asciidoc')
   end
 end
@@ -803,7 +803,7 @@ end
     page, rendered = render_page(content, ext)
 
     if regexes.empty?
-      assert_equal normal(output), normal(rendered)
+      assert_html_equal normal(output), normal(rendered)
     else
       output = page.formatted_data
       regexes.each { |r| assert_match r, output }
@@ -819,6 +819,6 @@ end
     @wiki.clear_cache
     page = @wiki.page("Bilbo Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_equal normal(output), normal(rendered)
+    assert_html_equal normal(output), normal(rendered)
   end
 end

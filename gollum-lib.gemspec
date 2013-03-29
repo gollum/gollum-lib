@@ -39,6 +39,7 @@ Gem::Specification.new do |s|
   # required by pry
   s.add_development_dependency('rb-readline', '~> 0.4.2')
   s.add_development_dependency 'minitest-reporters', '~> 0.14.10'
+  s.add_development_dependency('nokogiri-diff', '~> 0.1.2')
 
   # = MANIFEST =
   s.files = %w[
