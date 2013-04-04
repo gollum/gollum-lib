@@ -40,6 +40,12 @@ Gem::Specification.new do |s|
   s.add_development_dependency('rb-readline', '~> 0.4.2')
   s.add_development_dependency 'minitest-reporters', '~> 0.14.10'
   s.add_development_dependency('nokogiri-diff', '~> 0.1.2')
+  # required by guard
+  s.add_development_dependency('guard', '~> 1.6.2')
+  s.add_development_dependency('guard-minitest', '~> 0.5.0')
+  s.add_development_dependency('rb-inotify', '~> 0.9.0')
+  s.add_development_dependency('rb-fsevent', '~> 0.9.3')
+  s.add_development_dependency('rb-fchange', '~> 0.0.6')
 
   # = MANIFEST =
   s.files = %w[
