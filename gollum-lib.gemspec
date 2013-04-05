@@ -38,7 +38,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('pry', '~> 0.9.12')
   # required by pry
   s.add_development_dependency('rb-readline', '~> 0.4.2')
-  s.add_development_dependency 'minitest-reporters', '~> 0.14.10'
+  s.add_development_dependency 'minitest-reporters', '<= 0.14.14'
   s.add_development_dependency('nokogiri-diff', '~> 0.1.2')
   # required by guard
   s.add_development_dependency('guard', '~> 1.6.2')
