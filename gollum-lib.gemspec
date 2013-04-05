@@ -8,6 +8,7 @@ Gem::Specification.new do |s|
   s.version           = '1.0.0'
   s.date              = '2013-04-02'
   s.rubyforge_project = 'gollum-lib'
+  s.license           = 'MIT'
 
   s.summary     = "A simple, Git-powered wiki."
   s.description = "A simple, Git-powered wiki with a sweet API and local frontend."
