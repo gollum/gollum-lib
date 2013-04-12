@@ -4,9 +4,9 @@ require File.expand_path '../../lib/gollum-lib/file_view', __FILE__
 
 class FakePage
   def initialize filepath
-    @filepath = filepath  
+    @filepath = filepath
   end
-  
+
   # From page.rb
   def filename_stripped
     ::File.basename(@filepath, ::File.extname(@filepath))
@@ -44,7 +44,7 @@ class FakePages
   def size
     @array.size
   end
-  
+
   def [] index
     @array[ index ]
   end

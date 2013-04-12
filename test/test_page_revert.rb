@@ -29,12 +29,12 @@ context "Page Reverting" do
     end
 
     sha   = @wiki.revert_page(page1, '7c45b5f16ff3bae2a0063191ef832701214d4df5')
-    
+
     page2 = nil
     while (page2 == nil)
       page2 = @wiki.page('B')
     end
-    
+
     assert_equal sha,       page2.version.sha
     assert_equal "INITIAL", body=page2.raw_data.strip
     assert_equal body, File.read(File.join(@path, "B.md")).strip

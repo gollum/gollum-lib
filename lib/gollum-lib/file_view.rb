@@ -100,7 +100,7 @@ module Gollum
       end
 
       # http://stackoverflow.com/questions/3482814/sorting-list-of-string-paths-in-vb-net
-      sorted_folders.sort! do |first,second| 
+      sorted_folders.sort! do |first,second|
         a = first[0]
         b = second[0]
 

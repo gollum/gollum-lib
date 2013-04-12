@@ -564,7 +564,7 @@ np.array([[2,2],[1,3]],np.float)
     content = <<-END
 shoop da woop
 
-``` python 
+``` python
 np.array([[2,2],[1,3]],np.float)
 ```
     END
@@ -747,8 +747,8 @@ end # if $METADATA
 
   test "id with prefix ok" do
     content = "h2(example#wiki-foo). xxxx"
-output = %(<h2 class="example" id="wiki-foo">xxxx<a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"></a></h2>)
-compare(content, output, :textile)
+    output = %(<h2 class="example" id="wiki-foo">xxxx<a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"></a></h2>)
+    compare(content, output, :textile)
 end
 
   test "id prefix added" do

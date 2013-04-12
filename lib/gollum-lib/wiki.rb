@@ -144,10 +144,10 @@ module Gollum
     # Sets page title to value of first h1
     # Defaults to false
     attr_reader :h1_title
-    
+
     # Gets the custom index page for / and subdirs (e.g. foo/)
     attr_reader :index_page
-    
+
     # Gets side on which the sidebar should be shown
     attr_reader :bar_side
 
@@ -177,7 +177,7 @@ module Gollum
     #           :css           - Include the custom.css file from the repo.
     #           :h1_title      - Concatenate all h1's on a page to form the
     #                            page title.
-    #           :index_page    - The default page to retrieve or create if the 
+    #           :index_page    - The default page to retrieve or create if the
     #                            a directory is accessed.
     #           :bar_side      - Where the sidebar should be displayed, may be:
     #                             - :left

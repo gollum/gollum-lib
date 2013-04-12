@@ -105,7 +105,7 @@ module Gollum
 
         tree.blobs.each do |blob|
           next if page_path_scheduled_for_deletion?(index.tree, fullpath)
-          
+
           existing_file = blob.name.downcase.sub(/\.\w+$/, '')
           existing_file_ext = ::File.extname(blob.name).sub(/^\./, '')
 
