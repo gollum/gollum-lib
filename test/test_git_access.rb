@@ -3,22 +3,23 @@ require File.expand_path(File.join(File.dirname(__FILE__), "helper"))
 
 context "GitAccess" do
   setup do
-    @access = Gollum::GitAccess.new(testpath("examples/lotr.git"))
+    @access = Gollum::GitAccess.new(testpath("examples/lotr.git"), nil, true)
+    @repo = Rugged::Repository.init_at(testpath("examples/lotr.git"), true)
   end
 
   test "#commit fills commit_map cache" do
     assert @access.commit_map.empty?
-    actual   = @access.repo.commits.first
-    expected = @access.commit(actual.id)
+    actual   = @access.repo.lookup(@access.repo.head.target)
+    expected = @access.commit(actual.oid)
     assert_equal actual.message, expected.message
-    assert_equal actual.message, @access.commit_map[actual.id].message
+    assert_equal actual.message, @access.commit_map[actual.oid].message
   end
 
   test "#tree_map_for caches ref and tree" do
     assert @access.ref_map.empty?
     assert @access.tree_map.empty?
-    @access.tree 'master'
-    assert_equal({"master"=>"874f597a5659b4c3b153674ea04e406ff393975e"}, @access.ref_map)
+    @access.tree 'refs/heads/master'
+    assert_equal({'refs/heads/master'=>@repo.head.target}, @access.ref_map)
 
     @access.tree '1db89ebba7e2c14d93b94ff98cfa3708a4f0d4e3'
     map = @access.tree_map['1db89ebba7e2c14d93b94ff98cfa3708a4f0d4e3']
