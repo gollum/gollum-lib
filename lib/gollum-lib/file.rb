@@ -10,7 +10,7 @@ module Gollum
     # Returns a newly initialized Gollum::File.
     def initialize(wiki)
       @wiki = wiki
-      @blob = nil
+      @blob_entry = nil
       @path = nil
     end
 
@@ -34,7 +34,7 @@ module Gollum
     #
     # Returns the String name.
     def name
-      @blob && @blob.name
+      @path && ::File.basename(@path)
     end
     alias filename name
 
@@ -42,17 +42,17 @@ module Gollum
     #
     # Returns the String data.
     def raw_data
-      return nil unless @blob
+      return nil unless @blob_entry
 
-      if !@wiki.repo.bare && @blob.is_symlink
-        new_path = @blob.symlink_target(::File.join(@wiki.repo.path, '..', self.path))
+      if !@wiki.repo.bare? && @blob_entry.mode == 40960
+        new_path = @blob_entry.symlink_target(::File.join(@wiki.repo.path, '..', self.path))
         return IO.read(new_path) if new_path
       end
 
-      @blob.data
+      @blob_entry.blob(@wiki.repo).read_raw.data
     end
 
-    # Public: The Grit::Commit version of the file.
+    # Public: The Rugged::Commit version of the file.
     attr_accessor :version
 
     # Public: The String path of the file.
@@ -60,18 +60,18 @@ module Gollum
 
     # Public: The String mime type of the file.
     def mime_type
-      @blob.mime_type
+      @blob_entry.mime_type
     end
 
     # Populate the File with information from the Blob.
     #
-    # blob - The Grit::Blob that contains the info.
+    # blob - The Gollum::BlobEntry that contains the info.
     # path - The String directory path of the file.
     #
     # Returns the populated Gollum::File.
-    def populate(blob, path=nil)
-      @blob = blob
-      @path = "#{path}/#{blob.name}"[1..-1]
+    def populate(blob_entry, path=nil)
+      @blob_entry = blob_entry
+      @path = "#{path}/#{blob_entry.name}"[1..-1]
       self
     end
 
@@ -92,8 +92,8 @@ module Gollum
       map     = @wiki.tree_map_for(version)
       if entry = map.detect { |entry| entry.path.downcase == checked }
         @path    = name
-        @blob    = entry.blob(@wiki.repo)
-        @version = version.is_a?(Grit::Commit) ? version : @wiki.commit_for(version)
+        @blob_entry    = entry
+        @version = version.is_a?(Rugged::Commit) ? version : @wiki.commit_for(version)
         self
       end
     end

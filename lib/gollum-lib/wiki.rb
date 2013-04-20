@@ -107,7 +107,7 @@ module Gollum
       end
     end
 
-    self.default_ref = 'master'
+    self.default_ref = 'refs/heads/master'
     self.default_committer_name  = 'Anonymous'
     self.default_committer_email = 'anon@anon.com'
 
@@ -145,12 +145,6 @@ module Gollum
     # Defaults to false
     attr_reader :h1_title
 
-    # Gets the custom index page for / and subdirs (e.g. foo/)
-    attr_reader :index_page
-
-    # Gets side on which the sidebar should be shown
-    attr_reader :bar_side
-
     # Public: Initialize a new Gollum Repo.
     #
     # path    - The String path to the Git repository that holds the Gollum
@@ -166,7 +160,7 @@ module Gollum
     #                             document type. Default: { Gollum::Markup }
     #           :sanitization  - An instance of Sanitization.
     #           :page_file_dir - String the directory in which all page files reside
-    #           :ref - String the repository ref to retrieve pages from
+    #           :ref           - String the repository ref to retrieve pages from
     #           :ws_subs       - Array of chars to sub for ws in filenames.
     #           :mathjax       - Set to false to disable mathjax.
     #           :user_icons    - Enable user icons on the history page. [gravatar, identicon, none].
@@ -174,14 +168,6 @@ module Gollum
     #           :show_all      - Show all files in file view, not just valid pages.
     #                            Default: false
     #           :collapse_tree - Start with collapsed file view. Default: false
-    #           :css           - Include the custom.css file from the repo.
-    #           :h1_title      - Concatenate all h1's on a page to form the
-    #                            page title.
-    #           :index_page    - The default page to retrieve or create if the
-    #                            a directory is accessed.
-    #           :bar_side      - Where the sidebar should be displayed, may be:
-    #                             - :left
-    #                             - :right
     #
     # Returns a fresh Gollum::Repo.
     def initialize(path, options = {})
@@ -217,8 +203,7 @@ module Gollum
       @collapse_tree        = options.fetch :collapse_tree, false
       @css                  = options.fetch :css, false
       @h1_title             = options.fetch :h1_title, false
-      @index_page           = options.fetch :index_page, 'Home'
-      @bar_side             = options.fetch :sidebar, :right
+
       @user_icons           = ['gravatar', 'identicon'].include?( options[:user_icons] ) ?
                               options[:user_icons] : 'none'
     end
@@ -276,7 +261,7 @@ module Gollum
       page = @page_class.new(self)
       ext  = @page_class.format_to_ext(format.to_sym)
       name = @page_class.cname(name) + '.' + ext
-      blob = OpenStruct.new(:name => name, :data => data, :is_symlink => false)
+      blob = OpenStruct.new(:name => name, :data => data)
       page.populate(blob)
       page.version = @access.commit('master')
       page
@@ -321,63 +306,7 @@ module Gollum
 
       committer.after_commit do |index, sha|
         @access.refresh
-        index.update_working_dir(dir, filename, format)
-      end
-
-      multi_commit ? committer : committer.commit
-    end
-
-    # Public: Rename an existing page without altering content.
-    #
-    # page   - The Gollum::Page to update.
-    # rename - The String extension-less full path of the page (leading '/' is ignored).
-    # commit - The commit Hash details:
-    #          :message   - The String commit message.
-    #          :name      - The String author full name.
-    #          :email     - The String email address.
-    #          :parent    - Optional Grit::Commit parent to this update.
-    #          :tree      - Optional String SHA of the tree to create the
-    #                       index from.
-    #          :committer - Optional Gollum::Committer instance.  If provided,
-    #                       assume that this operation is part of batch of
-    #                       updates and the commit happens later.
-    #
-    # Returns the String SHA1 of the newly written version, or the
-    # Gollum::Committer instance if this is part of a batch update.
-    # Returns false if the operation is a NOOP.
-    def rename_page(page, rename, commit = {})
-      return false if page.nil?
-      return false if rename.nil? or rename.empty?
-
-      (target_dir, target_name) = ::File.split(rename)
-      (source_dir, source_name) = ::File.split(page.path)
-      source_name = page.filename_stripped
-
-      # File.split gives us relative paths with ".", commiter.add_to_index doesn't like that.
-      target_dir = '' if target_dir == '.'
-      source_dir = '' if source_dir == '.'
-      target_dir = target_dir.gsub(/^\//, '')
-
-      # if the rename is a NOOP, abort
-      if source_dir == target_dir and source_name == target_name
-        return false
-      end
-
-      multi_commit = false
-      committer = if obj = commit[:committer]
-        multi_commit = true
-        obj
-      else
-        Committer.new(self, commit)
-      end
-
-      committer.delete(page.path)
-      committer.add_to_index(target_dir, target_name, page.format, page.raw_data, :allow_same_ext)
-
-      committer.after_commit do |index, sha|
-        @access.refresh
-        index.update_working_dir(source_dir, source_name, page.format)
-        index.update_working_dir(target_dir, target_name, page.format)
+        index.update_working_dir('', filename, format)
       end
 
       multi_commit ? committer : committer.commit
@@ -628,6 +557,7 @@ module Gollum
     #
     # Returns an Array of Grit::Commit.
     def log(options = {})
+      # i want a log function in the GitAccess class!
       @repo.log(@ref, nil, log_pagination_options(options))
     end
 
@@ -665,9 +595,9 @@ module Gollum
     #
     #########################################################################
 
-    # The Grit::Repo associated with the wiki.
+    # The Rugged::Repo associated with the wiki.
     #
-    # Returns the Grit::Repo.
+    # Returns the Rugged::Repo.
     attr_reader :repo
 
     # The String path to the Git repository that holds the Gollum site.
@@ -802,10 +732,10 @@ module Gollum
     #
     # ref - A string ref or SHA pointing to a valid commit.
     #
-    # Returns a Grit::Commit instance.
+    # Returns a Rugged::Commit instance.
     def commit_for(ref)
       @access.commit(ref)
-    rescue Grit::GitRuby::Repository::NoSuchShaFound
+    rescue Rugged::ReferenceError
     end
 
     # Finds a full listing of files and their blob SHA for a given ref.  Each
@@ -822,7 +752,10 @@ module Gollum
       else
         @access.tree(ref)
       end
-    rescue Grit::GitRuby::Repository::NoSuchShaFound
+      
+    #rescue Grit::GitRuby::Repository::NoSuchShaFound
+      # is this right?
+    rescue Rugged::ReferenceError
       []
     end
 
