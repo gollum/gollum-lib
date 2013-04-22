@@ -306,14 +306,8 @@ module Gollum
       name.gsub!(' ', '-')
       dir.gsub!(' ', '-')
 
-      multi_commit = false
-
-      committer = if obj = commit[:committer]
-        multi_commit = true
-        obj
-      else
-        Committer.new(self, commit)
-      end
+      committer = commit[:committer] ? commit[:committer] : Committer.new(self, commit)
+      multi_commit = commit[:committer] # could be `!!commit[:committer]` to get pure boolean
 
       filename = Gollum::Page.cname(name)
 
@@ -363,13 +357,8 @@ module Gollum
         return false
       end
 
-      multi_commit = false
-      committer = if obj = commit[:committer]
-        multi_commit = true
-        obj
-      else
-        Committer.new(self, commit)
-      end
+      committer = commit[:committer] ? commit[:committer] : Committer.new(self, commit)
+      multi_commit = commit[:committer] # could be `!!commit[:committer]` to get pure boolean
 
       committer.delete(page.path)
       committer.add_to_index(target_dir, target_name, page.format, page.raw_data, :allow_same_ext)
@@ -415,12 +404,8 @@ module Gollum
 
       multi_commit = false
 
-      committer = if obj = commit[:committer]
-        multi_commit = true
-        obj
-      else
-        Committer.new(self, commit)
-      end
+      committer = commit[:committer] ? commit[:committer] : Committer.new(self, commit)
+      multi_commit = commit[:committer] # could be `!!commit[:committer]` to get pure boolean
 
       if !rename && page.format == format
         committer.add(page.path, normalize(data))
@@ -457,12 +442,8 @@ module Gollum
     def delete_page(page, commit)
       multi_commit = false
 
-      committer = if obj = commit[:committer]
-        multi_commit = true
-        obj
-      else
-        Committer.new(self, commit)
-      end
+      committer = commit[:committer] ? commit[:committer] : Committer.new(self, commit)
+      multi_commit = commit[:committer] # could be `!!commit[:committer]` to get pure boolean
 
       committer.delete(page.path)
 
