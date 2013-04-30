@@ -179,16 +179,6 @@ module Gollum
       blobs
     end
 
-    # Reads the content from the Git db at the given SHA.
-    #
-    # sha - The String SHA.
-    #
-    # Returns the String content of the Git object.
-    def cat_file!(sha)
-      # todo: move to Rugged and write a nice test :)
-      @repo.git.cat_file({:p => true}, sha)
-    end
-
     # Reads a Git commit.
     #
     # sha - The string SHA of the Git commit.
