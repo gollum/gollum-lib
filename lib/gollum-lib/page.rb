@@ -85,7 +85,7 @@ module Gollum
     # Returns a newly initialized Gollum::Page.
     def initialize(wiki)
       @wiki = wiki
-      @blob = @header = @footer = @sidebar = nil
+      @blob_entry = @header = @footer = @sidebar = nil
       @doc = nil
       @parent_page = nil
     end
@@ -94,7 +94,7 @@ module Gollum
     #
     # Returns the String name.
     def filename
-      @blob && @blob.name
+      @blob_entry && @blob_entry.name
     end
 
     # Public: The on-disk filename of the page with extension stripped.
@@ -180,14 +180,15 @@ module Gollum
     #
     # Returns the String data.
     def raw_data
-      return nil unless @blob
+      return nil unless @blob_entry
 
-      if !@wiki.repo.bare && @blob.is_symlink
-        new_path = @blob.symlink_target(::File.join(@wiki.repo.path, '..', self.path))
+      if !@wiki.repo.bare? && @blob_entry.is_symlink
+        new_path = @blob_entry.symlink_target(::File.join(@wiki.repo.path, '..', self.path))
         return IO.read(new_path) if new_path
       end
 
-      @blob.data
+      # This is really a `BlobEntry` object
+      @blob_entry.blob(@wiki.repo).content
     end
 
     # Public: A text data encoded in specified encoding.
@@ -209,7 +210,7 @@ module Gollum
     #
     # Returns the String data.
     def formatted_data(encoding = nil, &block)
-      @blob && markup_class.render(historical?, encoding) do |doc|
+      @blob_entry && markup_class.render(historical?, encoding) do |doc|
         @doc = doc
         yield doc if block_given?
       end
@@ -238,7 +239,7 @@ module Gollum
     #
     # Returns the Symbol format of the page; one of the registered format types
     def format
-      self.class.format_for(@blob.name)
+      self.class.format_for(@blob_entry.name)
     end
 
     # Gets the Gollum::Markup instance that will render this page's content.
@@ -250,7 +251,7 @@ module Gollum
 
     # Public: The current version of the page.
     #
-    # Returns the Grit::Commit.
+    # Returns the Rugged::Commit.
     attr_reader :version
 
     # Public: All of the versions that have touched the Page.
@@ -371,13 +372,14 @@ module Gollum
     # Returns a Gollum::Page or nil if the page could not be found.
     def find(name, version, dir = nil, exact = false)
       map = @wiki.tree_map_for(version.to_s)
+
       if page = find_page_in_tree(map, name, dir, exact)
-        page.version    = version.is_a?(Grit::Commit) ?
+        page.version    = version.is_a?(Rugged::Commit) ?
           version : @wiki.commit_for(version)
         page.historical = page.version.to_s == version.to_s
         page
       end
-    rescue Grit::GitRuby::Repository::NoSuchShaFound
+    rescue Rugged::ReferenceError
     end
 
     # Find a page in a given tree.
@@ -408,13 +410,13 @@ module Gollum
 
     # Populate the Page with information from the Blob.
     #
-    # blob - The Grit::Blob that contains the info.
+    # blob - The Rugged::Blob object that contains the info.
     # path - The String directory path of the page file.
     #
     # Returns the populated Gollum::Page.
     def populate(blob, path=nil)
-      @blob = blob
-      @path = "#{path}/#{blob.name}"[1..-1]
+      @blob_entry = blob
+      @path = @blob_entry.path
       self
     end
 

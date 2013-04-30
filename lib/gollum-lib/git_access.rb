@@ -13,7 +13,12 @@ module Gollum
     def initialize(path, page_file_dir = nil, bare = false)
       @page_file_dir = page_file_dir
       @path = path
-      @repo = Rugged::Repository.init_at(path, bare)
+
+      if bare
+        @repo = Rugged::Repository.init_at(path, bare)
+      else
+        @repo = Rugged::Repository.new(path)
+      end
       clear
     end
 
@@ -180,6 +185,7 @@ module Gollum
     #
     # Returns the String content of the Git object.
     def cat_file!(sha)
+      # todo: move to Rugged and write a nice test :)
       @repo.git.cat_file({:p => true}, sha)
     end
 

@@ -753,8 +753,6 @@ module Gollum
         @access.tree(ref)
       end
       
-    #rescue Grit::GitRuby::Repository::NoSuchShaFound
-      # is this right?
     rescue Rugged::ReferenceError
       []
     end
