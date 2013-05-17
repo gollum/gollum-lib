@@ -30,7 +30,7 @@ $KCODE = 'U' if RUBY_VERSION[0,3] == '1.8'
 
 module Gollum
   module Lib
-    VERSION = '1.0.0'
+    VERSION = '1.0.1'
   end
 
   def self.assets_path
