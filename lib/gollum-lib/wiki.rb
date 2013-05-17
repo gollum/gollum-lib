@@ -306,14 +306,8 @@ module Gollum
       name.gsub!(' ', '-')
       dir.gsub!(' ', '-')
 
-      multi_commit = false
-
-      committer = if obj = commit[:committer]
-        multi_commit = true
-        obj
-      else
-        Committer.new(self, commit)
-      end
+      multi_commit = !!commit[:committer]
+      committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       filename = Gollum::Page.cname(name)
 
@@ -363,13 +357,8 @@ module Gollum
         return false
       end
 
-      multi_commit = false
-      committer = if obj = commit[:committer]
-        multi_commit = true
-        obj
-      else
-        Committer.new(self, commit)
-      end
+      multi_commit = !!commit[:committer]
+      committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       committer.delete(page.path)
       committer.add_to_index(target_dir, target_name, page.format, page.raw_data, :allow_same_ext)
@@ -413,14 +402,8 @@ module Gollum
       filename = (rename = page.name != name) ?
         Gollum::Page.cname(name) : page.filename_stripped
 
-      multi_commit = false
-
-      committer = if obj = commit[:committer]
-        multi_commit = true
-        obj
-      else
-        Committer.new(self, commit)
-      end
+      multi_commit = !!commit[:committer]
+      committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       if !rename && page.format == format
         committer.add(page.path, normalize(data))
@@ -455,14 +438,9 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
     def delete_page(page, commit)
-      multi_commit = false
 
-      committer = if obj = commit[:committer]
-        multi_commit = true
-        obj
-      else
-        Committer.new(self, commit)
-      end
+      multi_commit = !!commit[:committer]
+      committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       committer.delete(page.path)
 
