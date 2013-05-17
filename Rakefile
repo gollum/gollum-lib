@@ -101,6 +101,11 @@ task :bump do
   Rake::Task[:validate].execute
 end
 
+desc "Build and install"
+task :install => :build do
+  sh "gem install --no-ri --no-rdoc pkg/#{name}-#{version}.gem"
+end
+
 #############################################################################
 #
 # Packaging tasks

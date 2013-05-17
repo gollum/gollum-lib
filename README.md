@@ -249,7 +249,7 @@ $ gem uninstall -aIx gollum-lib
 $ git clone https://github.com/gollum/gollum-lib.git
 $ cd gollum-lib
 gollum-lib$ rake build
-gollum-lib$ gem install --no-ri --no-rdoc pkg/gollum-lib*.gem
+gollum-lib$ rake install
 ```
 
 ## RUN THE TESTS
