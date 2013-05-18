@@ -251,7 +251,9 @@ module Gollum
     # Public: The current version of the page.
     #
     # Returns the Grit::Commit.
-    attr_reader :version
+    def version
+      @version ||= versions(:per_page => 1).first
+    end
 
     # Public: All of the versions that have touched the Page.
     #

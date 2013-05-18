@@ -237,10 +237,10 @@ module Gollum
     # dir     - The directory String relative to the repo.
     #
     # Returns a Gollum::Page or nil if no matching page was found.
-    def page(name, given_version = nil, dir = nil, exact = false)
-      version = given_version || @ref
-      page = @page_class.new(self).find(name, version, dir, exact)
-      page.version = page.versions.first if given_version.nil? and page
+    def page(name, version = nil, dir = nil, exact = false)
+      find_version = version || @ref
+      page = @page_class.new(self).find(name, find_version, dir, exact)
+      page.version = nil if version.nil? and page
       page
     end
 
