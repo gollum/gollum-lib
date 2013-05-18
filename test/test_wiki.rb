@@ -186,16 +186,19 @@ context "Wiki page writing" do
 
   test "update_page" do
     @wiki.write_page("Gollum", :markdown, "# Gollum", commit_details)
-
     page = @wiki.page("Gollum")
-    cd = commit_details
-    @wiki.update_page(page, page.name, :markdown, "# Gollum2", cd)
+
+    @wiki.update_page(page, page.name, :markdown, "# Smeagol", {
+      :message => "Leave now, and never come back!",
+      :name => "Smeagol",
+      :email => "smeagol@example.org"
+    })
 
     assert_equal 2, @wiki.repo.commits.size
-    assert_equal "# Gollum2", @wiki.page("Gollum").raw_data
-    assert_equal cd[:message], @wiki.repo.commits.first.message
-    assert_equal cd[:name], @wiki.repo.commits.first.author.name
-    assert_equal cd[:email], @wiki.repo.commits.first.author.email
+    assert_equal "# Smeagol", @wiki.page("Gollum").raw_data
+    assert_equal "Leave now, and never come back!", @wiki.repo.commits.last.message
+    assert_equal "Smeagol", @wiki.repo.commits.last.author.name
+    assert_equal "smeagol@example.org", @wiki.repo.commits.last.author.email
   end
 
 if $METADATA
