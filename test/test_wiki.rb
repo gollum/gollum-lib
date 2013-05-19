@@ -169,10 +169,19 @@ context "Wiki page writing" do
     assert_equal cd[:message], @wiki.repo.commits.first.message
     assert_equal cd[:name], @wiki.repo.commits.first.author.name
     assert_equal cd[:email], @wiki.repo.commits.first.author.email
-    assert @wiki.page("Gollum")
 
-    @wiki.write_page("Bilbo", :markdown, "# Bilbo", commit_details)
-    assert_equal 2, @wiki.repo.commits.size
+    cd2 = { :message => "Updating Bilbo", :author => "Samwise" }
+    @wiki.write_page("Bilbo", :markdown, "# Bilbo", cd2)
+
+    commits = @wiki.repo.commits
+    # FIXME Grit commits ordering is not predictable. See #13.
+    # The following line should be: commit = commits.first
+    first_commit = commits.find { |c| c.message == "Updating Bilbo" }
+
+    assert_equal 2, commits.size
+    assert_equal cd2[:message], first_commit.message
+    assert_equal cd2[:name], first_commit.author.name
+    assert_equal cd2[:email], first_commit.author.email
     assert @wiki.page("Bilbo")
     assert @wiki.page("Gollum")
   end
@@ -187,18 +196,22 @@ context "Wiki page writing" do
   test "update_page" do
     @wiki.write_page("Gollum", :markdown, "# Gollum", commit_details)
     page = @wiki.page("Gollum")
-
     @wiki.update_page(page, page.name, :markdown, "# Smeagol", {
       :message => "Leave now, and never come back!",
       :name => "Smeagol",
       :email => "smeagol@example.org"
     })
 
-    assert_equal 2, @wiki.repo.commits.size
+    commits = @wiki.repo.commits
+    # FIXME Grit commits ordering is not predictable. See #13.
+    # The following line should be: first_commit = commits.first
+    first_commit = commits.find { |c| c.author.name == "Smeagol" }
+
+    assert_equal 2, commits.size
     assert_equal "# Smeagol", @wiki.page("Gollum").raw_data
-    assert_equal "Leave now, and never come back!", @wiki.repo.commits.last.message
-    assert_equal "Smeagol", @wiki.repo.commits.last.author.name
-    assert_equal "smeagol@example.org", @wiki.repo.commits.last.author.email
+    assert_equal "Leave now, and never come back!", first_commit.message
+    assert_equal "Smeagol", first_commit.author.name
+    assert_equal "smeagol@example.org", first_commit.author.email
   end
 
 if $METADATA
