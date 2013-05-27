@@ -664,7 +664,10 @@ context "Renames directory traversal" do
     assert_equal "def", page_target.version.message
     assert_equal "Smeagol", page_target.version.author.name
     assert_equal "smeagol@example.org", page_target.version.author.email
-    assert_not_equal page_source.version.sha, page_target.version.sha
+    assert_not_equal page_source.name, page_target.name
+    assert_equal 1, page_target.versions.size
+    assert page_source.versions.size > 1
+    assert_equal page_source.versions.first.sha, page_target.versions.first.sha
   end
 
   def rename_commit_details

@@ -19,7 +19,7 @@ context "Page" do
     assert page.formatted_data =~ %r{<h1>Bilbo Baggins<a class="anchor" id="Bilbo-Baggins" href="#Bilbo-Baggins"></a></h1>\n\n<p>Bilbo Baggins}
     assert_equal 'Bilbo-Baggins.md', page.path
     assert_equal :markdown, page.format
-    assert_equal @wiki.repo.commits.first.id, page.version.id
+    assert_equal "f25eccd98e9b667f9e22946f3e2f945378b8a72d", page.version.id
   end
 
   test "get existing page case insensitive" do
@@ -82,6 +82,11 @@ context "Page" do
   test "specific page version" do
     page = @wiki.page('Bilbo Baggins', 'fbabba862dfa7ac35b39042dd4ad780c9f67b8cb')
     assert_equal 'fbabba862dfa7ac35b39042dd4ad780c9f67b8cb', page.version.id
+  end
+
+  test "page version returns page's latest version and not repository head when searched with name" do
+    page = @wiki.page 'Bilbo-Baggins'
+    assert_equal 'f25eccd98e9b667f9e22946f3e2f945378b8a72d', page.version.id
   end
 
   test "no page match" do
@@ -228,7 +233,7 @@ context "within a sub-directory" do
     assert page.raw_data =~ /^# Elrond\n\nElrond/
     assert_equal 'Rivendell/Elrond.md', page.path
     assert_equal :markdown, page.format
-    assert_equal @wiki.repo.commits.first.id, page.version.id
+    assert_equal page.versions.first.id, page.version.id
   end
 
   test "should not get page from parent dir" do
