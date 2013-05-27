@@ -103,7 +103,7 @@ end
 
 desc "Build and install"
 task :install => :build do
-  sh "gem install --no-ri --no-rdoc pkg/#{name}-#{version}.gem"
+  sh "gem install --local --no-ri --no-rdoc pkg/#{name}-#{version}.gem"
 end
 
 #############################################################################
