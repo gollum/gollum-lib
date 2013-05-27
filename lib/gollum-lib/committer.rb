@@ -134,7 +134,7 @@ module Gollum
     def update_working_dir(dir, name, format)
       unless @wiki.repo.bare
         if @wiki.page_file_dir
-          dir = dir.size.zero? ? @wiki.page_file_dir : ::File.join(dir, @wiki.page_file_dir)
+          dir = dir.size.zero? ? @wiki.page_file_dir : ::File.join(@wiki.page_file_dir, dir)
         end
 
         path =
