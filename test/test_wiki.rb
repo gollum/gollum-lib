@@ -585,6 +585,16 @@ context "Renames directory traversal" do
     assert_renamed source, @wiki.page("C")
   end
 
+  test "rename page containing space without directories" do
+    # Make sure renames involving spaces work with relative paths.
+    source = @wiki.page("B")
+
+    # B.md => C D.md
+    assert @wiki.rename_page(source, "C D", rename_commit_details)
+
+    assert_renamed source, @wiki.page("C D")
+  end
+
   test "rename page with subdirs" do
     # Make sure renames in subdirectories happen ok
     source = @wiki.paged("H", "G")
@@ -593,6 +603,16 @@ context "Renames directory traversal" do
     assert @wiki.rename_page(source, "G/F", rename_commit_details)
 
     assert_renamed source, @wiki.paged("F", "G")
+  end
+
+  test "rename page containing space with subdir" do
+    # Make sure renames involving spaces in subdirectories happen ok
+    source = @wiki.paged("H", "G")
+
+    # G/H.md => G/F H.md
+    assert @wiki.rename_page(source, "G/F H", rename_commit_details)
+
+    assert_renamed source, @wiki.paged("F H", "G")
   end
 
   test "rename page absolute path is still no-act" do
@@ -622,6 +642,16 @@ context "Renames directory traversal" do
     assert_renamed source, @wiki.page("C")
   end
 
+  test "rename page with space absolute directory" do
+    # Make sure renames involving spaces work with absolute paths.
+    source = @wiki.page("B")
+
+    # B.md => C D.md
+    assert @wiki.rename_page(source, "/C D", rename_commit_details)
+
+    assert_renamed source, @wiki.page("C D")
+  end
+
   test "rename page absolute directory with subdirs" do
     # Make sure renames in subdirectories happen ok
     source = @wiki.paged("H", "G")
@@ -630,6 +660,16 @@ context "Renames directory traversal" do
     assert @wiki.rename_page(source, "/G/F", rename_commit_details)
 
     assert_renamed source, @wiki.paged("F", "G")
+  end
+
+  test "rename page containing space absolute directory with subdir" do
+    # Make sure renames involving spaces in subdirectories happen ok
+    source = @wiki.paged("H", "G")
+
+    # G/H.md => G/F H.md
+    assert @wiki.rename_page(source, "/G/F H", rename_commit_details)
+
+    assert_renamed source, @wiki.paged("F H", "G")
   end
 
   test "rename page relative directory with new dir creation" do
@@ -644,6 +684,18 @@ context "Renames directory traversal" do
     assert_renamed source, new_page
   end
 
+  test "rename page relative directory with new dir creation containing space" do
+    # Make sure renames involving spaces in subdirectories create more subdirectories ok
+    source = @wiki.paged("H", "G")
+
+    # G/H.md => G/K L/F.md
+    assert k = @wiki.rename_page(source, "K L/F", rename_commit_details)
+
+    new_page = @wiki.paged("F", "K L")
+    assert_not_nil new_page
+    assert_renamed source, new_page
+  end
+
   test "rename page absolute directory with subdir creation" do
     # Make sure renames in subdirectories create more subdirectories ok
     source = @wiki.paged("H", "G")
@@ -652,6 +704,18 @@ context "Renames directory traversal" do
     assert @wiki.rename_page(source, "/G/K/F", rename_commit_details)
 
     new_page = @wiki.paged("F", "G/K")
+    assert_not_nil new_page
+    assert_renamed source, new_page
+  end
+
+  test "rename page absolute directory with subdir creation containing space" do
+    # Make sure renames involving spaces in subdirectories create more subdirectories ok
+    source = @wiki.paged("H", "G")
+
+    # G/H.md => G/K L/F.md
+    assert @wiki.rename_page(source, "/G/K L/F", rename_commit_details)
+
+    new_page = @wiki.paged("F", "G/K L")
     assert_not_nil new_page
     assert_renamed source, new_page
   end
