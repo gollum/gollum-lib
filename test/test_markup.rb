@@ -625,7 +625,7 @@ np.array([[2,2],[1,3]],np.float)
     assert_not_nil rendered.match(output)
   end
 
-if $METADATA  #########################################################################
+  #########################################################################
   #
   # Metadata Blocks
   #
@@ -634,7 +634,7 @@ if $METADATA  ##################################################################
   test "metadata blocks" do
     content = "a\n\n<!-- ---\ntags: [foo, bar]\n-->\n\nb"
     output = "<p>a</p>\n\n<p>b</p>"
-    result = {'tags'=>['foo','bar']}
+    result = {'tags'=>'[foo, bar]'}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
@@ -649,7 +649,7 @@ if $METADATA  ##################################################################
   test "metadata blocks with newline" do
     content = "a\n\n<!--\n---\ntags: [foo, bar]\n-->\n\nb"
     output = "<p>a</p>\n\n<p>b</p>"
-    result = {'tags'=>['foo','bar']}
+    result = {'tags'=>'[foo, bar]'}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
@@ -661,10 +661,10 @@ if $METADATA  ##################################################################
     assert_equal result, page.metadata
   end
 
-  test "metadata sanitation" do
+  test "metadata escaping" do
     content = "a\n\n<!-- ---\nfoo: <script>alert('');</script>\n-->\n\nb"
     output = "<p>a</p>\n\n<p>b</p>"
-    result = {'foo'=>nil}
+    result = {'foo'=>%{alert('');}}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
@@ -675,7 +675,7 @@ if $METADATA  ##################################################################
     assert_html_equal output, rendered
     assert_equal result, page.metadata
   end
-end # if $METADATA
+
   #########################################################################
   #
   # Various

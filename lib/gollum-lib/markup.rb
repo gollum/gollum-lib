@@ -665,7 +665,10 @@ module Gollum
       @metadata ||= {}
       # The markers are `<!-- ---` and `-->`
       data.gsub(/\<\!--+\s+---(.*?)--+\>/m) do
+        # Split untrusted input on newlines, then remove bits that look like
+        # HTML elements before parsing each line.
         $1.split("\n").each do |line|
+          line.gsub!(/<[^>]*>/, '')
           k, v = line.split(':', 2)
           @metadata[k.strip] = (v ? v.strip : '') if k
         end
