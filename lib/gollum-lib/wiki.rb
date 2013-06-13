@@ -594,7 +594,7 @@ module Gollum
       end
 
       results.map do |key,val|
-        OpenStruct.new { :count => val, :name => key }
+        OpenStruct.new :count => val, :name => key
       end
     end
 
