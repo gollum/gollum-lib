@@ -257,10 +257,14 @@ module Gollum
     #
     # name    - The full String pathname to the file.
     # version - The String version ID to find (default: @ref).
+    # try_on_disk - If true, try to return just a reference to a file
+    #               that exists on the disk.
     #
-    # Returns a Gollum::File or nil if no matching file was found.
-    def file(name, version = @ref)
-      @file_class.new(self).find(name, version)
+    # Returns a Gollum::File or nil if no matching file was found. Note
+    # that if you specify try_on_disk=true, you may or may not get a file
+    # for which on_disk? is actually true.
+    def file(name, version = @ref, try_on_disk = false)
+      @file_class.new(self).find(name, version, try_on_disk)
     end
 
     # Public: Create an in-memory Page with the given data and format. This
