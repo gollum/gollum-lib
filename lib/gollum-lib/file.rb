@@ -13,6 +13,7 @@ module Gollum
       @blob = nil
       @path = nil
       @on_disk = false
+      @on_disk_path = nil
     end
 
     # Public: The url path required to reach this page within the repo.
@@ -44,7 +45,7 @@ module Gollum
     #
     # Returns the String data.
     def raw_data
-      return IO.read(on_disk_path) if on_disk?
+      return IO.read(@on_disk_path) if on_disk?
       return nil unless @blob
 
       if !@wiki.repo.bare && @blob.is_symlink
@@ -66,8 +67,7 @@ module Gollum
     #
     # Returns nil if on_disk? is false.
     def on_disk_path
-      return nil unless @on_disk
-      ::File.join(@wiki.repo.path, '..', self.path)
+      return @on_disk_path
     end
 
     # Public: The Grit::Commit version of the file.
@@ -91,6 +91,7 @@ module Gollum
       @blob = blob
       @path = "#{path}/#{blob.name}"[1..-1]
       @on_disk = false
+      @on_disk_path = nil
       self
     end
 
@@ -99,6 +100,23 @@ module Gollum
     # Internal Methods
     #
     #########################################################################
+
+    # Return the file path to this file on disk, if available.
+    #
+    # Returns nil if the file isn't available on disk. This can occur if the
+    # repo is bare, if the commit isn't the HEAD, or if there are problems
+    # resolving symbolic links.
+    def get_disk_reference(name, commit)
+      return false if @wiki.repo.bare
+      return false if commit.sha != @wiki.repo.head.commit.sha
+
+      # This will try to resolve symbolic links, as well
+      path = ::File.realpath(::File.join(@wiki.repo.path, '..', name))
+      return false unless ::File.exist?(path)
+
+      @on_disk_path = path
+      return true
+    end
 
     # Find a file in the given Gollum repo.
     #
@@ -119,13 +137,7 @@ module Gollum
         @path    = name
         @version = commit
 
-        # We can only search for files on disk for checked-out repositories
-        # that are on HEAD, and the file has to exist
-        try_on_disk = false if @wiki.repo.bare
-        try_on_disk = false if commit.sha != @wiki.repo.head.commit.sha
-        try_on_disk = false unless ::File.exist?(::File.join(@wiki.repo.path, '..', name))
-
-        if try_on_disk
+        if try_on_disk && get_disk_reference(name, commit)
           @on_disk = true
         else
           @blob = entry.blob(@wiki.repo)
