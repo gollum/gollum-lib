@@ -111,10 +111,11 @@ module Gollum
       return false if commit.sha != @wiki.repo.head.commit.sha
 
       # This will try to resolve symbolic links, as well
-      path = ::File.realpath(::File.join(@wiki.repo.path, '..', name))
-      return false unless ::File.exist?(path)
+      pathname = Pathname.new(::File.join(@wiki.repo.path, '..', name))
+      realpath = pathname.realpath
+      return false unless realpath.exist?
 
-      @on_disk_path = path
+      @on_disk_path = realpath.to_s
       return true
     end
 
