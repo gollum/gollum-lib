@@ -13,13 +13,7 @@ module Gollum
     def initialize(path, page_file_dir = nil, bare = false)
       @page_file_dir = page_file_dir
       @path = path
-
-      if bare
-        @repo = Rugged::Repository.init_at(path, bare)
-      else
-        @repo = Rugged::Repository.new(path)
-      end
-      clear
+      @repo = Rugged::Repository.new(path)
     end
 
     # Public: Determines whether the Git repository exists on disk.
