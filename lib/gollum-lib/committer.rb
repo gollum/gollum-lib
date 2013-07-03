@@ -132,8 +132,9 @@ module Gollum
     #
     # Returns nothing.
     def update_working_dir(dir, name, format)
+      STDERR.puts("#{dir} !~ /^#{@wiki.page_file_dir}/")
       unless @wiki.repo.bare
-        if @wiki.page_file_dir
+        if @wiki.page_file_dir && dir !~ /^#{@wiki.page_file_dir}\//
           dir = dir.size.zero? ? @wiki.page_file_dir : ::File.join(@wiki.page_file_dir, dir)
         end
 
@@ -145,7 +146,7 @@ module Gollum
           end
 
         path = path.force_encoding('ascii-8bit') if path.respond_to?(:force_encoding)
-
+        STDERR.puts(path)
         Dir.chdir(::File.join(@wiki.repo.path, '..')) do
           if file_path_scheduled_for_deletion?(index.tree, path)
             @wiki.repo.git.rm({'f' => true}, '--', path)
@@ -160,6 +161,7 @@ module Gollum
     #
     # Returns the String SHA1 of the new commit.
     def commit
+      STDERR.puts("COMMIT")
       sha1 = index.commit(@options[:message], parents, actor, nil, @wiki.ref)
       @callbacks.each do |cb|
         cb.call(self, sha1)
