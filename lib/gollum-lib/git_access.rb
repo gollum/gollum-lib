@@ -14,6 +14,7 @@ module Gollum
       @page_file_dir = page_file_dir
       @path = path
       @repo = Rugged::Repository.new(path)
+      clear
     end
 
     # Public: Determines whether the Git repository exists on disk.
