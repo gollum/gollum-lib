@@ -30,7 +30,9 @@ require File.expand_path('../gollum-lib/web_sequence_diagram', __FILE__)
 $KCODE = 'U' if RUBY_VERSION[0,3] == '1.8'
 
 module Gollum
-  VERSION = '1.0.0'
+  module Lib
+    VERSION = '1.0.3'
+  end
 
   def self.assets_path
     ::File.expand_path('gollum/frontend/public', ::File.dirname(__FILE__))

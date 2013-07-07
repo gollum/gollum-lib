@@ -392,16 +392,15 @@ module Gollum
     # Returns a Gollum::Page or nil if the page could not be found.
     def find_page_in_tree(map, name, checked_dir = nil, exact = false)
       return nil if !map || name.to_s.empty?
-      if checked_dir = BlobEntry.normalize_dir(checked_dir)
-        checked_dir.downcase!
-      end
 
+      checked_dir = BlobEntry.normalize_dir(checked_dir)
       checked_dir = '' if exact && checked_dir.nil?
+      name = ::File.join(checked_dir, name) if checked_dir
 
       map.each do |entry|
         next if entry.name.to_s.empty?
-        next unless checked_dir.nil? || entry.dir.downcase == checked_dir
-        next unless page_match(name, entry.name)
+        path = checked_dir ? ::File.join(entry.dir, entry.name) : entry.name
+        next unless page_match(name, path)
         return entry.page(@wiki, @version)
       end
 
@@ -437,11 +436,11 @@ module Gollum
     # Compare the canonicalized versions of the two names.
     #
     # name     - The human or canonical String page name.
-    # filename - the String filename on disk (including extension).
+    # path     - the String path on disk (including file extension).
     #
     # Returns a Boolean.
-    def page_match(name, filename)
-      if match = self.class.valid_filename?(filename)
+    def page_match(name, path)
+      if match = self.class.valid_filename?(path)
         @wiki.ws_subs.each do |sub|
           return true if Page.cname(name).downcase == Page.cname(match, sub).downcase
         end

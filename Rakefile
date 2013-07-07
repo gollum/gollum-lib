@@ -30,8 +30,8 @@ def bump_version
   old_file = File.read("lib/#{name}.rb")
   old_version_line = old_file[/^\s*VERSION\s*=\s*.*/]
   new_version = next_version
-  # replace first match of old vesion with new version
-  old_file.sub!(old_version_line, "  VERSION = '#{new_version}'")
+  # replace first match of old version with new version
+  old_file.sub!(old_version_line, "    VERSION = '#{new_version}'")
 
   File.write("lib/#{name}.rb", old_file)
 
@@ -101,6 +101,11 @@ task :bump do
   Rake::Task[:validate].execute
 end
 
+desc "Build and install"
+task :install => :build do
+  sh "gem install --local --no-ri --no-rdoc pkg/#{name}-#{version}.gem"
+end
+
 #############################################################################
 #
 # Packaging tasks
@@ -146,7 +151,7 @@ task :gemspec => :validate do
     split("\n").
     sort.
     reject { |file| file =~ /^\./ }.
-    reject { |file| file =~ /^(rdoc|pkg|test|Home\.md|\.gitattributes)/ }.
+    reject { |file| file =~ /^(rdoc|pkg|test|Home\.md|\.gitattributes|Guardfile)/ }.
     map { |file| "    #{file}" }.
     join("\n")
 

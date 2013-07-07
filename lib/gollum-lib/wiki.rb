@@ -242,10 +242,14 @@ module Gollum
     #
     # name    - The full String pathname to the file.
     # version - The String version ID to find (default: @ref).
+    # try_on_disk - If true, try to return just a reference to a file
+    #               that exists on the disk.
     #
-    # Returns a Gollum::File or nil if no matching file was found.
-    def file(name, version = @ref)
-      @file_class.new(self).find(name, version)
+    # Returns a Gollum::File or nil if no matching file was found. Note
+    # that if you specify try_on_disk=true, you may or may not get a file
+    # for which on_disk? is actually true.
+    def file(name, version = @ref, try_on_disk = false)
+      @file_class.new(self).find(name, version, try_on_disk)
     end
 
     # Public: Create an in-memory Page with the given data and format. This
@@ -291,14 +295,8 @@ module Gollum
       name.gsub!(' ', '-')
       dir.gsub!(' ', '-')
 
-      multi_commit = false
-
-      committer = if obj = commit[:committer]
-        multi_commit = true
-        obj
-      else
-        Committer.new(self, commit)
-      end
+      multi_commit = !!commit[:committer]
+      committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       filename = Gollum::Page.cname(name)
 
@@ -306,7 +304,58 @@ module Gollum
 
       committer.after_commit do |index, sha|
         @access.refresh
-        index.update_working_dir('', filename, format)
+        index.update_working_dir(dir, filename, format)
+      end
+
+      multi_commit ? committer : committer.commit
+    end
+
+    # Public: Rename an existing page without altering content.
+    #
+    # page   - The Gollum::Page to update.
+    # rename - The String extension-less full path of the page (leading '/' is ignored).
+    # commit - The commit Hash details:
+    #          :message   - The String commit message.
+    #          :name      - The String author full name.
+    #          :email     - The String email address.
+    #          :parent    - Optional Grit::Commit parent to this update.
+    #          :tree      - Optional String SHA of the tree to create the
+    #                       index from.
+    #          :committer - Optional Gollum::Committer instance.  If provided,
+    #                       assume that this operation is part of batch of
+    #                       updates and the commit happens later.
+    #
+    # Returns the String SHA1 of the newly written version, or the
+    # Gollum::Committer instance if this is part of a batch update.
+    # Returns false if the operation is a NOOP.
+    def rename_page(page, rename, commit = {})
+      return false if page.nil?
+      return false if rename.nil? or rename.empty?
+
+      (target_dir, target_name) = ::File.split(rename)
+      (source_dir, source_name) = ::File.split(page.path)
+      source_name = page.filename_stripped
+
+      # File.split gives us relative paths with ".", commiter.add_to_index doesn't like that.
+      target_dir = '' if target_dir == '.'
+      source_dir = '' if source_dir == '.'
+      target_dir = target_dir.gsub(/^\//, '')
+
+      # if the rename is a NOOP, abort
+      if source_dir == target_dir and source_name == target_name
+        return false
+      end
+
+      multi_commit = !!commit[:committer]
+      committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
+
+      committer.delete(page.path)
+      committer.add_to_index(target_dir, target_name, page.format, page.raw_data, :allow_same_ext)
+
+      committer.after_commit do |index, sha|
+        @access.refresh
+        index.update_working_dir(source_dir, source_name, page.format)
+        index.update_working_dir(target_dir, target_name, page.format)
       end
 
       multi_commit ? committer : committer.commit
@@ -342,14 +391,8 @@ module Gollum
       filename = (rename = page.name != name) ?
         Gollum::Page.cname(name) : page.filename_stripped
 
-      multi_commit = false
-
-      committer = if obj = commit[:committer]
-        multi_commit = true
-        obj
-      else
-        Committer.new(self, commit)
-      end
+      multi_commit = !!commit[:committer]
+      committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       if !rename && page.format == format
         committer.add(page.path, normalize(data))
@@ -384,14 +427,9 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
     def delete_page(page, commit)
-      multi_commit = false
 
-      committer = if obj = commit[:committer]
-        multi_commit = true
-        obj
-      else
-        Committer.new(self, commit)
-      end
+      multi_commit = !!commit[:committer]
+      committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       committer.delete(page.path)
 

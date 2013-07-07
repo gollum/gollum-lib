@@ -1,6 +1,7 @@
 gollum lib -- A wiki built on top of Git
 ========================================
 
+[![Gem Version](https://badge.fury.io/rb/gollum-lib.png)](http://rubygems.org/gems/gollum-lib)
 [![Build Status](https://travis-ci.org/gollum/gollum-lib.png)](https://travis-ci.org/gollum/gollum-lib)
 [![Dependency Status](https://gemnasium.com/gollum/gollum-lib.png)](https://gemnasium.com/gollum/gollum-lib)
 
@@ -249,7 +250,7 @@ $ gem uninstall -aIx gollum-lib
 $ git clone https://github.com/gollum/gollum-lib.git
 $ cd gollum-lib
 gollum-lib$ rake build
-gollum-lib$ gem install --no-ri --no-rdoc pkg/gollum-lib*.gem
+gollum-lib$ rake install
 ```
 
 ## RUN THE TESTS

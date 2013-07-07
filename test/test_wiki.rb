@@ -169,10 +169,19 @@ context "Wiki page writing" do
     assert_equal cd[:message], @wiki.repo.commits.first.message
     assert_equal cd[:name], @wiki.repo.commits.first.author.name
     assert_equal cd[:email], @wiki.repo.commits.first.author.email
-    assert @wiki.page("Gollum")
 
-    @wiki.write_page("Bilbo", :markdown, "# Bilbo", commit_details)
-    assert_equal 2, @wiki.repo.commits.size
+    cd2 = { :message => "Updating Bilbo", :author => "Samwise" }
+    @wiki.write_page("Bilbo", :markdown, "# Bilbo", cd2)
+
+    commits = @wiki.repo.commits
+    # FIXME Grit commits ordering is not predictable. See #13.
+    # The following line should be: commit = commits.first
+    first_commit = commits.find { |c| c.message == "Updating Bilbo" }
+
+    assert_equal 2, commits.size
+    assert_equal cd2[:message], first_commit.message
+    assert_equal cd2[:name], first_commit.author.name
+    assert_equal cd2[:email], first_commit.author.email
     assert @wiki.page("Bilbo")
     assert @wiki.page("Gollum")
   end
@@ -186,16 +195,23 @@ context "Wiki page writing" do
 
   test "update_page" do
     @wiki.write_page("Gollum", :markdown, "# Gollum", commit_details)
-
     page = @wiki.page("Gollum")
-    cd = commit_details
-    @wiki.update_page(page, page.name, :markdown, "# Gollum2", cd)
+    @wiki.update_page(page, page.name, :markdown, "# Smeagol", {
+      :message => "Leave now, and never come back!",
+      :name => "Smeagol",
+      :email => "smeagol@example.org"
+    })
 
-    assert_equal 2, @wiki.repo.commits.size
-    assert_equal "# Gollum2", @wiki.page("Gollum").raw_data
-    assert_equal cd[:message], @wiki.repo.commits.first.message
-    assert_equal cd[:name], @wiki.repo.commits.first.author.name
-    assert_equal cd[:email], @wiki.repo.commits.first.author.email
+    commits = @wiki.repo.commits
+    # FIXME Grit commits ordering is not predictable. See #13.
+    # The following line should be: first_commit = commits.first
+    first_commit = commits.find { |c| c.author.name == "Smeagol" }
+
+    assert_equal 2, commits.size
+    assert_equal "# Smeagol", @wiki.page("Gollum").raw_data
+    assert_equal "Leave now, and never come back!", first_commit.message
+    assert_equal "Smeagol", first_commit.author.name
+    assert_equal "smeagol@example.org", first_commit.author.email
   end
 
 if $METADATA
@@ -544,122 +560,179 @@ context "Renames directory traversal" do
   end
 
   test "rename aborts on nil" do
-    cd = {:message => "def"}
-    res = @wiki.rename_page(@wiki.page("some-super-fake-page"), "B", cd)
+    res = @wiki.rename_page(@wiki.page("some-super-fake-page"), "B", rename_commit_details)
     assert !res, "rename did not abort with non-existant page"
-    res = @wiki.rename_page(@wiki.page("B"), "", cd)
+    res = @wiki.rename_page(@wiki.page("B"), "", rename_commit_details)
     assert !res, "rename did not abort with empty rename"
-    res = @wiki.rename_page(@wiki.page("B"), nil, cd)
+    res = @wiki.rename_page(@wiki.page("B"), nil, rename_commit_details)
     assert !res, "rename did not abort with nil rename"
   end
 
   test "rename page no-act" do
     # Make sure renames don't do anything if the name is the same.
-    cd = {:message => "def"}
-
     # B.md => B.md
-    res = @wiki.rename_page(@wiki.page("B"), "B", cd)
+    res = @wiki.rename_page(@wiki.page("B"), "B", rename_commit_details)
     assert !res, "NOOP rename did not abort"
   end
 
   test "rename page without directories" do
     # Make sure renames work with relative paths.
-    cd = {:message => "def"}
     source = @wiki.page("B")
 
     # B.md => C.md
-    res = @wiki.rename_page(source, "C", cd)
-    assert res
+    assert @wiki.rename_page(source, "C", rename_commit_details)
 
-    renamed_ok(source, @wiki.page("C"))
+    assert_renamed source, @wiki.page("C")
+  end
+
+  test "rename page containing space without directories" do
+    # Make sure renames involving spaces work with relative paths.
+    source = @wiki.page("B")
+
+    # B.md => C D.md
+    assert @wiki.rename_page(source, "C D", rename_commit_details)
+
+    assert_renamed source, @wiki.page("C D")
   end
 
   test "rename page with subdirs" do
     # Make sure renames in subdirectories happen ok
-    cd = {:message => "def"}
     source = @wiki.paged("H", "G")
 
     # G/H.md => G/F.md
-    @wiki.rename_page(source, "G/F", cd)
+    assert @wiki.rename_page(source, "G/F", rename_commit_details)
 
-    renamed_ok(source, @wiki.paged("F", "G"))
+    assert_renamed source, @wiki.paged("F", "G")
+  end
+
+  test "rename page containing space with subdir" do
+    # Make sure renames involving spaces in subdirectories happen ok
+    source = @wiki.paged("H", "G")
+
+    # G/H.md => G/F H.md
+    assert @wiki.rename_page(source, "G/F H", rename_commit_details)
+
+    assert_renamed source, @wiki.paged("F H", "G")
   end
 
   test "rename page absolute path is still no-act" do
     # Make sure renames don't do anything if the name is the same.
-    cd = {:message => "def"}
 
     # B.md => B.md
-    res = @wiki.rename_page(@wiki.page("B"), "/B", cd)
+    res = @wiki.rename_page(@wiki.page("B"), "/B", rename_commit_details)
     assert !res, "NOOP rename did not abort"
   end
 
   test "rename page absolute path NOOPs ok" do
     # Make sure renames don't do anything if the name is the same and we are in a subdirectory.
-    cd = {:message => "def"}
     source = @wiki.paged("H", "G")
 
     # G/H.md => G/H.md
-    res = @wiki.rename_page(source, "/G/H", cd)
+    res = @wiki.rename_page(source, "/G/H", rename_commit_details)
     assert !res, "NOOP rename did not abort"
   end
 
   test "rename page absolute directory" do
     # Make sure renames work with absolute paths.
-    cd = {:message => "def"}
     source = @wiki.page("B")
 
     # B.md => C.md
-    res = @wiki.rename_page(source, "/C", cd)
-    assert res
+    assert @wiki.rename_page(source, "/C", rename_commit_details)
 
-    renamed_ok(source, @wiki.page("C"))
+    assert_renamed source, @wiki.page("C")
+  end
+
+  test "rename page with space absolute directory" do
+    # Make sure renames involving spaces work with absolute paths.
+    source = @wiki.page("B")
+
+    # B.md => C D.md
+    assert @wiki.rename_page(source, "/C D", rename_commit_details)
+
+    assert_renamed source, @wiki.page("C D")
   end
 
   test "rename page absolute directory with subdirs" do
     # Make sure renames in subdirectories happen ok
-    cd = {:message => "def"}
     source = @wiki.paged("H", "G")
 
     # G/H.md => G/F.md
-    @wiki.rename_page(source, "/G/F", cd)
+    assert @wiki.rename_page(source, "/G/F", rename_commit_details)
 
-    renamed_ok(source, @wiki.paged("F", "G"))
+    assert_renamed source, @wiki.paged("F", "G")
+  end
+
+  test "rename page containing space absolute directory with subdir" do
+    # Make sure renames involving spaces in subdirectories happen ok
+    source = @wiki.paged("H", "G")
+
+    # G/H.md => G/F H.md
+    assert @wiki.rename_page(source, "/G/F H", rename_commit_details)
+
+    assert_renamed source, @wiki.paged("F H", "G")
   end
 
   test "rename page relative directory with new dir creation" do
     # Make sure renames in subdirectories create more subdirectories ok
-    cd = {:message => "def"}
     source = @wiki.paged("H", "G")
 
     # G/H.md => G/K/F.md
-    assert_not_equal k = @wiki.rename_page(source, "K/F", cd), false
+    assert k = @wiki.rename_page(source, "K/F", rename_commit_details)
 
     new_page = @wiki.paged("F", "K")
-    assert_not_equal new_page, nil
-    renamed_ok(source, new_page)
+    assert_not_nil new_page
+    assert_renamed source, new_page
+  end
+
+  test "rename page relative directory with new dir creation containing space" do
+    # Make sure renames involving spaces in subdirectories create more subdirectories ok
+    source = @wiki.paged("H", "G")
+
+    # G/H.md => G/K L/F.md
+    assert k = @wiki.rename_page(source, "K L/F", rename_commit_details)
+
+    new_page = @wiki.paged("F", "K L")
+    assert_not_nil new_page
+    assert_renamed source, new_page
   end
 
   test "rename page absolute directory with subdir creation" do
     # Make sure renames in subdirectories create more subdirectories ok
-    cd = {:message => "def"}
     source = @wiki.paged("H", "G")
 
     # G/H.md => G/K/F.md
-    assert_not_equal @wiki.rename_page(source, "/G/K/F", cd), false
+    assert @wiki.rename_page(source, "/G/K/F", rename_commit_details)
 
     new_page = @wiki.paged("F", "G/K")
-    assert_not_equal new_page, nil
-    renamed_ok(source, new_page)
+    assert_not_nil new_page
+    assert_renamed source, new_page
   end
 
-  def renamed_ok(page_source, page_target)
+  test "rename page absolute directory with subdir creation containing space" do
+    # Make sure renames involving spaces in subdirectories create more subdirectories ok
+    source = @wiki.paged("H", "G")
+
+    # G/H.md => G/K L/F.md
+    assert @wiki.rename_page(source, "/G/K L/F", rename_commit_details)
+
+    new_page = @wiki.paged("F", "G/K L")
+    assert_not_nil new_page
+    assert_renamed source, new_page
+  end
+
+  def assert_renamed(page_source, page_target)
     @wiki.clear_cache
-    page1 = @wiki.paged(page_source.name, page_source.path)
-    assert_nil page1
+    assert_nil @wiki.paged(page_source.name, page_source.path)
+
     assert_equal "INITIAL\n\nSPAM2\n", page_target.raw_data
-    assert_equal 'def', page_target.version.message
+    assert_equal "def", page_target.version.message
+    assert_equal "Smeagol", page_target.version.author.name
+    assert_equal "smeagol@example.org", page_target.version.author.email
     assert_not_equal page_source.version.sha, page_target.version.sha
+  end
+
+  def rename_commit_details
+    { :message => "def", :name => "Smeagol", :email => "smeagol@example.org" }
   end
 end
 

@@ -12,7 +12,7 @@ context "Page Reverting" do
   end
 
 =begin
-  # Grit is broken and this test fails often. See #363.
+  # Grit is broken and this test fails often. See gollum/gollum#363.
   test "reverts single commit" do
     page1 = @wiki.page("B")
     sha   = @wiki.revert_commit('7c45b5f16ff3bae2a0063191ef832701214d4df5')

@@ -37,8 +37,34 @@ context "File with checkout" do
   end
 
   test "symbolic link" do
-    commit = @wiki.repo.lookup(@wiki.repo.head.target)
-    file   = @wiki.file("Data.csv")
+    file = @wiki.file("Data-Two.csv")
+
+    assert_match /^FirstName,LastName\n/, file.raw_data
+  end
+
+  test "on disk file detection" do
+    file = @wiki.file("Bilbo-Baggins.md", 'master', true)
+    assert file.on_disk?
+  end
+
+  test "on disk file access" do
+    file = @wiki.file("Bilbo-Baggins.md", 'master', true)
+    path = file.on_disk_path
+
+    assert ::File.exist?(path)
+    assert_match /^# Bilbo Baggins\n\nBilbo Baggins/, IO.read(path)
+  end
+
+  test "symbolic link, with on-disk" do
+    file = @wiki.file("Data-Two.csv", 'master', true)
+
+    assert file.on_disk?
+    assert_match /Data\.csv$/, file.on_disk_path
+    assert_match /^FirstName,LastName\n/, IO.read(file.on_disk_path)
+  end
+
+  test "on disk file, with symlink, raw_data" do
+    file = @wiki.file("Data-Two.csv")
 
     assert_match /^FirstName,LastName\n/, file.raw_data
   end
