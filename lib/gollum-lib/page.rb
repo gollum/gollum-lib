@@ -182,13 +182,16 @@ module Gollum
     def raw_data
       return nil unless @blob_entry
 
-      if !@wiki.repo.bare? && @blob_entry.is_symlink
-        new_path = @blob_entry.symlink_target(::File.join(@wiki.repo.path, '..', self.path))
-        return IO.read(new_path) if new_path
+      # Find the entry from the blob's oid to get the filemode
+      if !@wiki.repo.bare? && @blob_entry.mode == 40960
+        puts "it's symlinked!"
+
+        #todo: What now?
+        #new_path = entry.symlink_target(::File.join(@wiki.repo.path, '..', self.path))
+        #return IO.read(new_path) if new_path
       end
 
-      # This is really a `BlobEntry` object
-      @blob_entry.blob(@wiki.repo).content
+      @blob_entry.blob(@wiki.repo).read_raw.data
     end
 
     # Public: A text data encoded in specified encoding.
@@ -262,16 +265,44 @@ module Gollum
     #           :follow   - Follow's a file across renames, but falls back
     #                       to a slower Grit native call.  (default: false)
     #
-    # Returns an Array of Grit::Commit.
+    # Returns an Array of Rugged::Commit.
     def versions(options = {})
+      # not sure how to handle the options yet since i'm a noob!
       if options[:follow]
         options[:pretty] = 'raw'
         options.delete :max_count
         options.delete :skip
+
+        puts "The Grit way :("
+
         log = @wiki.repo.git.native "log", options, @wiki.ref, "--", @path
         Grit::Commit.list_from_string(@wiki.repo, log)
       else
-        @wiki.repo.log(@wiki.ref, @path, log_pagination_options(options))
+        walker = Rugged::Walker.new(@wiki.repo)
+        walker.push(@wiki.repo.ref(@wiki.ref).target)
+
+        versions = []
+
+        # "diff" for this blob name by oid against each parent commit, add the commit to the versions
+        walker.each do |commit|
+          commit.tree.each_blob do |blob|
+            if blob[:name] == @blob_entry.name
+              commit.parents.each do |parent|
+                parent = @wiki.repo.lookup(parent.oid)
+
+                parent.tree.each_blob do |parent_blob|
+                  if parent_blob[:name] == blob[:name] and parent_blob[:oid] != blob[:oid]
+                    # Add the commit into the list of versions if it isn't already present
+                    versions << commit if not versions.include?(commit)
+                  end
+                end
+              end
+            end
+          end
+        end
+
+        # Return them reverse sorted by time of commit
+        versions.sort! {|a, b| b.time <=> a.time}
       end
     end
 
