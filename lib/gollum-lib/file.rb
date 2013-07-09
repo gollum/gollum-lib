@@ -37,8 +37,6 @@ module Gollum
     # Returns the String name.
     def name
       @path && ::File.basename(@path)
-      return @path if on_disk?
-      @blob_entry && @blob_entry.name
     end
     alias filename name
 
@@ -47,14 +45,19 @@ module Gollum
     # Returns the String data.
     def raw_data
       return IO.read(@on_disk_path) if on_disk?
-      return nil unless @blob_entry
+      return nil unless @blob
 
-      if !@wiki.repo.bare? && @blob_entry.mode == 40960
-        new_path = @blob_entry.symlink_target(::File.join(@wiki.repo.path, '..', self.path))
+      # Find the entry from the blob's oid to get the filemode
+      entry = @version.tree.get_entry_by_oid(@blob.oid)
+
+      if !@wiki.repo.bare? && entry[:filemode] == 40960
+        puts "it's symlinked!"
+
+        new_path = entry.symlink_target(::File.join(@wiki.repo.path, '..', self.path))
         return IO.read(new_path) if new_path
       end
 
-      @blob_entry.blob(@wiki.repo).read_raw.data
+      @blob.read_raw.data
     end
 
     # Public: Is this an on-disk file reference?
