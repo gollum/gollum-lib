@@ -145,6 +145,12 @@ module Gollum
     # Defaults to false
     attr_reader :h1_title
 
+    # Gets the custom index page for / and subdirs (e.g. foo/)
+    attr_reader :index_page
+
+    # Gets side on which the sidebar should be shown
+    attr_reader :bar_side
+
     # Public: Initialize a new Gollum Repo.
     #
     # path    - The String path to the Git repository that holds the Gollum
@@ -168,6 +174,14 @@ module Gollum
     #           :show_all      - Show all files in file view, not just valid pages.
     #                            Default: false
     #           :collapse_tree - Start with collapsed file view. Default: false
+    #           :css           - Include the custom.css file from the repo.
+    #           :h1_title      - Concatenate all h1's on a page to form the
+    #                            page title.
+    #           :index_page    - The default page to retrieve or create if the
+    #                            a directory is accessed.
+    #           :bar_side      - Where the sidebar should be displayed, may be:
+    #                             - :left
+    #                             - :right
     #
     # Returns a fresh Gollum::Repo.
     def initialize(path, options = {})
@@ -203,7 +217,8 @@ module Gollum
       @collapse_tree        = options.fetch :collapse_tree, false
       @css                  = options.fetch :css, false
       @h1_title             = options.fetch :h1_title, false
-
+      @index_page           = options.fetch :index_page, 'Home'
+      @bar_side             = options.fetch :sidebar, :right
       @user_icons           = ['gravatar', 'identicon'].include?( options[:user_icons] ) ?
                               options[:user_icons] : 'none'
     end
