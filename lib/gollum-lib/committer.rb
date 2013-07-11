@@ -49,21 +49,32 @@ module Gollum
 
     # Public: The committer for this commit.
     #
-    # Returns a Grit::Actor.
+    # Returns a hash representing an actor.
     def actor
       @actor ||= begin
         @options[:name]  = @wiki.default_committer_name  if @options[:name].to_s.empty?
         @options[:email] = @wiki.default_committer_email if @options[:email].to_s.empty?
-        Grit::Actor.new(@options[:name], @options[:email])
+
+        # Returns hash with the author information
+        {:name => @options[:name], :email => @options[:email], :time => Time.now}
       end
     end
 
     # Public: The parent commits to this pending commit.
     #
-    # Returns an array of Grit::Commit instances.
+    # Returns an array of Rugged::Commit instances.
     def parents
+      # Get the ref's oid if it's not a sha
+      ref_oid = ""
+
+      if GitAccess.sha?(@wiki.ref)
+        ref_oid = @wiki.ref
+      else
+        ref_oid = @wiki.repo.ref(@wiki.ref).target
+      end
+
       @parents ||= begin
-        arr = [@options[:parent] || @wiki.repo.commit(@wiki.ref)]
+        arr = [@options[:parent] || @wiki.repo.lookup(ref_oid)]
         arr.flatten!
         arr.compact!
         arr
@@ -160,7 +171,21 @@ module Gollum
     #
     # Returns the String SHA1 of the new commit.
     def commit
-      sha1 = index.commit(@options[:message], parents, actor, nil, @wiki.ref)
+      # Build the tree for the commit
+      tree_for_commit = index.write_tree
+
+      # Options for the commit
+      options = {:author => actor,
+                 :message => @options[:message] || "",
+                 :committer => actor,
+                 :parents => parents,
+                 :tree => tree_for_commit,
+                 :update_ref => @wiki.ref}
+
+      # Commit
+      sha1 = Rugged::Commit.create(@wiki.repo, options)
+
+      # Not sure what to do about these yet
       @callbacks.each do |cb|
         cb.call(self, sha1)
       end
