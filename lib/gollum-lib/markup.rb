@@ -650,9 +650,10 @@ module Gollum
     #
     #########################################################################
 
-    # Extract metadata for data and build metadata table. Metadata
-    # is content found between markers, and must
-    # be a valid YAML mapping.
+    # Extract metadata for data and build metadata table.  Metadata consists of
+    # key/value pairs in "key:value" format found between markers.  Each
+    # key/value pair must be on its own line.  Internal whitespace in keys and
+    # values is preserved, but external whitespace is ignored.
     #
     # Because ri and ruby 1.8.7 are awesome, the markers can't
     # be included in this documentation without triggering
@@ -661,8 +662,15 @@ module Gollum
     #
     # Returns the String of formatted data with metadata removed.
     def extract_metadata(data)
-      @metadata = {}
-      data
+      @metadata ||= {}
+      # The markers are `<!-- ---` and `-->`
+      data.gsub(/\<\!--+\s+---(.*?)--+\>/m) do
+        $1.split("\n").each do |line|
+          k, v = line.split(':', 2)
+          @metadata[k.strip] = (v ? v.strip : '') if k
+        end
+        ''
+      end
     end
 
     # Hook for getting the formatted value of extracted tag data.
