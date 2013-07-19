@@ -2,11 +2,11 @@ Gem::Specification.new do |s|
   s.specification_version = 2 if s.respond_to? :specification_version=
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.rubygems_version = '0.0.1'
-  s.required_ruby_version = ">= 1.8.7"
+  s.required_ruby_version = ">= 1.9"
 
   s.name              = 'gollum-lib'
-  s.version           = '1.0.1'
-  s.date              = '2013-05-31'
+  s.version           = '1.0.3'
+  s.date              = '2013-06-18'
   s.rubyforge_project = 'gollum-lib'
   s.license           = 'MIT'
 
@@ -26,8 +26,8 @@ Gem::Specification.new do |s|
   s.add_dependency('github-markup', ['>= 0.7.5', '< 1.0.0'])
   s.add_dependency('github-markdown', '~> 0.5.3')
   s.add_dependency('pygments.rb', '~> 0.5.0')
-  s.add_dependency('sanitize', '~> 2.0.3')
-  s.add_dependency('nokogiri', '~> 1.5.9')
+  s.add_dependency('sanitize', ['~> 2.0.3', '< 2.0.4']) # sanitize 2.0.4 depends on nokogiri ~> 1.6.0
+  s.add_dependency('nokogiri', ['~> 1.5.9', '< 1.6.0']) # nokogiri 1.6.0 drops support for Ruby 1.8
   s.add_dependency('stringex', '~> 1.5.1')
 
   s.add_development_dependency('RedCloth', '~> 4.2.9')
