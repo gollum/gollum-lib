@@ -661,7 +661,7 @@ np.array([[2,2],[1,3]],np.float)
     assert_equal result, page.metadata
   end
 
-  test "metadata escaping" do
+  test "metadata stripping" do
     content = "a\n\n<!-- ---\nfoo: <script>alert('');</script>\n-->\n\nb"
     output = "<p>a</p>\n\n<p>b</p>"
     result = {'foo'=>%{alert('');}}
