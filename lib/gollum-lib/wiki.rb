@@ -182,6 +182,7 @@ module Gollum
     #           :bar_side      - Where the sidebar should be displayed, may be:
     #                             - :left
     #                             - :right
+    #           :allow_uploads - Set to true to allow file uploads.
     #
     # Returns a fresh Gollum::Repo.
     def initialize(path, options = {})
@@ -221,6 +222,7 @@ module Gollum
       @bar_side             = options.fetch :sidebar, :right
       @user_icons           = ['gravatar', 'identicon'].include?( options[:user_icons] ) ?
                               options[:user_icons] : 'none'
+      @allow_uploads        = options.fetch :allow_uploads, false
     end
 
     # Public: check whether the wiki's git repo exists on the filesystem.
@@ -681,6 +683,9 @@ module Gollum
 
     # Start with collapsed file view. Default: false
     attr_reader :collapse_tree
+
+    # Toggles file upload functionality.
+    attr_reader :allow_uploads
 
     # Normalize the data.
     #
