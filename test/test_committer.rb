@@ -63,7 +63,7 @@ context "Wiki" do
   end
 
 
-  test "update working directory with page file directory and subdirectory" do
+  test "update working directory with page file directory and subdirectory for a new page" do
     page_file_dir = "foo"
     dir = "/bar"
     name = "baz"
@@ -76,5 +76,19 @@ context "Wiki" do
 
     @wiki.repo.git.expects(:checkout).with(anything, anything, anything, "#{page_file_dir}#{dir}/#{name}.md")
     @wiki.write_page(name, format, "foo bar baz", commit_details, dir)
+  end
+
+  test "update working directory with page file directory and subdirectory for an existing page" do
+    page_file_dir = "Rivendell"
+    name = "Elrond"
+    format = :markdown
+    @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"), {:page_file_dir => page_file_dir})
+
+    @wiki.repo.stubs(:bare).returns(false)
+    Grit::Index.any_instance.stubs(:commit).returns(true)
+
+    page = @wiki.page(name)
+    @wiki.repo.git.expects(:checkout).at_least(1).with(anything, anything, anything, "#{page_file_dir}/#{name}.md")
+    @wiki.update_page(page, page.name, format, "# Elrond", commit_details())
   end
 end

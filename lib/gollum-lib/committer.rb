@@ -133,19 +133,17 @@ module Gollum
     # Returns nothing.
     def update_working_dir(dir, name, format)
       unless @wiki.repo.bare
-        if @wiki.page_file_dir
+        if @wiki.page_file_dir && dir !~ /^#{@wiki.page_file_dir}/
           dir = dir.size.zero? ? @wiki.page_file_dir : ::File.join(@wiki.page_file_dir, dir)
         end
 
-        path =
-          if dir == ''
-            @wiki.page_file_name(name, format)
-          else
-            ::File.join(dir, @wiki.page_file_name(name, format))
-          end
+        if dir == ''
+          path = @wiki.page_file_name(name, format)
+        else
+          path = ::File.join(dir, @wiki.page_file_name(name, format))
+        end
 
         path = path.force_encoding('ascii-8bit') if path.respond_to?(:force_encoding)
-
         Dir.chdir(::File.join(@wiki.repo.path, '..')) do
           if file_path_scheduled_for_deletion?(index.tree, path)
             @wiki.repo.git.rm({'f' => true}, '--', path)
