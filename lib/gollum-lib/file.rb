@@ -1,4 +1,6 @@
 # ~*~ encoding: utf-8 ~*~
+require 'pathname'
+
 module Gollum
   class File
     Wiki.file_class = self
