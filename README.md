@@ -202,6 +202,16 @@ To delete a page and commit the change:
 wiki.delete_page(page, commit)
 ```
 
+Register or unregister a hook to be called after a page commit:
+
+```ruby
+Gollum::Hook.register(:post_commit, :hook_id) do |committer, sha1|
+  # Your code here
+end
+
+Gollum::Hook.unregister(:post_commit, :hook_id)
+```
+
 ## WINDOWS FILENAME VALIDATION
 
 Note that filenames on windows must not contain any of the following characters `\ / : * ? " < > |`. See [this support article](http://support.microsoft.com/kb/177506) for details.

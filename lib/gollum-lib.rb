@@ -12,6 +12,7 @@ require 'sanitize'
 
 # internal
 require File.expand_path('../gollum-lib/git_access', __FILE__)
+require File.expand_path('../gollum-lib/hook', __FILE__)
 require File.expand_path('../gollum-lib/committer', __FILE__)
 require File.expand_path('../gollum-lib/pagination', __FILE__)
 require File.expand_path('../gollum-lib/blob_entry', __FILE__)
