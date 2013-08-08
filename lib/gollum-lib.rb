@@ -36,6 +36,14 @@ module Gollum
   def self.assets_path
     ::File.expand_path('gollum/frontend/public', ::File.dirname(__FILE__))
   end
+  
+  def self.set_git_timeout(time)
+    Grit::Git.git_timeout = time
+  end
+  
+  def self.set_git_max_filesize(size)
+    Grit::Git.git_max_size = size
+  end
 
   class Error < StandardError; end
 
@@ -51,5 +59,9 @@ module Gollum
       super(message || "Cannot write #{@dir}/#{@attempted_path}, found #{@dir}/#{@existing_path}.")
     end
   end
+  
+  class InvalidGitRepositoryError < StandardError ; end
+  class NoSuchPathError < StandardError ; end
+  
 end
 

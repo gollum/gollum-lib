@@ -13,7 +13,13 @@ module Gollum
     def initialize(path, page_file_dir = nil, bare = false)
       @page_file_dir = page_file_dir
       @path = path
-      @repo = Grit::Repo.new(path, { :is_bare => bare })
+      begin
+        @repo = Grit::Repo.new(path, { :is_bare => bare })
+      rescue Grit::InvalidGitRepositoryError
+        raise Gollum::InvalidGitRepositoryError
+      rescue Grit::NoSuchPathError
+        raise Gollum::NoSuchPatherror
+      end
       clear
     end
 
