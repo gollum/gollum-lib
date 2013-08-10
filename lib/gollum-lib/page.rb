@@ -148,11 +148,18 @@ module Gollum
       path
     end
 
+    # Public: The display form of the url path required to reach this page within the repo.
+    #
+    # Returns the String url_path
+    def url_path_display
+      url_path.gsub("-", " ")
+    end
+
     # Public: Defines title for page.rb
     #
     # Returns the String title
     def url_path_title
-      metadata_title || url_path.gsub("-", " ")
+      metadata_title || url_path_display
     end
 
     # Public: Metadata title
