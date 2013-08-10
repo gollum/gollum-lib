@@ -49,6 +49,30 @@ context "Wiki" do
     end
   end
 
+  test "post_commit hooks called after committing" do
+    @path   = cloned_testpath('examples/lotr.git')
+    yielded = nil
+    begin
+      wiki      = Gollum::Wiki.new(@path)
+      committer = Gollum::Committer.new(wiki)
+      Gollum::Hook.register(:post_commit, :hook) do |index, sha1|
+        yielded = sha1
+        assert_equal committer, index
+      end
+
+      res = wiki.write_page("Gollum", :markdown, "# Gollum",
+                            :committer => committer)
+
+      assert_equal committer, res
+
+      sha1 = committer.commit
+      assert_equal sha1, yielded
+    ensure
+      Gollum::Hook.unregister(:post_commit, :hook)
+      FileUtils.rm_rf(@path)
+    end
+  end
+
   test "parents with default master ref" do
     ref = '874f597a5659b4c3b153674ea04e406ff393975e'
     committer = Gollum::Committer.new(@wiki)
