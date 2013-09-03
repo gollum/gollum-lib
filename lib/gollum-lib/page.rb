@@ -259,7 +259,7 @@ module Gollum
     #           :page     - The Integer page number (default: 1).
     #           :per_page - The Integer max count of items to return.
     #           :follow   - Follow's a file across renames, but falls back
-    #                       to a slower Grit native call.  (default: false)
+    #                       to a slower Grit native call (implicit in repo.git.log).  (default: false)
     #
     # Returns an Array of Grit::Commit.
     def versions(options = {})
@@ -267,7 +267,7 @@ module Gollum
         options[:pretty] = 'raw'
         options.delete :max_count
         options.delete :skip
-        log = @wiki.repo.git.native "log", options, @wiki.ref, "--", @path
+        log = @wiki.repo.git.log(options, @wiki.ref, "--", @path)
         Grit::Commit.list_from_string(@wiki.repo, log)
       else
         @wiki.repo.log(@wiki.ref, @path, log_pagination_options(options))
