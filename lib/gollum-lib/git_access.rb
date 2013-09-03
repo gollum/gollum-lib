@@ -163,15 +163,13 @@ module Gollum
     #
     # Returns an Array of BlobEntry instances.
     def tree!(sha)
-      tree  = @repo.git.native(:ls_tree,
-        {:r => true, :l => true, :z => true}, sha)
-      if tree.respond_to?(:force_encoding)
-        tree.force_encoding("UTF-8")
+      tree = @repo.lstree(sha, {:recursive => true})
+      items = []
+      tree.each do |entry|
+        if entry[:type] == 'blob'
+          items << BlobEntry.new(entry[:sha], entry[:path], entry[:size], entry[:mode].to_i(8)) 
+        end
       end
-      items = tree.split("\0").inject([]) do |memo, line|
-        memo << parse_tree_line(line)
-      end
-
       if dir = @page_file_dir
         regex = /^#{dir}\//
         items.select { |i| i.path =~ regex }

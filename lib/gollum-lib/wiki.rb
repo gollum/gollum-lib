@@ -751,11 +751,11 @@ module Gollum
     # Returns a String of the reverse Diff to apply.
     def full_reverse_diff_for(page, sha1, sha2 = nil)
       sha1, sha2 = "#{sha1}^", sha1 if sha2.nil?
-      args = [{:R => true}, sha1, sha2]
       if page
-        args << '--' << (page.respond_to?(:path) ? page.path : page.to_s)
+        path = (page.respond_to?(:path) ? page.path : page.to_s)
+        return repo.diff(sha2, sha1, path).first.diff
       end
-      repo.git.native(:diff, *args)
+      repo.diff(sha2, sha1).map{|d| d.diff}.join("\n")
     end
 
     # Creates a reverse diff for the given SHAs.
