@@ -13,7 +13,15 @@ module Gollum
     def initialize(path, page_file_dir = nil, bare = false)
       @page_file_dir = page_file_dir
       @path = path
-      @repo = Rugged::Repository.new(path)
+
+      begin
+        @repo = Rugged::Repository.new(path)
+      rescue Rugged::InvalidError
+        raise Gollum::InvalidGitRepositoryError
+      rescue Rugged::RepositoryError
+        raise Gollum::NoSuchPatherror
+      end
+
       clear
     end
 
@@ -164,10 +172,9 @@ module Gollum
 
       # Convert the tree into an array of BlobEntry instances
       blobs = []
-
       tree.walk(:preorder) do |root, entry|
         if entry[:type] == :blob
-          blobs << Gollum::BlobEntry.new(entry[:oid], root + entry[:name], entry.size, entry[:filemode])
+          blobs << Gollum::BlobEntry.new(entry[:oid], root + entry[:name], entry.size, entry[:filemode].to_i(8))
         end
       end
 

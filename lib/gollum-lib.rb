@@ -13,6 +13,7 @@ require 'sanitize'
 
 # internal
 require File.expand_path('../gollum-lib/git_access', __FILE__)
+require File.expand_path('../gollum-lib/hook', __FILE__)
 require File.expand_path('../gollum-lib/committer', __FILE__)
 require File.expand_path('../gollum-lib/pagination', __FILE__)
 require File.expand_path('../gollum-lib/blob_entry', __FILE__)
@@ -31,11 +32,19 @@ $KCODE = 'U' if RUBY_VERSION[0,3] == '1.8'
 
 module Gollum
   module Lib
-    VERSION = '1.0.4'
+    VERSION = '1.0.6'
   end
 
   def self.assets_path
     ::File.expand_path('gollum/frontend/public', ::File.dirname(__FILE__))
+  end
+  
+  def self.set_git_timeout(time)
+    Grit::Git.git_timeout = time
+  end
+  
+  def self.set_git_max_filesize(size)
+    Grit::Git.git_max_size = size
   end
 
   class Error < StandardError; end
@@ -52,5 +61,9 @@ module Gollum
       super(message || "Cannot write #{@dir}/#{@attempted_path}, found #{@dir}/#{@existing_path}.")
     end
   end
+  
+  class InvalidGitRepositoryError < StandardError ; end
+  class NoSuchPathError < StandardError ; end
+  
 end
 

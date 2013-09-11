@@ -148,11 +148,18 @@ module Gollum
       path
     end
 
+    # Public: The display form of the url path required to reach this page within the repo.
+    #
+    # Returns the String url_path
+    def url_path_display
+      url_path.gsub("-", " ")
+    end
+
     # Public: Defines title for page.rb
     #
     # Returns the String title
     def url_path_title
-      metadata_title || url_path.gsub("-", " ")
+      metadata_title || url_path_display
     end
 
     # Public: Metadata title
@@ -263,7 +270,7 @@ module Gollum
     #           :page     - The Integer page number (default: 1).
     #           :per_page - The Integer max count of items to return.
     #           :follow   - Follow's a file across renames, but falls back
-    #                       to a slower Grit native call.  (default: false)
+    #                       to a slower Grit native call (implicit in repo.git.log).  (default: false)
     #
     # Returns an Array of Rugged::Commit.
     def versions(options = {})
@@ -274,8 +281,7 @@ module Gollum
         options.delete :skip
 
         puts "The Grit way :("
-
-        log = @wiki.repo.git.native "log", options, @wiki.ref, "--", @path
+        log = @wiki.repo.git.log(options, @wiki.ref, "--", @path)
         Grit::Commit.list_from_string(@wiki.repo, log)
       else
         walker = Rugged::Walker.new(@wiki.repo)

@@ -84,14 +84,14 @@ context "Wiki" do
 
   test "gets reverse diff" do
     diff = @wiki.full_reverse_diff('a8ad3c09dd842a3517085bfadd37718856dee813')
-    assert_match "b/Mordor/_Sidebar.md", diff
-    assert_match "b/_Sidebar.md", diff
+    assert_match "a/Mordor/_Sidebar.md", diff
+    assert_match "a/_Sidebar.md", diff
   end
 
   test "gets reverse diff for a page" do
     diff  = @wiki.full_reverse_diff_for('_Sidebar.md', 'a8ad3c09dd842a3517085bfadd37718856dee813')
-    regex = /b\/Mordor\/\_Sidebar\.md/
-    assert_match    "b/_Sidebar.md", diff
+    regex = /a\/Mordor\/\_Sidebar\.md/
+    assert_match    "a/_Sidebar.md", diff
     assert_no_match regex, diff
   end
 
