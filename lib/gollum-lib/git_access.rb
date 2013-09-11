@@ -174,7 +174,7 @@ module Gollum
       blobs = []
       tree.walk(:preorder) do |root, entry|
         if entry[:type] == :blob
-          blobs << Gollum::BlobEntry.new(entry[:oid], root + entry[:name], entry.size, entry[:filemode].to_i(8))
+          blobs << Gollum::BlobEntry.new(entry[:oid], root + entry[:name], entry.size, entry[:filemode])
         end
       end
 
