@@ -285,6 +285,7 @@ module Gollum
         Grit::Commit.list_from_string(@wiki.repo, log)
       else
         walker = Rugged::Walker.new(@wiki.repo)
+        walker.sorting(Rugged::SORT_REVERSE)
         walker.push(@wiki.repo.ref(@wiki.ref).target)
 
         versions = []
@@ -297,7 +298,8 @@ module Gollum
                 parent = @wiki.repo.lookup(parent.oid)
 
                 parent.tree.each_blob do |parent_blob|
-                  if parent_blob[:name] == blob[:name] and parent_blob[:oid] != blob[:oid]
+                  if parent_blob[:name].sub('-', '') == blob[:name].sub('-', '') and
+                     parent_blob[:oid] != blob[:oid]
                     # Add the commit into the list of versions if it isn't already present
                     versions << commit if not versions.include?(commit)
                   end
@@ -307,8 +309,7 @@ module Gollum
           end
         end
 
-        # Return them reverse sorted by time of commit
-        versions.sort! {|a, b| b.time <=> a.time}
+        versions
       end
     end
 
