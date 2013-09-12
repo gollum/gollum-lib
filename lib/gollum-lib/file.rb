@@ -53,13 +53,12 @@ module Gollum
       entry = @version.tree.get_entry_by_oid(@blob.oid)
 
       if !@wiki.repo.bare? && entry[:filemode] == 40960
-        puts "it's symlinked!"
-
-        new_path = entry.symlink_target(::File.join(@wiki.repo.path, '..', self.path))
-        return IO.read(new_path) if new_path
+        symlinked_object = @wiki.repo.lookup(entry[:oid])
+        linked_path = ::File.join(@wiki.repo.workdir, symlinked_object.text)
+        return IO.read(linked_path) if linked_path
       end
 
-      @blob.read_raw.data
+      @blob.text
     end
 
     # Public: Is this an on-disk file reference?
@@ -96,7 +95,7 @@ module Gollum
     def populate(blob_entry, path=nil)
       @blob_entry = blob_entry
       @path = "#{path}/#{blob_entry.name}"[1..-1]
-      @on_disk = false
+      @on_disk = flase
       @on_disk_path = nil
       self
     end
@@ -113,11 +112,11 @@ module Gollum
     # repo is bare, if the commit isn't the HEAD, or if there are problems
     # resolving symbolic links.
     def get_disk_reference(name, commit)
-      return false if @wiki.repo.bare
-      return false if commit.sha != @wiki.repo.head.commit.sha
+      return false if @wiki.repo.bare?
+      return false if commit.oid != @wiki.repo.lookup(@wiki.repo.head.target).oid
 
       # This will try to resolve symbolic links, as well
-      pathname = Pathname.new(::File.join(@wiki.repo.path, '..', name))
+      pathname = Pathname.new(::File.join(@wiki.repo.workdir, name))
       realpath = pathname.realpath
       return false unless realpath.exist?
 
