@@ -266,6 +266,7 @@ module Gollum
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
     def file(name, version = @ref, try_on_disk = false)
+      #todo: should i resolve the passed version to see if it's a valid ref in Rugged?
       @file_class.new(self).find(name, version, try_on_disk)
     end
 
