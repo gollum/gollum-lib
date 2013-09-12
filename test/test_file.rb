@@ -60,8 +60,8 @@ context "File with checkout" do
   # i think i'm just confused about what is happening here, but
   # here goes anyway.
   #
-  # "Data-Two.csv" isn't a symbolic link, right?
-  # It's *text* is the path that it wants to point to.
+  # "Data-Two.csv" isn't a symbolic link, right? It's *text* is the path that it wants to point to,
+  # therefore i'm thinking this *should* fail.
   #
   # test "symbolic link, with on-disk" do
   #   file = @wiki.file("Data-Two.csv", 'refs/heads/master', true)
