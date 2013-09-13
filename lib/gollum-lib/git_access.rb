@@ -18,7 +18,7 @@ module Gollum
       rescue Grit::InvalidGitRepositoryError
         raise Gollum::InvalidGitRepositoryError
       rescue Grit::NoSuchPathError
-        raise Gollum::NoSuchPatherror
+        raise Gollum::NoSuchPathError
       end
       clear
     end
