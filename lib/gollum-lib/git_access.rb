@@ -173,12 +173,19 @@ module Gollum
       # Convert the tree into an array of BlobEntry instances
       blobs = []
       tree.walk(:preorder) do |root, entry|
+        # if we have a blob and the path is within the given @page_file_dir
         if entry[:type] == :blob
           blobs << Gollum::BlobEntry.new(entry[:oid], root + entry[:name], entry.size, entry[:filemode])
         end
       end
 
-      blobs
+      # Watch out for that @page_file_dir
+      if dir = @page_file_dir
+        regex = /^#{dir}\//
+        blobs.select { |i| i.path =~ regex }
+      else
+        blobs
+      end
     end
 
     # Reads a Git commit.
