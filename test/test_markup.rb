@@ -288,6 +288,46 @@ context "Markup" do
 
   #########################################################################
   #
+  # include: directive
+  #
+  #########################################################################
+  
+  test "simple include: directive" do
+    @wiki.write_page("page1", :textile, "hello\n[[include:page2]]\n", commit_details)
+    @wiki.write_page("page2", :textile, "goodbye\n", commit_details)
+    page1 = @wiki.page("page1")
+    assert_html_equal("<p>hello<br/></p><p>goodbye</p>", page1.formatted_data)
+  end
+
+  test "include: directive with infinite loop" do
+    @wiki.write_page("page1", :textile, "hello\n[[include:page1]]\n", commit_details)
+    page1 = @wiki.page("page1")
+    assert_match("Too many levels", page1.formatted_data)
+  end
+
+  test "include: directive with missing file" do
+    @wiki.write_page("page1", :textile, "hello\n[[include:page2]]\n", commit_details)
+    page1 = @wiki.page("page1")
+    assert_match("Cannot include", page1.formatted_data)
+  end
+  
+  test "include: directive with javascript" do
+    @wiki.write_page("page1", :textile, "hello\n[[include:page2]]\n", commit_details)
+    @wiki.write_page("page2", :textile, "<javascript>alert(99);</javascript>", commit_details)
+    page1 = @wiki.page("page1")
+    assert_html_equal("<p>hello<br/>\nalert(99);</p>", page1.formatted_data)
+  end
+
+  test "include: directive with sneaky javascript attempt" do
+    @wiki.write_page("page1", :textile, "hello\n[[include:page2]][[include:page3]]\n", commit_details)
+    @wiki.write_page("page2", :textile, "<java", commit_details)
+    @wiki.write_page("page3", :textile, "script>alert(99);</javascript>", commit_details)
+    page1 = @wiki.page("page1")
+    assert_html_equal("<p>hello<br /></p><p>&lt;java</p><p>script&gt;alert(99);</p>", page1.formatted_data)
+  end
+
+  #########################################################################
+  #
   # Images
   #
   #########################################################################
