@@ -289,18 +289,18 @@ module Gollum
         walker.push(@wiki.repo.ref(@wiki.ref).target)
 
         versions = []
-        blob_oids = []
+        last_blob_oid = ""
 
         # "diff" for this blob name by oid against each parent commit, add the commit to the versions
         walker.each do |commit|
           commit.tree.each_blob do |blob|
             if Page.cname(blob[:name]) == Page.cname(@blob_entry.name) and
-               !blob_oids.include?(blob[:oid])
+               blob[:oid] != last_blob_oid
 
               # Add the commit to the head of the list of versions if it isn't already present
               # and add the blob_oid into our list of oids we've seen before
               versions.unshift(commit)
-              blob_oids << blob[:oid]
+              last_blob_oid = blob[:oid]
             end
           end
         end
