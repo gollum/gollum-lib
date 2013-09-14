@@ -19,7 +19,7 @@ module Gollum
       rescue Rugged::InvalidError
         raise Gollum::InvalidGitRepositoryError
       rescue Rugged::RepositoryError
-        raise Gollum::NoSuchPatherror
+        raise Gollum::NoSuchPathError
       end
 
       clear
