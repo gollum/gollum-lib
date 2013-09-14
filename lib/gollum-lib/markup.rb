@@ -71,10 +71,13 @@ module Gollum
     # encoding  - Encoding Constant or String.
     #
     # Returns the formatted String content.
-    def render(no_follow = false, encoding = nil)
+    def render(no_follow = false, encoding = nil, include_levels = 10)
       sanitize = no_follow ?
         @wiki.history_sanitizer :
         @wiki.sanitizer
+        
+      @encoding = encoding
+      @include_levels = include_levels
 
       data = @data.dup
       data = extract_metadata(data)
@@ -88,7 +91,7 @@ module Gollum
           raise "There was an error converting #{@name} to HTML."
         end
       rescue Object => e
-        data = %{<p class="gollum-error">#{e.message}</p>}
+        data = html_error(e.message)
       end
       data = process_tags(data)
       data = process_code(data, encoding)
@@ -238,12 +241,43 @@ module Gollum
         %{[[#{tag}]]}
       elsif tag =~ /^_$/
         %{<div class="clearfloats"></div>}
+      elsif html = process_include_tag(tag)
+        html
       elsif html = process_image_tag(tag)
         html
       elsif html = process_file_link_tag(tag)
         html
       else
         process_page_link_tag(tag)
+      end
+    end
+    
+    # Render a (presumably) non-fatal error as HTML
+    #
+    def html_error(message)
+      "<p class=\"gollum-error\">#{message}</p>"
+    end
+
+    # Attempt to process the tag as an include tag
+    #
+    # tag - The String tag contents (the  stuff inside the double brackets).
+    #
+    # Returns the String HTML if the tag is a valid image tag or nil
+    #   if it is not.
+    #
+    def process_include_tag(tag)
+      return unless /^include:/.match(tag)
+      page_name = tag[8..-1]
+
+      if @include_levels > 0
+        page = @wiki.page(page_name)
+        if page
+          page.formatted_data(@encoding, @include_levels-1)
+        else
+          html_error("Cannot include #{process_page_link_tag(page_name)} - does not exist yet")
+        end
+      else
+        html_error("Too many levels of included pages, will not include #{process_page_link_tag(page_name)}")
       end
     end
 
