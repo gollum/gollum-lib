@@ -8,6 +8,7 @@ require 'ostruct'
 require 'grit'
 require File.expand_path('../gollum-lib/grit_ext', __FILE__)
 require 'github/markup'
+require 'rugged'
 require 'sanitize'
 
 # internal

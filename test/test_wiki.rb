@@ -29,7 +29,7 @@ context "Wiki" do
   end
 
   test "git repo" do
-    assert_equal Grit::Repo, @wiki.repo.class
+    assert_equal Rugged::Repository, @wiki.repo.class
     assert @wiki.exist?
   end
 
@@ -99,6 +99,7 @@ context "Wiki" do
     @path = cloned_testpath('examples/lotr.git')
     begin
       wiki = Gollum::Wiki.new(@path)
+      #todo: we don't do commits like this anymore!
       index = wiki.repo.index
       index.read_tree 'master'
       index.add('Foobar/Elrond.md', 'Baz')
@@ -158,7 +159,7 @@ context "Wiki page writing" do
   setup do
     @path = testpath("examples/test.git")
     FileUtils.rm_rf(@path)
-    Grit::Repo.init_bare(@path)
+    Rugged::Repository.init_at(@path, :bare)
     @wiki = Gollum::Wiki.new(@path)
   end
 
@@ -369,7 +370,7 @@ end
 context "Wiki sync with working directory" do
   setup do
     @path = testpath('examples/wdtest')
-    Grit::Repo.init(@path)
+    Rugged::Repository.init_at(@path)
     @wiki = Gollum::Wiki.new(@path)
   end
 
@@ -472,7 +473,7 @@ end
 context "page_file_dir option" do
   setup do
     @path = cloned_testpath('examples/page_file_dir')
-    @repo = Grit::Repo.init(@path)
+    @repo = Rugged::Repository.init_at(@path)
     @page_file_dir = 'docs'
     @wiki = Gollum::Wiki.new(@path, :page_file_dir => @page_file_dir)
   end
@@ -518,7 +519,7 @@ context "Wiki page writing with different branch" do
   setup do
     @path = testpath("examples/test.git")
     FileUtils.rm_rf(@path)
-    @repo = Grit::Repo.init_bare(@path)
+    @repo = Rugged::Repository.init_at(@path, :bare)
     @wiki = Gollum::Wiki.new(@path)
 
     # We need an initial commit to create the master branch

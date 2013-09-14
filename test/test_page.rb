@@ -3,7 +3,7 @@ require File.expand_path(File.join(File.dirname(__FILE__), "helper"))
 
 context "Page" do
   setup do
-    @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"))
+    @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"), { :repo_is_bare => true } )
   end
 
   test "new page" do
@@ -19,7 +19,8 @@ context "Page" do
     assert page.formatted_data =~ %r{<h1>Bilbo Baggins<a class="anchor" id="Bilbo-Baggins" href="#Bilbo-Baggins"></a></h1>\n\n<p>Bilbo Baggins}
     assert_equal 'Bilbo-Baggins.md', page.path
     assert_equal :markdown, page.format
-    assert_equal @wiki.repo.commits.first.id, page.version.id
+    first_commit = @wiki.repo.lookup(@wiki.repo.head.target)
+    assert_equal first_commit.oid, page.version.oid
   end
 
   test "get existing page case insensitive" do
@@ -69,24 +70,24 @@ context "Page" do
   test "page versions" do
     page = @wiki.page('Bilbo Baggins')
     assert_equal ["f25eccd98e9b667f9e22946f3e2f945378b8a72d", "5bc1aaec6149e854078f1d0f8b71933bbc6c2e43"],
-      page.versions.map { |v| v.id }
+      page.versions.map { |v| v.oid }
   end
 
   test "page versions across renames" do
     page = @wiki.page 'My-Precious'
     assert_equal ['60f12f4254f58801b9ee7db7bca5fa8aeefaa56b', '94523d7ae48aeba575099dd12926420d8fd0425d'],
-      page.versions(:follow => true).map { |v| v.id }
+      page.versions(:follow => true).map { |v| v.oid }
   end
 
   test "page versions without renames" do
     page = @wiki.page 'My-Precious'
     assert_equal ['60f12f4254f58801b9ee7db7bca5fa8aeefaa56b'],
-      page.versions(:follow => false).map { |v| v.id }
+      page.versions(:follow => false).map { |v| v.oid }
   end
 
   test "specific page version" do
     page = @wiki.page('Bilbo Baggins', 'fbabba862dfa7ac35b39042dd4ad780c9f67b8cb')
-    assert_equal 'fbabba862dfa7ac35b39042dd4ad780c9f67b8cb', page.version.id
+    assert_equal 'fbabba862dfa7ac35b39042dd4ad780c9f67b8cb', page.version.oid
   end
 
   test "no page match" do
@@ -233,7 +234,7 @@ context "within a sub-directory" do
     assert page.raw_data =~ /^# Elrond\n\nElrond/
     assert_equal 'Rivendell/Elrond.md', page.path
     assert_equal :markdown, page.format
-    assert_equal @wiki.repo.commits.first.id, page.version.id
+    assert_equal @wiki.repo.last_commit.oid, page.version.oid
   end
 
   test "should not get page from parent dir" do

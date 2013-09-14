@@ -4,7 +4,7 @@ require File.expand_path(path)
 
 context "File" do
   setup do
-    @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"))
+    @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"), { :repo_is_bare => true })
   end
 
   test "new file" do
@@ -13,12 +13,12 @@ context "File" do
   end
 
   test "existing file" do
-    commit = @wiki.repo.commits.first
+    commit = @wiki.repo.lookup(@wiki.repo.head.target)
     file   = @wiki.file("Mordor/todo.txt")
     assert_equal "[ ] Write section on Ents\n", file.raw_data
-    assert_equal 'todo.txt',         file.name
-    assert_equal commit.id,          file.version.id
-    assert_equal commit.author.name, file.version.author.name
+    assert_equal 'todo.txt',           file.name
+    assert_equal commit.oid,           file.version.oid
+    assert_equal commit.author[:name], file.version.author[:name]
   end
 
   test "accessing tree" do
@@ -29,7 +29,7 @@ end
 context "File with checkout" do
   setup do
     @path = cloned_testpath("examples/lotr.git")
-    @wiki = Gollum::Wiki.new(@path)
+    @wiki = Gollum::Wiki.new(@path, { :repo_is_bare => false })
   end
 
   teardown do
@@ -43,12 +43,12 @@ context "File with checkout" do
   end
 
   test "on disk file detection" do
-    file = @wiki.file("Bilbo-Baggins.md", 'master', true)
+    file = @wiki.file("Bilbo-Baggins.md", 'refs/heads/master', true)
     assert file.on_disk?
   end
 
   test "on disk file access" do
-    file = @wiki.file("Bilbo-Baggins.md", 'master', true)
+    file = @wiki.file("Bilbo-Baggins.md", 'refs/heads/master', true)
     path = file.on_disk_path
 
     assert ::File.exist?(path)
@@ -56,8 +56,8 @@ context "File with checkout" do
   end
 
   test "symbolic link, with on-disk" do
-    file = @wiki.file("Data-Two.csv", 'master', true)
-
+    file = @wiki.file("Data-Two.csv", 'refs/heads/master', true)
+  
     assert file.on_disk?
     assert_match /Data\.csv$/, file.on_disk_path
     assert_match /^FirstName,LastName\n/, IO.read(file.on_disk_path)
@@ -69,3 +69,4 @@ context "File with checkout" do
     assert_match /^FirstName,LastName\n/, file.raw_data
   end
 end
+

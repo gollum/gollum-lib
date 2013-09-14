@@ -12,7 +12,7 @@ module Gollum
     # Returns a newly initialized Gollum::File.
     def initialize(wiki)
       @wiki = wiki
-      @blob = nil
+      @blob_entry = nil
       @path = nil
       @on_disk = false
       @on_disk_path = nil
@@ -38,8 +38,7 @@ module Gollum
     #
     # Returns the String name.
     def name
-      return @path if on_disk?
-      @blob && @blob.name
+      @path && ::File.basename(@path)
     end
     alias filename name
 
@@ -50,12 +49,16 @@ module Gollum
       return IO.read(@on_disk_path) if on_disk?
       return nil unless @blob
 
-      if !@wiki.repo.bare && @blob.is_symlink
-        new_path = @blob.symlink_target(::File.join(@wiki.repo.path, '..', self.path))
-        return IO.read(new_path) if new_path
+      # Find the entry from the blob's oid to get the filemode
+      entry = @version.tree.get_entry_by_oid(@blob.oid)
+
+      if !@wiki.repo.bare? && entry[:filemode] == 40960
+        symlinked_object = @wiki.repo.lookup(entry[:oid])
+        linked_path = ::File.join(@wiki.repo.workdir, symlinked_object.text)
+        return IO.read(linked_path) if linked_path
       end
 
-      @blob.data
+      @blob.text
     end
 
     # Public: Is this an on-disk file reference?
@@ -72,7 +75,7 @@ module Gollum
       return @on_disk_path
     end
 
-    # Public: The Grit::Commit version of the file.
+    # Public: The Rugged::Commit version of the file.
     attr_accessor :version
 
     # Public: The String path of the file.
@@ -80,19 +83,19 @@ module Gollum
 
     # Public: The String mime type of the file.
     def mime_type
-      @blob && @blob.mime_type
+      @blob_entry && @blob_entry.mime_type
     end
 
     # Populate the File with information from the Blob.
     #
-    # blob - The Grit::Blob that contains the info.
+    # blob - The Gollum::BlobEntry that contains the info.
     # path - The String directory path of the file.
     #
     # Returns the populated Gollum::File.
-    def populate(blob, path=nil)
-      @blob = blob
-      @path = "#{path}/#{blob.name}"[1..-1]
-      @on_disk = false
+    def populate(blob_entry, path=nil)
+      @blob_entry = blob_entry
+      @path = "#{path}/#{blob_entry.name}"[1..-1]
+      @on_disk = flase
       @on_disk_path = nil
       self
     end
@@ -109,11 +112,11 @@ module Gollum
     # repo is bare, if the commit isn't the HEAD, or if there are problems
     # resolving symbolic links.
     def get_disk_reference(name, commit)
-      return false if @wiki.repo.bare
-      return false if commit.sha != @wiki.repo.head.commit.sha
+      return false if @wiki.repo.bare?
+      return false if commit.oid != @wiki.repo.lookup(@wiki.repo.head.target).oid
 
       # This will try to resolve symbolic links, as well
-      pathname = Pathname.new(::File.join(@wiki.repo.path, '..', name))
+      pathname = Pathname.new(::File.join(@wiki.repo.workdir, name))
       realpath = pathname.realpath
       return false unless realpath.exist?
 
@@ -134,7 +137,7 @@ module Gollum
     def find(name, version, try_on_disk=false)
       checked = name.downcase
       map     = @wiki.tree_map_for(version)
-      commit  = version.is_a?(Grit::Commit) ? version : @wiki.commit_for(version)
+      commit  = version.is_a?(Rugged::Commit) ? version : @wiki.commit_for(version)
 
       if entry = map.detect { |entry| entry.path.downcase == checked }
         @path    = name

@@ -13,13 +13,15 @@ module Gollum
     def initialize(path, page_file_dir = nil, bare = false)
       @page_file_dir = page_file_dir
       @path = path
+
       begin
-        @repo = Grit::Repo.new(path, { :is_bare => bare })
-      rescue Grit::InvalidGitRepositoryError
+        @repo = Rugged::Repository.new(path)
+      rescue Rugged::InvalidError
         raise Gollum::InvalidGitRepositoryError
-      rescue Grit::NoSuchPathError
+      rescue Rugged::RepositoryError
         raise Gollum::NoSuchPathError
       end
+
       clear
     end
 
@@ -27,7 +29,9 @@ module Gollum
     #
     # Returns true if it exists, or false.
     def exist?
-      @repo.git.exist?
+      # Is there an equivalent Rugged call?
+      # @repo.git.exist?
+      @repo != nil
     end
 
     # Public: Converts a given Git reference to a SHA, using the cache if
@@ -40,7 +44,7 @@ module Gollum
       ref = ref.to_s
       return if ref.empty?
       sha =
-        if sha?(ref)
+        if self.class.sha?(ref)
           ref
         else
           get_cache(:ref, ref) { ref_to_sha!(ref) }
@@ -68,16 +72,16 @@ module Gollum
     #
     # Returns the String content of the blob.
     def blob(sha)
-      cat_file!(sha)
+      @repo.lookup(sha).content
     end
 
     # Public: Looks up the Git commit using the given Git SHA or ref.
     #
     # ref - A String Git SHA or ref.
     #
-    # Returns a Grit::Commit.
+    # Returns a Rugged::Commit.
     def commit(ref)
-      if sha?(ref)
+      if self.class.sha?(ref)
         get_cache(:commit, ref) { commit!(ref) }
       else
         if sha = get_cache(:ref, ref)
@@ -89,6 +93,7 @@ module Gollum
           end
         end
       end
+    rescue Rugged::InvalidError
     end
 
     # Public: Clears all of the cached data that this GitAccess is tracking.
@@ -117,7 +122,7 @@ module Gollum
     # Gets the String path to the Git repository.
     attr_reader :path
 
-    # Gets the Grit::Repo instance for the Git repository.
+    # Gets the Rugged::Repo instance for the Git repository.
     attr_reader :repo
 
     # Gets a Hash cache of refs to commit SHAs.
@@ -132,9 +137,9 @@ module Gollum
     #
     attr_reader :tree_map
 
-    # Gets a Hash cache of commit SHAs to the Grit::Commit instance.
+    # Gets a Hash cache of commit SHAs to the Rugged::Commit instance.
     #
-    #     {"abcd123" => <Grit::Commit>}
+    #     {"abcd123" => <Rugged::Commit>}
     #
     attr_reader :commit_map
 
@@ -143,7 +148,7 @@ module Gollum
     # str - Possible String SHA.
     #
     # Returns true if the String is a SHA, or false.
-    def sha?(str)
+    def self.sha?(str)
       !!(str =~ /^[0-9a-f]{40}$/)
     end
 
@@ -153,8 +158,8 @@ module Gollum
     #
     # Returns a String SHA.
     def ref_to_sha!(ref)
-      @repo.git.rev_list({:max_count=>1}, ref)
-    rescue Grit::GitRuby::Repository::NoSuchShaFound
+      @repo.ref(ref).target
+    rescue Rugged::ReferenceError
     end
 
     # Looks up the Git blobs for a given commit.
@@ -163,37 +168,39 @@ module Gollum
     #
     # Returns an Array of BlobEntry instances.
     def tree!(sha)
-      tree = @repo.lstree(sha, {:recursive => true})
-      items = []
-      tree.each do |entry|
-        if entry[:type] == 'blob'
-          items << BlobEntry.new(entry[:sha], entry[:path], entry[:size], entry[:mode].to_i(8)) 
+      tree  = @repo.lookup(sha).tree
+
+      # Convert the tree into an array of BlobEntry instances
+      blobs = []
+      tree.walk(:preorder) do |root, entry|
+        # if we have a blob and the path is within the given @page_file_dir
+        if entry[:type] == :blob
+          blobs << Gollum::BlobEntry.new(entry[:oid], root + entry[:name], entry.size, entry[:filemode])
         end
       end
+
+      # Watch out for that @page_file_dir
       if dir = @page_file_dir
         regex = /^#{dir}\//
-        items.select { |i| i.path =~ regex }
+        blobs.select { |i| i.path =~ regex }
       else
-        items
+        blobs
       end
-    end
-
-    # Reads the content from the Git db at the given SHA.
-    #
-    # sha - The String SHA.
-    #
-    # Returns the String content of the Git object.
-    def cat_file!(sha)
-      @repo.git.cat_file({:p => true}, sha)
     end
 
     # Reads a Git commit.
     #
     # sha - The string SHA of the Git commit.
     #
-    # Returns a Grit::Commit.
+    # Returns a Rugged::Commit.
     def commit!(sha)
-      @repo.commit(sha)
+      commit_maybe = @repo.lookup(sha)
+
+      if commit_maybe.type == :commit
+        return commit_maybe
+      else
+        nil
+      end
     end
 
     # Attempts to get the given data from a cache.  If it doesn't exist, it'll
@@ -223,17 +230,6 @@ module Gollum
     def set_cache(name, key, value)
       cache      = instance_variable_get("@#{name}_map")
       cache[key] = value || :_nil
-    end
-
-    # Parses a line of output from the `ls-tree` command.
-    #
-    # line - A String line of output:
-    #          "100644 blob 839c2291b30495b9a882c17d08254d3c90d8fb53  Home.md"
-    #
-    # Returns an Array of BlobEntry instances.
-    def parse_tree_line(line)
-      mode, type, sha, size, *name = line.split(/\s+/)
-      BlobEntry.new(sha, name.join(' '), size.to_i, mode.to_i(8))
     end
 
     # Decode octal sequences (\NNN) in tree path names.
