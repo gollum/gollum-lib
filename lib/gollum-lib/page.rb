@@ -295,7 +295,7 @@ module Gollum
         walker.each do |commit|
           commit.tree.each_blob do |blob|
             if Page.cname(blob[:name]) == Page.cname(@blob_entry.name) and
-               last_blob_oid != blob[:oid]
+               blob[:oid] != last_blob_oid
 
               # Add the commit to the head of the list of versions if it isn't already present
               # and add the blob_oid into our list of oids we've seen before
