@@ -219,13 +219,8 @@ module Gollum
     # encoding - Encoding Constant or String.
     #
     # Returns the String data.
-<<<<<<< HEAD
     def formatted_data(encoding = nil, &block)
-      @blob_entry && markup_class.render(historical?, encoding) do |doc|
-=======
-    def formatted_data(encoding = nil, include_levels = 10, &block)
-      @blob && markup_class.render(historical?, encoding, include_levels) do |doc|
->>>>>>> upstream/master
+      @blob_entry && markup_class.render(historical?, encoding, include_levels) do |doc|
         @doc = doc
         yield doc if block_given?
       end
