@@ -153,8 +153,8 @@ module Gollum
     #
     # Returns a String SHA.
     def ref_to_sha!(ref)
-      @repo.git.rev_list({:max_count=>1}, ref)
-    rescue Grit::GitRuby::Repository::NoSuchShaFound
+      commit = @repo.commit(ref)
+      commit ? commit.id : nil
     end
 
     # Looks up the Git blobs for a given commit.
