@@ -120,7 +120,13 @@ module Gollum
 
       fullpath = fullpath.force_encoding('ascii-8bit') if fullpath.respond_to?(:force_encoding)
 
-      index.add(fullpath, @wiki.normalize(data))
+      begin
+        data = @wiki.normalize(data)
+      rescue ArgumentError => err
+        # Swallow errors that arise from data being binary
+        raise err unless err.message.include?('invalid byte sequence')
+      end
+      index.add(fullpath, data)
     end
 
     # Update the given file in the repository's working directory if there
