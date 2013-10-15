@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.extra_rdoc_files = %w[README.md LICENSE]
 
-  s.add_dependency('grit', '~> 2.5.0')
+  s.add_dependency('gitlab-grit', '~> 2.5.0')
   s.add_dependency('github-markup', ['>= 0.7.5', '< 1.0.0'])
   s.add_dependency('pygments.rb', '~> 0.5.2')
   s.add_dependency('sanitize', '~> 2.0.6')
