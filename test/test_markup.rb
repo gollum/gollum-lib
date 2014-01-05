@@ -626,7 +626,7 @@ np.array([[2,2],[1,3]],np.float)
 
     page = @wiki.page("a")
     output = page.formatted_data
-    assert_html_equal %Q{<p>a\nFile not found: /base</p>}, output
+    assert_html_equal %Q{<p>a\n</p><p class="gollum-error">File not found: /base</p>}, output
   end
 
   test "embed code page relative link" do
@@ -635,7 +635,7 @@ np.array([[2,2],[1,3]],np.float)
 
     page = @wiki.page("a")
     output = page.formatted_data
-    assert_html_equal %Q{<p>a\nFile not found: base</p>}, output
+    assert_html_equal %Q{<p>a\n</p><p class="gollum-error">File not found: base</p>}, output
   end
 
   test "code block in unsupported language" do
