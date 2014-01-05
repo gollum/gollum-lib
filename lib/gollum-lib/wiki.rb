@@ -150,6 +150,12 @@ module Gollum
 
     # Gets side on which the sidebar should be shown
     attr_reader :bar_side
+    
+    # An array of symbols which refer to classes under Gollum::Filter,
+    # each of which is an element in the "filtering chain".  See
+    # the documentation for Gollum::Filter for more on how this chain
+    # works, and what filter classes need to implement.
+    attr_reader :filter_chain
 
     # Public: Initialize a new Gollum Repo.
     #
@@ -186,6 +192,7 @@ module Gollum
     #           :per_page_uploads - Whether uploads should be stored in a central
     #                            'uploads' directory, or in a directory named for
     #                            the page they were uploaded to.
+    #           :filter_chain  - Override the default filter chain with your own.
     #
     # Returns a fresh Gollum::Repo.
     def initialize(path, options = {})
@@ -227,6 +234,8 @@ module Gollum
                               options[:user_icons] : 'none'
       @allow_uploads        = options.fetch :allow_uploads, false
       @per_page_uploads     = options.fetch :per_page_uploads, false
+      @filter_chain         = options.fetch :filter_chain,
+                              [:Metadata, :TOC, :RemoteCode, :Code, :Sanitize, :WSD, :Tags, :Render]
     end
 
     # Public: check whether the wiki's git repo exists on the filesystem.
@@ -644,6 +653,74 @@ module Gollum
     def history_sanitizer
       if options = history_sanitization
         @history_sanitizer ||= options.to_sanitize
+      end
+    end
+    
+    # Public: Add an additional link to the filter chain.
+    #
+    # name - A symbol which represents the name of a class under the
+    #        Gollum::Render namespace to insert into the chain.
+    #
+    # loc  - A "location specifier" -- that is, where to put the new
+    #        filter in the chain.  This can be one of `:first`, `:last`,
+    #        `:before => :SomeElement`, or `:after => :SomeElement`, where
+    #        `:SomeElement` (if specified) is a symbol already in the
+    #        filter chain.  A `:before` or `:after` which references a
+    #        filter that doesn't exist will cause `ArgumentError` to be
+    #        raised.
+    #
+    # Returns nothing.
+    def add_filter(name, loc)
+      unless name.is_a? Symbol
+        raise ArgumentError,
+              "Invalid filter name #{name.inspect} (must be a symbol)"
+      end
+      
+      case loc
+        when :first
+          @filter_chain.unshift(name)
+        when :last
+          @filter_chain.push(name)
+        when Hash
+          if loc.length != 1
+            raise ArgumentError,
+                  "Invalid location specifier"
+          end
+          if ([:before, :after] && loc.keys).empty?
+            raise ArgumentError,
+                  "Invalid location specifier"
+          end
+          
+          next_to = loc.values.first
+          relative = loc.keys.first
+          
+          i = @filter_chain.index(next_to)
+          if i.nil?
+            raise ArgumentError,
+                  "Unknown filter #{next_to.inspect}"
+          end
+
+          i += 1 if relative == :after
+          @filter_chain.insert(i, name)
+        else
+          raise ArgumentError,
+                "Invalid location specifier"
+      end
+    end
+    
+    # Remove the named filter from the filter chain.
+    #
+    # Returns nothing.  Raises `ArgumentError` if the named filter doesn't
+    # exist in the chain.
+    def remove_filter(name)
+      unless name.is_a? Symbol
+        raise ArgumentError,
+              "Invalid filter name #{name.inspect} (must be a symbol)"
+      end
+      
+      unless @filter_chain.delete(name)
+        raise ArgumentError,
+              "#{name.inspect} not found in filter chain"
       end
     end
 

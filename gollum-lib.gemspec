@@ -71,9 +71,7 @@ Gem::Specification.new do |s|
     lib/gollum-lib/markups.rb
     lib/gollum-lib/page.rb
     lib/gollum-lib/pagination.rb
-    lib/gollum-lib/remote_code.rb
     lib/gollum-lib/sanitization.rb
-    lib/gollum-lib/web_sequence_diagram.rb
     lib/gollum-lib/wiki.rb
     licenses/licenses.txt
   ]
