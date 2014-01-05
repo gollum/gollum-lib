@@ -183,6 +183,9 @@ module Gollum
     #                             - :left
     #                             - :right
     #           :allow_uploads - Set to true to allow file uploads.
+    #           :per_page_uploads - Whether uploads should be stored in a central
+    #                            'uploads' directory, or in a directory named for
+    #                            the page they were uploaded to.
     #
     # Returns a fresh Gollum::Repo.
     def initialize(path, options = {})
@@ -223,6 +226,7 @@ module Gollum
       @user_icons           = ['gravatar', 'identicon'].include?( options[:user_icons] ) ?
                               options[:user_icons] : 'none'
       @allow_uploads        = options.fetch :allow_uploads, false
+      @per_page_uploads     = options.fetch :per_page_uploads, false
     end
 
     # Public: check whether the wiki's git repo exists on the filesystem.
@@ -686,6 +690,10 @@ module Gollum
 
     # Toggles file upload functionality.
     attr_reader :allow_uploads
+
+    # Toggles whether uploaded files go into 'uploads', or a directory
+    # named after the page they were uploaded to.
+    attr_reader :per_page_uploads
 
     # Normalize the data.
     #
