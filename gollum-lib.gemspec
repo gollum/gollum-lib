@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency('gitlab-grit', '2.6.0')
   s.add_dependency('github-markup', ['>= 0.7.5', '< 1.0.0'])
-  s.add_dependency('pygments.rb', '~> 0.5.2')
+  s.add_dependency('rouge', '~> 1.3.1')
   s.add_dependency('sanitize', '~> 2.0.6')
   s.add_dependency('nokogiri', '~> 1.6.0')
   s.add_dependency('stringex', '~> 2.1.0')

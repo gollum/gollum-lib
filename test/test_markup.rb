@@ -208,7 +208,7 @@ context "Markup" do
           DATA
       ), commit_details)
     output = @wiki.page(page).formatted_data
-    expected = %Q{<pre><code>      <div class=\"highlight\"><pre><span class=\"n\">rot13</span><span class=\"o\">=</span><span class=\"err\">'</span><span class=\"n\">tr</span> <span class=\"sc\">'\\''</span><span class=\"n\">A</span><span class=\"o\">-</span><span class=\"n\">Za</span><span class=\"o\">-</span><span class=\"n\">z</span><span class=\"sc\">'\\''</span> <span class=\"sc\">'\\''</span><span class=\"n\">N</span><span class=\"o\">-</span><span class=\"n\">ZA</span><span class=\"o\">-</span><span class=\"n\">Mn</span><span class=\"o\">-</span><span class=\"n\">za</span><span class=\"o\">-</span><span class=\"n\">m</span><span class=\"err\">'\\'</span>\n</pre></div>\n</code></pre>}
+    expected = %Q{<pre><code>      <pre class=\"highlight\"><span class=\"err\">rot13='tr '\\''A-Za-z'\\'' '\\''N-ZA-Mn-za-m'\\'</span></pre>\n</code></pre>}
     assert_html_equal expected, output
   end
 
@@ -221,7 +221,8 @@ context "Markup" do
 ~~~
       ), commit_details)
     output = @wiki.page(page).formatted_data
-    expected = %Q{<div class=\"highlight\"><pre><span class=\"err\">'</span><span class=\"n\">hi</span><span class=\"err\">'</span>\n</pre></div>}
+    expected = %Q{<pre class=\"highlight\"><span class=\"err\">'hi'</span></pre>}
+                  
     assert_html_equal expected, output
   end
 
@@ -233,7 +234,7 @@ context "Markup" do
 ~~~
       ), commit_details)
     output = @wiki.page(page).formatted_data
-    expected = %Q{<div class=\"highlight\"><pre><span class=\"s1\">'hi'</span>\n</pre></div>}
+    expected = %Q{<pre class=\"highlight\"><span class=\"s1\">'hi'</span></pre>}
     assert_html_equal expected, output
   end
 
@@ -246,7 +247,8 @@ context "Markup" do
 ~~~
       ), commit_details)
     output = @wiki.page(page).formatted_data
-    expected = %Q{<div class=\"highlight\"><pre><span class=\"s1\">'hi'</span>\n</pre></div>}
+    expected = %Q{<pre class=\"highlight\"><span class=\"s1\">'hi'</span></pre>}
+                  
     assert_html_equal expected, output
   end
 
@@ -260,7 +262,8 @@ context "Markup" do
 ~~~~~~
       ), commit_details)
     output = @wiki.page(page).formatted_data
-    expected = %Q{<div class=\"highlight\"><pre><span class=\"o\">~~</span>\n<span class=\"s1\">'hi'</span><span class=\"o\">~</span>\n</pre></div>}
+    expected = %Q{<pre class=\"highlight\"><span class=\"o\">~~</span>\n<span class=\"s1\">'hi'</span><span class=\"o\">~</span></pre>}
+
     assert_html_equal expected, output
   end
 
@@ -526,7 +529,7 @@ context "Markup" do
 
   test "regular code blocks" do
     content = "a\n\n```ruby\nx = 1\n```\n\nb"
-    output = %Q{<p>a</p>\n\n<div class=\"highlight\"><pre><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>\n</pre></div>\n\n<p>b</p>}
+    output = %Q{<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span></pre>\n\n<p>b</p>}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
@@ -539,7 +542,7 @@ context "Markup" do
 
   test "code blocks with carriage returns" do
     content = "a\r\n\r\n```ruby\r\nx = 1\r\n```\r\n\r\nb"
-    output = %Q{<p>a</p>\n\n<div class=\"highlight\"><pre><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>\n</pre></div>\n\n<p>b</p>}
+    output = %Q{<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span></pre>\n\n<p>b</p>}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
@@ -552,25 +555,25 @@ context "Markup" do
 
   test "code blocks with two-space indent" do
     content = "a\n\n```ruby\n  x = 1\n\n  y = 2\n```\n\nb"
-    output = "<p>a</p>\n\n<div class=\"highlight\"><pre><span class=\"n\">" +
+    output = "<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">" +
              "x</span> <span class=\"o\">=</span> <span class=\"mi\">1" +
              "</span>\n\n<span class=\"n\">y</span> <span class=\"o\">=" +
-             "</span> <span class=\"mi\">2</span>\n</pre>\n</div>\n\n\n<p>b</p>"
+             "</span> <span class=\"mi\">2</span>\n</pre>\n\n\n<p>b</p>"
     compare(content, output)
   end
 
   test "code blocks with one-tab indent" do
     content = "a\n\n```ruby\n\tx = 1\n\n\ty = 2\n```\n\nb"
-    output = "<p>a</p>\n\n<div class=\"highlight\"><pre><span class=\"n\">" +
+    output = "<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">" +
              "x</span> <span class=\"o\">=</span> <span class=\"mi\">1" +
              "</span>\n\n<span class=\"n\">y</span> <span class=\"o\">=" +
-             "</span> <span class=\"mi\">2</span>\n</pre>\n</div>\n\n\n<p>b</p>"
+             "</span> <span class=\"mi\">2</span>\n</pre>\n\n\n<p>b</p>"
     compare(content, output)
   end
 
-  test "code blocks with multibyte caracters indent" do
+  test "code blocks with multibyte characters indent" do
     content = "a\n\n```ruby\ns = 'やくしまるえつこ'\n```\n\nb"
-    output = %Q{<p>a</p>\n\n<div class=\"highlight\"><pre><span class=\"n\">s</span> <span class=\"o\">=</span> <span class=\"s1\">'やくしまるえつこ'</span>\n</pre></div>\n\n<p>b</p>}
+    output = %Q{<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">s</span> <span class=\"o\">=</span> <span class=\"s1\">'やくしまるえつこ'</span></pre>\n\n<p>b</p>}
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
     index.commit("Add alpha.jpg")
@@ -582,7 +585,7 @@ context "Markup" do
 
   test "code blocks with ascii characters" do
     content = "a\n\n```\n├─foo\n```\n\nb"
-    output = %(<p>a</p><divclass=\"highlight\"><pre><spanclass=\"err\">├─</span><spanclass=\"n\">foo</span></pre></div><p>b</p>)
+    output = %(<p>a</p><preclass=\"highlight\"><spanclass=\"err\">├─foo</span></pre><p>b</p>)
     compare(content, output)
   end
 
@@ -615,7 +618,7 @@ np.array([[2,2],[1,3]],np.float)
   end
 
   def assert_markup_highlights_code(markup_class, rendered)
-    assert_match /div class="highlight"/, rendered, "#{markup_class} doesn't highlight code\n #{rendered}"
+    assert_match /pre class="highlight"/, rendered, "#{markup_class} doesn't highlight code\n #{rendered}"
     assert_match /span class="n"/, rendered, "#{markup_class} doesn't highlight code\n #{rendered}"
     assert_match /\(\[\[/, rendered, "#{markup_class} parses out wiki links\n#{rendered}"
   end
@@ -643,7 +646,7 @@ np.array([[2,2],[1,3]],np.float)
 
     page = @wiki.page("a")
     output = page.formatted_data
-    assert_html_equal %Q{<p>a\ncode\nb</p>}, output
+    assert_html_equal %Q{<p>a\n</p><pre class=\"highlight\"><span class=\"err\">code</span></pre>\nb}, output
   end
 
   #########################################################################
