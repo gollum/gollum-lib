@@ -12,10 +12,18 @@ module Gollum
     include Helpers
 
     @formats = {}
-
+    
     class << self
-      attr_reader :formats
-
+      
+      # Only use the formats that are specified in config.rb
+      def formats
+        if defined? Gollum::Page::FORMAT_NAMES
+          @formats.select { |_, value| Gollum::Page::FORMAT_NAMES.values.include? value[:name] }
+        else
+          @formats
+        end
+      end
+      
       # Register a file extension and associated markup type
       #
       # ext     - The file extension

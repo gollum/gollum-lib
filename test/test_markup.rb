@@ -48,6 +48,21 @@ context "Markup" do
     end
     assert yielded
   end
+  
+  test "Gollum::Markup#formats returns all formats by default" do
+    assert Gollum::Markup.formats.keys.include?(:asciidoc)
+    assert Gollum::Markup.formats.size > 1
+  end
+  
+  test "Gollum::Markup#formats is limited by Gollum::Page::FORMAT_NAMES" do
+    begin
+      Gollum::Page::FORMAT_NAMES = { :markdown  => "Markdown" }
+      assert Gollum::Markup.formats.keys.include?(:markdown)
+      assert ! Gollum::Markup.formats.keys.include?(:asciidoc)
+    ensure
+      Gollum::Page.send :remove_const, :FORMAT_NAMES
+    end
+  end
 
   #########################################################################
   #
