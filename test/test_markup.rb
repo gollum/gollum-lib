@@ -843,6 +843,46 @@ if ENV['ASCIIDOC']
 end
 
   #########################################################################
+  # Plain Text
+  #########################################################################
+
+  test "plain text (.txt) is rendered within a <pre></pre> block" do
+    content = "In the Land of Mordor where the Shadows lie."
+    output = "<pre>In the Land of Mordor where the Shadows lie.</pre>"
+    compare(content, output, "txt")
+  end
+  
+  test "plain text (.txt) is rendered without code blocks" do
+    content = "```ruby\nx = 1\n```\n"
+    output = "<pre>```ruby\nx = 1\n```\n</pre>"
+    compare(content, output, "txt")
+  end
+  
+  test "plain text (.txt) is rendered without markdown markup" do
+    content = "# A basic header"
+    output = "<pre># A basic header</pre>"
+    compare(content, output, "txt")
+  end
+  
+  test "plain text (.txt) is rendered with meta data" do
+    content = "a\n\n<!-- ---\ntags: [foo, bar]\n-->\n\nb"
+    result = {'tags'=>'[foo, bar]'}
+
+    index = @wiki.repo.index
+    index.add("Bilbo-Baggins.txt", content)
+    index.commit("Plain Text with metadata")
+
+    page = @wiki.page("Bilbo Baggins")
+    assert_equal result, page.metadata
+  end
+
+  test "plain text (.txt) is rendered with inline HTML escaped" do
+    content = "Plain text <br/> with a <a href=\"http://example.com\">HTML link</a>"
+    output = "<pre>Plain text&lt;br/&gt;with a&lt;ahref=\"http://example.com\"&gt;HTML link&lt;/a&gt;</pre>"
+    compare(content, output, "txt")
+  end
+  
+  #########################################################################
   #
   # Helpers
   #

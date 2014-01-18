@@ -10,5 +10,6 @@ module Gollum
     register(:asciidoc,  "AsciiDoc")
     register(:mediawiki, "MediaWiki", :regexp => /(media)?wiki/)
     register(:pod,       "Pod")
+    register(:txt,       "Plain Text")
   end
 end

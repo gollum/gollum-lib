@@ -5,6 +5,7 @@
 # Render a block of code using the Rouge syntax-highlighter.
 class Gollum::Filter::Code < Gollum::Filter
   def extract(data)
+    return data if @markup.format == :txt
     data.gsub!(/^([ \t]*)(~~~+) ?([^\r\n]+)?\r?\n(.+?)\r?\n\1(~~~+)[ \t\r]*$/m) do
       m_indent = $1
       m_start  = $2 # ~~~

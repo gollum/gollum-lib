@@ -54,19 +54,19 @@ context "Wiki" do
   test "list pages" do
     pages = @wiki.pages
     assert_equal \
-      ['Bilbo-Baggins.md', 'Boromir.md', 'Elrond.md', 'Eye-Of-Sauron.md', 'Hobbit.md', 'Home.textile', 'My-Precious.md', 'Samwise Gamgee.mediawiki'],
+      ['Bilbo-Baggins.md', 'Boromir.md', 'Elrond.md', 'Eye-Of-Sauron.md', 'Hobbit.md', 'Home.textile', 'My-Precious.md', 'Samwise Gamgee.mediawiki', 'todo.txt'],
       pages.map { |p| p.filename }.sort
   end
 
   test "list files" do
     files = @wiki.files
     assert_equal \
-      ['Data-Two.csv', 'Data.csv', 'Riddles.rd', 'eye.jpg', 'todo.txt'],
+      ['Data-Two.csv', 'Data.csv', 'Riddles.rd', 'eye.jpg'],
       files.map { |p| p.filename }.sort
   end
 
   test "counts pages" do
-    assert_equal 8, @wiki.size
+    assert_equal 9, @wiki.size
   end
 
   test "text_data" do

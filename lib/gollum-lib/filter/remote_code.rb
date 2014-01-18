@@ -12,7 +12,8 @@ require 'open-uri'
 #              ```language:https://example.com/somefile.txt```
 #
 class Gollum::Filter::RemoteCode < Gollum::Filter
-  def extract data
+  def extract(data)
+    return data if @markup.format == :txt
     data.gsub /^[ \t]*``` ?([^:\n\r]+):((http)?[^`\n\r]+)```/ do
       language = $1
       uri = $2

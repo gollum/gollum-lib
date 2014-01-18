@@ -14,6 +14,7 @@ class Gollum::Filter::WSD < Gollum::Filter
   # Extract all sequence diagram blocks into the map and replace with
   # placeholders.
   def extract(data)
+    return data if @markup.format == :txt
     data.gsub(/^\{\{\{\{\{\{ ?(.+?)\r?\n(.+?)\r?\n\}\}\}\}\}\}\r?$/m) do
       id = Digest::SHA1.hexdigest($2)
       @map[id] = { :style => $1, :code => $2 }

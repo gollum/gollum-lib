@@ -4,9 +4,7 @@
 class Gollum::Filter::Tags < Gollum::Filter
   # Extract all tags into the tagmap and replace with placeholders.
   def extract(data)
-    if @markup.format == :asciidoc
-      return data
-    end
+    return data if @markup.format == :txt || @markup.format == :asciidoc
     data.gsub!(/(.?)\[\[(.+?)\]\]([^\[]?)/m) do
       if $1 == "'" && $3 != "'"
         "[[#{$2}]]#{$3}"
