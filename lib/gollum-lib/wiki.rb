@@ -380,7 +380,7 @@ module Gollum
       committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       committer.delete(page.path)
-      committer.add_to_index(target_dir, target_name, page.format, page.raw_data, :allow_same_ext)
+      committer.add_to_index(target_dir, target_name, page.format, page.raw_data)
 
       committer.after_commit do |index, sha|
         @access.refresh
