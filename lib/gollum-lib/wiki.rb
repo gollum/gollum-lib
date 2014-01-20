@@ -428,7 +428,7 @@ module Gollum
         committer.add(page.path, normalize(data))
       else
         committer.delete(page.path)
-        committer.add_to_index(dir, filename, format, data, :allow_same_ext)
+        committer.add_to_index(dir, filename, format, data)
       end
 
       committer.after_commit do |index, sha|
