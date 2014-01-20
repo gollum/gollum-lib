@@ -186,7 +186,7 @@ context "Wiki page writing" do
     assert @wiki.page("Gollum")
   end
 
-  test "is not allowed to overwrite file" do
+  test "write page is not allowed to overwrite file" do
     @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
     assert_raises Gollum::DuplicatePageError do
       @wiki.write_page("ABC DEF", :textile,  "# Gollum", commit_details)
@@ -212,6 +212,15 @@ context "Wiki page writing" do
     assert_equal "Leave now, and never come back!", first_commit.message
     assert_equal "Smeagol", first_commit.author.name
     assert_equal "smeagol@example.org", first_commit.author.email
+  end
+
+  test "update page is not allowed to overwrite file with name change" do
+    @wiki.write_page("Gollum", :markdown, "# Gollum", commit_details)
+    @wiki.write_page("Smeagel", :markdown, "# Smeagel", commit_details)
+    page = @wiki.page("Gollum")
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.update_page(page, 'Smeagel', :markdown, "h1. Gollum", commit_details)
+    end
   end
 
 if $METADATA
