@@ -95,16 +95,17 @@ class Gollum::Filter::Tags < Gollum::Filter
   def process_include_tag(tag)
     return unless /^include:/.match(tag)
     page_name = tag[8..-1]
+    resolved_page_name =  ::File.expand_path(page_name, "/"+@markup.dir)
 
     if @markup.include_levels > 0
-      page = @markup.wiki.page(page_name)
+      page = find_page_from_name(resolved_page_name)
       if page
         page.formatted_data(@markup.encoding, @markup.include_levels-1)
       else
-        html_error("Cannot include #{process_page_link_tag(page_name)} - does not exist yet")
+        html_error("Cannot include #{process_page_link_tag(resolved_page_name)} - does not exist yet")
       end
     else
-      html_error("Too many levels of included pages, will not include #{process_page_link_tag(page_name)}")
+      html_error("Too many levels of included pages, will not include #{process_page_link_tag(resolved_page_name)}")
     end
   end
 

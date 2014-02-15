@@ -344,6 +344,51 @@ context "Markup" do
     assert_html_equal("<p>hello<br /></p><p>&lt;java</p><p>script&gt;alert(99);</p>", page1.formatted_data)
   end
 
+  test "include directive with very long absolute path and relative include" do
+    @wiki.write_page("page1", :textile, "hello\n[[include:/a/very/long/path/to/page2]]\n", commit_details)
+    @wiki.write_page("/a/very/long/path/to/page2", :textile, "goodbye\n[[include:object]]", commit_details)
+    @wiki.write_page("/a/very/long/path/to/object", :textile, "my love", commit_details)
+    page1 = @wiki.page("page1")
+    assert_html_equal("<p>hello<br/></p><p>goodbye<br/></p><p>my love</p>", page1.formatted_data)
+  end
+
+  test "include directive with a relative include" do
+    @wiki.write_page("page1", :textile, "hello\n[[include:/going/in/deep]]\n", commit_details)
+    @wiki.write_page("/going/in/deep", :textile, "[[include:../shallow]]", commit_details)
+    @wiki.write_page("/going/shallow", :textile, "found me", commit_details)
+    page1 = @wiki.page("page1")
+    assert_html_equal("<p>hello<br/></p><p>found me</p>", page1.formatted_data)
+  end
+
+  test "relative include directive with a subtle infinite loop" do
+    @wiki.write_page("page1", :textile, "hello\n[[include:../../page1]]\n", commit_details)
+    page1 = @wiki.page("page1")
+    assert_match("Too many levels", page1.formatted_data)
+  end
+
+  test "ugly include directives that should all be not found" do
+    %w(
+
+      ///
+      ../../..
+      /./.!!./
+      ../../../etc/passwd
+      con:
+      /dev/null
+      \0
+      \ \ \ 
+      \\\\\\\\
+
+      ).each_with_index do |ugly, n|
+
+      name = "ugly#{n}"
+
+      @wiki.write_page(name, :textile, "hello\n[[include:#{ugly}]]\n", commit_details)
+      page1 = @wiki.page(name)
+      assert_match("does not exist yet", page1.formatted_data)
+    end
+  end
+
   #########################################################################
   #
   # Images
