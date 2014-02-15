@@ -50,6 +50,7 @@ module Gollum
     attr_reader   :name
     attr_reader   :include_levels
     attr_reader   :to_xml_opts
+    attr_reader   :dir
 
     # Initialize a new Markup object.
     #
