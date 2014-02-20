@@ -720,6 +720,15 @@ context "Renames directory traversal" do
     assert_renamed source, new_page
   end
 
+  test "rename page with a name of an already existing page does not clobber that page" do
+    @wiki.write_page("Gollum", :markdown, "# Gollum", commit_details)
+    @wiki.write_page("Smeagel", :markdown, "# Smeagel", commit_details)
+    page = @wiki.page("Gollum")
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.rename_page(page, 'Smeagel', rename_commit_details)
+    end
+  end
+
   def assert_renamed(page_source, page_target)
     @wiki.clear_cache
     assert_nil @wiki.paged(page_source.name, page_source.path)
