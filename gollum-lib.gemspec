@@ -62,6 +62,16 @@ Gem::Specification.new do |s|
     lib/gollum-lib/committer.rb
     lib/gollum-lib/file.rb
     lib/gollum-lib/file_view.rb
+    lib/gollum-lib/filter.rb
+    lib/gollum-lib/filter/code.rb
+    lib/gollum-lib/filter/metadata.rb
+    lib/gollum-lib/filter/plain_text.rb
+    lib/gollum-lib/filter/remote_code.rb
+    lib/gollum-lib/filter/render.rb
+    lib/gollum-lib/filter/sanitize.rb
+    lib/gollum-lib/filter/tags.rb
+    lib/gollum-lib/filter/toc.rb
+    lib/gollum-lib/filter/wsd.rb
     lib/gollum-lib/git_access.rb
     lib/gollum-lib/gitcode.rb
     lib/gollum-lib/grit_ext.rb
