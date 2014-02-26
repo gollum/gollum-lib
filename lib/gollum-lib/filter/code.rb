@@ -35,7 +35,7 @@ class Gollum::Filter::Code < Gollum::Filter
       "#{m_indent}#{id}" # print the SHA1 ID with the proper indentation
     end
 
-    data.gsub!(/^([ \t]*)``` ?([^\r\n]+)?\r?\n(.+?)\r?\n\1```[ \t]*\r?$/m) do
+    data.gsub!(/^([ \t]{0,3})``` ?([^\r\n]+)?\r?\n(.+?)\r?\n\1```[ \t]*\r?$/m) do
       lang   = $2 ? $2.strip : nil
       id     = Digest::SHA1.hexdigest("#{lang}.#{$3}")
       cached = @markup.check_cache(:code, id)
