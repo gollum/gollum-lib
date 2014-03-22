@@ -5,9 +5,21 @@ class Gollum::Filter::TOC < Gollum::Filter
   def process(data)
     doc = Nokogiri::HTML::DocumentFragment.parse(data)
     toc = nil
+    anchor_names = {}
+
     doc.css('h1,h2,h3,h4,h5,h6').each do |h|
       # must escape "
       h_name = h.content.gsub(' ','-').gsub('"','%22')
+
+      # Ensure repeat anchors have a unique prefix or the
+      # toc will break
+      anchor_names[h_name] = 0 if anchor_names[h_name].nil?
+      anchor_names[h_name] += 1
+
+      anchor_prefix_number = anchor_names[h_name]
+      if anchor_prefix_number > 1
+        h_name = anchor_prefix_number.to_s + '-' + h_name
+      end
 
       level = h.name.gsub(/[hH]/,'').to_i
 

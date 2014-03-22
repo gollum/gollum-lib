@@ -873,6 +873,17 @@ end
     ]
   end
 
+  test "identical headers in TOC have unique prefix" do
+    content = <<-MARKDOWN
+__TOC__
+# Summary
+# Summary
+MARKDOWN
+
+    output = "<p><strong>TOC</strong></p><h1>Summary<aclass=\"anchor\"id=\"Summary\"href=\"#Summary\"></a></h1><h1>Summary<aclass=\"anchor\"id=\"2-Summary\"href=\"#2-Summary\"></a></h1>"
+    compare(content, output, :markdown)
+  end
+
 if ENV['ASCIIDOC']
   #########################################################################
   # Asciidoc
