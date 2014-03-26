@@ -5,7 +5,10 @@ class Gollum::Filter::TOC < Gollum::Filter
   def process(data)
     doc = Nokogiri::HTML::DocumentFragment.parse(data)
     toc = nil
-    doc.css('h1,h2,h3,h4,h5,h6').each do |h|
+    doc.css('h1,h2,h3,h4,h5,h6').each_with_index do |h, i|
+      # omit the first H1 from the TOC
+      next if i == 0 and h.name =~ /[Hh]1/
+      
       # must escape "
       h_name = h.content.gsub(' ','-').gsub('"','%22')
 
