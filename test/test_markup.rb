@@ -589,7 +589,7 @@ context "Markup" do
 
   test "regular code blocks" do
     content = "a\n\n```ruby\nx = 1\n```\n\nb"
-    output = %Q{<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span></pre>\n\n<p>b</p>}
+    output = %Q{<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span></pre>\n\n\n<p>b</p>}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
@@ -602,7 +602,7 @@ context "Markup" do
 
   test "code blocks with carriage returns" do
     content = "a\r\n\r\n```ruby\r\nx = 1\r\n```\r\n\r\nb"
-    output = %Q{<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span></pre>\n\n<p>b</p>}
+    output = %Q{<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span></pre>\n\n\n<p>b</p>}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
@@ -633,7 +633,7 @@ context "Markup" do
 
   test "code blocks with multibyte characters indent" do
     content = "a\n\n```ruby\ns = 'やくしまるえつこ'\n```\n\nb"
-    output = %Q{<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">s</span> <span class=\"o\">=</span> <span class=\"s1\">'やくしまるえつこ'</span></pre>\n\n<p>b</p>}
+    output = %Q{<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">s</span> <span class=\"o\">=</span> <span class=\"s1\">'やくしまるえつこ'</span></pre>\n\n\n<p>b</p>}
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
     index.commit("Add alpha.jpg")

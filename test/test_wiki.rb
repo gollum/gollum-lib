@@ -121,9 +121,9 @@ context "Wiki page previewing" do
   end
 
   test "preview_page" do
-    page = @wiki.preview_page("Test", "# Bilbo", :markdown)
-    assert_equal "# Bilbo", page.raw_data
-    assert_html_equal %Q{<h1>Bilbo<a class=\"anchor\" id=\"Bilbo\" href=\"#Bilbo\"></a></h1>}, page.formatted_data
+    page = @wiki.preview_page("Test", "## Bilbo", :markdown)
+    assert_equal "## Bilbo", page.raw_data
+    assert_html_equal %Q{<h2>Bilbo<a class=\"anchor\" id=\"Bilbo\" href=\"#Bilbo\"></a></h2>}, page.formatted_data
     assert_equal "Test.md", page.filename
     assert_equal "Test", page.name
   end
@@ -137,9 +137,23 @@ context "Wiki TOC" do
   end
 
   test "toc_generation" do
+    page = @wiki.preview_page("Test", "## Bilbo", :markdown)
+    assert_equal "## Bilbo", page.raw_data
+    assert_html_equal '<h2>Bilbo<a class="anchor" id="Bilbo" href="#Bilbo"></a></h2>', page.formatted_data
+    assert_html_equal %{<div class="toc"><div class="toc-title">Table of Contents</div><ul><ul><li><a href="#Bilbo">Bilbo</a></li></ul></ul></div>}, page.toc_data
+  end
+
+  test "toc_generation_ignores_first_h1" do
     page = @wiki.preview_page("Test", "# Bilbo", :markdown)
     assert_equal "# Bilbo", page.raw_data
-    assert_html_equal '<h1>Bilbo<a class="anchor" id="Bilbo" href="#Bilbo"></a></h1>', page.formatted_data
+    assert_html_equal '<h1>Bilbo</h1>', page.formatted_data
+    assert_html_equal nil, page.toc_data
+  end
+
+  test "toc_generation_includes_other_h1s" do
+    page = @wiki.preview_page("Test", "# The Ring\n\n# Bilbo", :markdown)
+    assert_equal "# The Ring\n\n# Bilbo", page.raw_data
+    assert_html_equal "<h1>The Ring</h1>\n\n<h1>Bilbo<a class=\"anchor\" id=\"Bilbo\" href=\"#Bilbo\"></a></h1>", page.formatted_data
     assert_html_equal %{<div class="toc"><div class="toc-title">Table of Contents</div><ul><li><a href="#Bilbo">Bilbo</a></li></ul></div>}, page.toc_data
   end
 
@@ -147,10 +161,10 @@ context "Wiki TOC" do
   # Incorrect: <a href=\"#a\" b=\"\">
   #   Correct: <a href=\"#a'b\">
   test "' in link" do
-    page = @wiki.preview_page("Test", "# a'b", :markdown)
-    assert_equal "# a'b", page.raw_data
-    assert_html_equal %q{<h1>a'b<a class="anchor" id="a'b" href="#a'b"></a></h1>}, page.formatted_data
-    assert_html_equal %{<div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#a'b\">a'b</a></li></ul></div>}, page.toc_data
+    page = @wiki.preview_page("Test", "## a'b", :markdown)
+    assert_equal "## a'b", page.raw_data
+    assert_html_equal %q{<h2>a'b<a class="anchor" id="a'b" href="#a'b"></a></h2>}, page.formatted_data
+    assert_html_equal %{<div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><ul><li><a href=\"#a'b\">a'b</a></li></ul></ul></div>}, page.toc_data
   end
 end
 
