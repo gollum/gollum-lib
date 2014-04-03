@@ -44,7 +44,6 @@ module Gollum
       def register(ext, name, options = {}, &block)
         regexp = options[:regexp] || Regexp.new(ext.to_s)
         @formats[ext] = { :name => name, :regexp => regexp }
-        GitHub::Markup.add_markup(regexp, &block) if block_given?
       end
     end
 
