@@ -194,15 +194,14 @@ context "Markup" do
     @wiki.write_page("Potato", :markdown, "a [[Potato Heaad|Potato]] ", commit_details)
     page = @wiki.page("Potato")
     output = page.formatted_data
-    assert_html_equal "<p>a<aclass=\"internalpresent\"href=\"/Potato\">PotatoHeaad</a></p>", normal(output)
+    assert_html_equal "<p>a<aclass=\"internalpresent\"href=\"/Potato\">PotatoHeaad</a></p>", output
   end
 
   test "page link with different text on mediawiki" do
     @wiki.write_page("Potato", :mediawiki, "a [[Potato|Potato Heaad]] ", commit_details)
     page = @wiki.page("Potato")
     output = page.formatted_data
-    assert_html_equal normal("<p>\na <a class=\"internal present\" href=\"/Potato\">Potato Heaad</a> </p>
-"), normal(output)
+    assert_html_equal "<p>\na <a class=\"internal present\" href=\"/Potato\">Potato Heaad</a> </p>", output
   end
 
   test "wiki link within inline code block" do
@@ -850,16 +849,13 @@ np.array([[2,2],[1,3]],np.float)
 
   test "id with prefix ok" do
     content = "h2(example#wiki-foo). xxxx"
-    output = %(<h2 class="example" id="wiki-foo">xxxx<a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"></a></h2>)
+    output =  "<h2 class=\"example\" id=\"wiki-foo\">xxxx<a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"></a></h2>"
     compare(content, output, :textile)
 end
 
   test "id prefix added" do
     content = "h2(#foo). xxxx[1]\n\nfn1.footnote"
-    output = "<h2 id=\"wiki-foo\">xxxx" +
-             "<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup>" +
-             "<a class=\"anchor\" id=\"xxxx1\" href=\"#xxxx1\"></a></h2>" +
-             "\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
+    output = "<h2 id=\"wiki-foo\">xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup><a class=\"anchor\" id=\"xxxx1\" href=\"#xxxx1\"></a></h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
     compare(content, output, :textile)
   end
 
@@ -957,7 +953,7 @@ end
     page, rendered = render_page(content, ext)
 
     if regexes.empty?
-      assert_html_equal normal(output), normal(rendered)
+      assert_html_equal output, rendered
     else
       output = page.formatted_data
       regexes.each { |r| assert_match r, output }
@@ -973,6 +969,6 @@ end
     @wiki.clear_cache
     page = @wiki.page("Bilbo Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_html_equal normal(output), normal(rendered)
+    assert_html_equal output, rendered
   end
 end

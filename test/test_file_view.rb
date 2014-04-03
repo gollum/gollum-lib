@@ -54,7 +54,6 @@ def view pages
   Gollum::FileView.new( pages ).render_files
 end
 
-
 def test_path
   @test_path ||= File.expand_path( '../file_view/' , __FILE__ ) + '/'
 end
