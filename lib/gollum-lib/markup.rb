@@ -6,6 +6,13 @@ require 'base64'
 
 require File.expand_path '../helpers', __FILE__
 
+# Use pygments if it's installed
+begin
+  require 'pygments'
+  Pygments.start
+rescue Exception
+end
+
 module Gollum
 
   class Markup

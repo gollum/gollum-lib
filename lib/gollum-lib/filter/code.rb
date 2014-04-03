@@ -74,18 +74,30 @@ class Gollum::Filter::Code < Gollum::Filter
     highlighted = []
     blocks.each do |lang, code|
       encoding = @markup.encoding || 'utf-8'
-      begin
-        if Rouge::Lexer.find(lang).nil?
-          lexer = Rouge::Lexers::PlainText.new
-          formatter = Rouge::Formatters::HTML.new(:wrap => false)
-          hl_code = formatter.format(lexer.lex(code))
-          hl_code = "<pre class='highlight'><span class='err'>#{CGI.escapeHTML(hl_code)}</span></pre>"
+
+      if defined? Pygments
+        # treat unknown and bash as standard pre tags
+        if !lang || lang.downcase == 'bash'
+          hl_code = "<pre>#{code}</pre>"
         else
-          hl_code = Rouge.highlight(code, lang, 'html')  
+          # must set startinline to true for php to be highlighted without <?
+          hl_code = Pygments.highlight(code, :lexer => lang, :options => { :encoding => encoding.to_s, :startinline => true })
         end
-      rescue
-        hl_code = code
+      else # Rouge
+        begin
+          if Rouge::Lexer.find(lang).nil?
+            lexer     = Rouge::Lexers::PlainText.new
+            formatter = Rouge::Formatters::HTML.new(:wrap => false)
+            hl_code   = formatter.format(lexer.lex(code))
+            hl_code   = "<pre class='highlight'><span class='err'>#{CGI.escapeHTML(hl_code)}</span></pre>"
+          else
+            hl_code = Rouge.highlight(code, lang, 'html')
+          end
+        rescue
+          hl_code = code
+        end
       end
+
       highlighted << hl_code
     end
 
