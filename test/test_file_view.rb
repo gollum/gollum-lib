@@ -54,16 +54,19 @@ def view pages
   Gollum::FileView.new( pages ).render_files
 end
 
-@@test_path = File.expand_path( '../file_view/' , __FILE__ ) + '/'
+
+def test_path
+  @test_path ||= File.expand_path( '../file_view/' , __FILE__ ) + '/'
+end
 
 def read file
-  File.read @@test_path + file + '.txt'
+  File.read test_path + file + '.txt'
 end
 
 # For creating expected files.
 # write name, actual
 def write file, content
-  File.open(@@test_path + file + '.txt', 'w') do | f |
+  File.open(test_path + file + '.txt', 'w') do | f |
     f.write content
   end
 end

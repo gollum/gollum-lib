@@ -13,6 +13,9 @@ require 'minitest/reporters'
 # internal
 require File.expand_path('../assertions', __FILE__)
 
+# Fix locale warnings
+I18n.enforce_available_locales = false
+
 MiniTest::Reporters.use!
 
 dir = File.dirname(File.expand_path(__FILE__))

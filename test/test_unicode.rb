@@ -15,7 +15,7 @@ context "Unicode Support" do
     FileUtils.rm_rf(@path)
   end
 
-  test "create and read non-latin page with anchor" do
+  test "create and read non-latin page with anchor 1" do
     @wiki.write_page("test", :markdown, "# 한글")
 
     page = @wiki.page("test")
@@ -48,7 +48,7 @@ context "Unicode Support" do
       assert_match /<h1>#{text}<a class="anchor" id="#{text}" href="##{text}"><\/a><\/h1>/,   output
   end
 
-  test "create and read non-latin page with anchor" do
+  test "create and read non-latin page with anchor 2" do
     # href="#한글"
     # href="#%ED%95%9C%EA%B8%80"
     check_h1 '한글', '1'
@@ -57,7 +57,7 @@ context "Unicode Support" do
     check_h1 'Synhtèse', '2'
   end
 
-  test "create and read non-latin page with anchor 2" do
+  test "create and read non-latin page with anchor 3" do
     @wiki.write_page("test", :markdown, "# \"La\" faune d'Édiacara")
 
     page = @wiki.page("test")

@@ -110,22 +110,22 @@ context "Page" do
     assert_equal "モルドール", Gollum::Page.cname("モルドール")
   end
 
-  test "title from filename with normal contents" do
+  test "title from filename with normal contents 1" do
     page = @wiki.page('Bilbo Baggins')
     assert_equal 'Bilbo Baggins', page.title
   end
 
-  test "title from filename with html contents" do
+  test "title from filename with html contents 1" do
     page = @wiki.page('My <b>Precious', '0ed8cbe0a25235bd867e65193c7d837c66b328ef')
     assert_equal 'My Precious', page.title
   end
 
-  test "title from filename with normal contents" do
+  test "title from filename with normal contents 2" do
     page = @wiki.page('Home')
     assert_equal "Home", page.title
   end
 
-  test "title from filename with html contents" do
+  test "title from filename with html contents 2" do
     page = @wiki.page('Eye Of Sauron')
     assert_equal "Eye Of Sauron", page.title
   end
