@@ -14,5 +14,7 @@ class Gollum::Filter::Render < Gollum::Filter
     data
   end
 
-  def process(d) d; end
+  def process(d)
+    d
+  end
 end

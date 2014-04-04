@@ -28,20 +28,20 @@ class Gollum::Filter::Code < Gollum::Filter
         lang = lang[1] unless lang.nil?
       end
 
-      @map[id] = cached   ?
-      { :output => cached } :
-      { :lang => lang, :code => m_code, :indent => m_indent }
+      @map[id] = cached ?
+          { :output => cached } :
+          { :lang => lang, :code => m_code, :indent => m_indent }
 
       "#{m_indent}#{id}" # print the SHA1 ID with the proper indentation
     end
 
     data.gsub!(/^([ \t]*)``` ?([^\r\n]+)?\r?\n(.+?)\r?\n\1```[ \t]*\r?$/m) do
-      lang   = $2 ? $2.strip : nil
-      id     = Digest::SHA1.hexdigest("#{lang}.#{$3}")
-      cached = @markup.check_cache(:code, id)
-      @map[id] = cached   ?
-        { :output => cached } :
-        { :lang => lang, :code => $3, :indent => $1 }
+      lang     = $2 ? $2.strip : nil
+      id       = Digest::SHA1.hexdigest("#{lang}.#{$3}")
+      cached   = @markup.check_cache(:code, id)
+      @map[id] = cached ?
+          { :output => cached } :
+          { :lang => lang, :code => $3, :indent => $1 }
       "#{$1}#{id}" # print the SHA1 ID with the proper indentation
     end
 

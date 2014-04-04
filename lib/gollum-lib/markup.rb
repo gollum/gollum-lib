@@ -19,9 +19,9 @@ module Gollum
     include Helpers
 
     @formats = {}
-    
+
     class << self
-      
+
       # Only use the formats that are specified in config.rb
       def formats
         if defined? Gollum::Page::FORMAT_NAMES
@@ -30,7 +30,7 @@ module Gollum
           @formats
         end
       end
-      
+
       # Register a file extension and associated markup type
       #
       # ext     - The file extension
@@ -42,21 +42,21 @@ module Gollum
       # If given a block, that block will be registered with GitHub::Markup to
       # render any matching pages
       def register(ext, name, options = {}, &block)
-        regexp = options[:regexp] || Regexp.new(ext.to_s)
+        regexp        = options[:regexp] || Regexp.new(ext.to_s)
         @formats[ext] = { :name => name, :regexp => regexp }
       end
     end
 
     attr_accessor :toc
     attr_accessor :metadata
-    attr_reader   :encoding
-    attr_reader   :sanitize
-    attr_reader   :format
-    attr_reader   :wiki
-    attr_reader   :name
-    attr_reader   :include_levels
-    attr_reader   :to_xml_opts
-    attr_reader   :dir
+    attr_reader :encoding
+    attr_reader :sanitize
+    attr_reader :format
+    attr_reader :wiki
+    attr_reader :name
+    attr_reader :include_levels
+    attr_reader :to_xml_opts
+    attr_reader :dir
 
     # Initialize a new Markup object.
     #
@@ -65,30 +65,30 @@ module Gollum
     # Returns a new Gollum::Markup object, ready for rendering.
     def initialize(page)
       if page
-        @wiki    = page.wiki
-        @name    = page.filename
-        @data    = page.text_data
-        @version = page.version.id if page.version
-        @format  = page.format
-        @sub_page = page.sub_page
+        @wiki        = page.wiki
+        @name        = page.filename
+        @data        = page.text_data
+        @version     = page.version.id if page.version
+        @format      = page.format
+        @sub_page    = page.sub_page
         @parent_page = page.parent_page
-        @dir     = ::File.dirname(page.path)
+        @dir         = ::File.dirname(page.path)
       end
-      @metadata = nil
+      @metadata    = nil
       @to_xml_opts = { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML ^ 1, :indent => 0, :encoding => 'UTF-8' }
     end
 
-   # Render data using default chain in the target format.
-   #
-   # data - the data to render
-   # format - format to use as a symbol
-   # name - name using the extension of the format
-   #
-   # Returns the processed data
-   def render_default data, format=:markdown, name='render_default.md'
+    # Render data using default chain in the target format.
+    #
+    # data - the data to render
+    # format - format to use as a symbol
+    # name - name using the extension of the format
+    #
+    # Returns the processed data
+    def render_default data, format=:markdown, name='render_default.md'
       # set instance vars so we're able to render data without a wiki or page.
       @format = format
-      @name = name
+      @name   = name
 
       chain = [:Metadata, :PlainText, :TOC, :RemoteCode, :Code, :Sanitize, :WSD, :Tags, :Render]
 
@@ -97,7 +97,7 @@ module Gollum
       end
 
       process_chain data, filter_chain
-   end
+    end
 
     # Process the filter chain
     #
@@ -134,13 +134,13 @@ module Gollum
     # Returns the formatted String content.
     def render(no_follow = false, encoding = nil, include_levels = 10)
       @sanitize = no_follow ?
-        @wiki.history_sanitizer :
-        @wiki.sanitizer
+          @wiki.history_sanitizer :
+          @wiki.sanitizer
 
-      @encoding = encoding
+      @encoding       = encoding
       @include_levels = include_levels
 
-      data = @data.dup
+      data         = @data.dup
       filter_chain = @wiki.filter_chain.map do |r|
         Gollum::Filter.const_get(r).new(self)
       end

@@ -39,7 +39,7 @@ module Gollum
     def index
       @index ||= begin
         idx = @wiki.repo.index
-        if tree   = options[:tree]
+        if tree = options[:tree]
           idx.read_tree(tree)
         elsif parent = parents.first
           idx.read_tree(parent.tree.id)
@@ -53,7 +53,7 @@ module Gollum
     # Returns a Grit::Actor.
     def actor
       @actor ||= begin
-        @options[:name]  = @wiki.default_committer_name  if @options[:name].to_s.empty?
+        @options[:name]  = @wiki.default_committer_name if @options[:name].to_s.empty?
         @options[:email] = @wiki.default_committer_email if @options[:email].to_s.empty?
         Grit::Actor.new(@options[:name], @options[:email])
       end
@@ -92,7 +92,7 @@ module Gollum
 
       path = @wiki.page_file_name(name, format)
 
-      dir = '/' if dir.strip.empty?
+      dir  = '/' if dir.strip.empty?
 
       fullpath = ::File.join(*[@wiki.page_file_dir, dir, path].compact)
       fullpath = fullpath[1..-1] if fullpath =~ /^\//
@@ -107,7 +107,7 @@ module Gollum
         tree.blobs.each do |blob|
           next if page_path_scheduled_for_deletion?(index.tree, fullpath)
 
-          existing_file = blob.name.downcase.sub(/\.\w+$/, '')
+          existing_file     = blob.name.downcase.sub(/\.\w+$/, '')
           existing_file_ext = ::File.extname(blob.name).sub(/^\./, '')
 
           new_file_ext = ::File.extname(path).sub(/^\./, '')
@@ -145,17 +145,17 @@ module Gollum
         end
 
         path =
-          if dir == ''
-            @wiki.page_file_name(name, format)
-          else
-            ::File.join(dir, @wiki.page_file_name(name, format))
-          end
+            if dir == ''
+              @wiki.page_file_name(name, format)
+            else
+              ::File.join(dir, @wiki.page_file_name(name, format))
+            end
 
         path = path.force_encoding('ascii-8bit') if path.respond_to?(:force_encoding)
 
         Dir.chdir(::File.join(@wiki.repo.path, '..')) do
           if file_path_scheduled_for_deletion?(index.tree, path)
-            @wiki.repo.git.rm({'f' => true}, '--', path)
+            @wiki.repo.git.rm({ 'f' => true }, '--', path)
           else
             @wiki.repo.git.checkout({}, 'HEAD', '--', path)
           end
@@ -198,7 +198,7 @@ module Gollum
       parts = path.split('/')
       if parts.size == 1
         deletions = map.keys.select { |k| !map[k] }
-        downfile = parts.first.downcase.sub(/\.\w+$/, '')
+        downfile  = parts.first.downcase.sub(/\.\w+$/, '')
         deletions.any? { |d| d.downcase.sub(/\.\w+$/, '') == downfile }
       else
         part = parts.shift

@@ -46,7 +46,7 @@
 module Gollum
   class Filter
     include Gollum::Helpers
-    
+
     # Setup the object.  Sets `@markup` to be the instance of Gollum::Markup that
     # is running this filter chain, and sets `@map` to be an empty hash (for use
     # in your extract/process operations).
@@ -54,7 +54,7 @@ module Gollum
       @markup = markup
       @map    = {}
     end
-    
+
     def extract(_d)
       raise RuntimeError,
             "#{self.class} has not implemented ##extract!"
@@ -64,7 +64,7 @@ module Gollum
       raise RuntimeError,
             "#{self.class} has not implemented ##process!"
     end
-    
+
     protected
     # Render a (presumably) non-fatal error as HTML
     #

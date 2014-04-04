@@ -38,7 +38,7 @@ module Gollum
     # Returns an unbaked Grit::Blob instance.
     def blob(repo)
       @blob ||= Grit::Blob.create(repo,
-        :id => @sha, :name => name, :size => @size, :mode => @mode)
+                                  :id => @sha, :name => name, :size => @size, :mode => @mode)
     end
 
     # Gets a Page instance for this blob.
@@ -47,8 +47,8 @@ module Gollum
     #
     # Returns a Gollum::Page instance.
     def page(wiki, commit)
-      blob = self.blob(wiki.repo)
-      page = wiki.page_class.new(wiki).populate(blob, self.dir)
+      blob         = self.blob(wiki.repo)
+      page         = wiki.page_class.new(wiki).populate(blob, self.dir)
       page.version = commit
       page
     end
@@ -59,8 +59,8 @@ module Gollum
     #
     # Returns a Gollum::File instance.
     def file(wiki, commit)
-      blob = self.blob(wiki.repo)
-      file = wiki.file_class.new(wiki).populate(blob, self.dir)
+      blob         = self.blob(wiki.repo)
+      file         = wiki.file_class.new(wiki).populate(blob, self.dir)
       file.version = commit
       file
     end
