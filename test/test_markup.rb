@@ -849,13 +849,13 @@ np.array([[2,2],[1,3]],np.float)
 
   test "id with prefix ok" do
     content = "h2(example#wiki-foo). xxxx"
-    output =  "<h2 class=\"example\" id=\"wiki-foo\">xxxx<a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"></a></h2>"
+    output =  "<h2 class=\"example\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"><i class=\"fa fa-link\"></i></a>xxxx</h2>"
     compare(content, output, :textile)
 end
 
   test "id prefix added" do
     content = "h2(#foo). xxxx[1]\n\nfn1.footnote"
-    output = "<h2 id=\"wiki-foo\">xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup><a class=\"anchor\" id=\"xxxx1\" href=\"#xxxx1\"></a></h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
+    output =  "<h2 id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx1\" href=\"#xxxx1\"><i class=\"fa fa-link\"></i></a>xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup></h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
     compare(content, output, :textile)
   end
 
@@ -876,7 +876,7 @@ __TOC__
 # Summary
 MARKDOWN
 
-    output = "<p><strong>TOC</strong></p><h1>Summary<aclass=\"anchor\"id=\"Summary\"href=\"#Summary\"></a></h1><h1>Summary<aclass=\"anchor\"id=\"2-Summary\"href=\"#2-Summary\"></a></h1>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"Summary\" href=\"#Summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h1><a class=\"anchor\" id=\"2-Summary\" href=\"#2-Summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>"
     compare(content, output, :markdown)
   end
 
@@ -938,7 +938,7 @@ end
     uses_wiki = false
     markup = Gollum::Markup.new uses_wiki
 
-    expected = "<h1>hi<a class=\"anchor\" id=\"hi\" href=\"#hi\"></a></h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
+    expected = "<h1><a class=\"anchor\" id=\"hi\" href=\"#hi\"><i class=\"fa fa-link\"></i></a>hi</h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
     actual = markup.render_default "#hi\n[[_TOC_]]"
 
     assert_html_equal expected, actual

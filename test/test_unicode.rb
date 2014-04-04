@@ -35,17 +35,29 @@ context "Unicode Support" do
     assert_equal '',       anchors[0].text
   end
 
+  def nfd utf8
+    TwitterCldr::Normalization::NFD.normalize utf8
+  end
+
   def check_h1 text, page
       @wiki.write_page(page, :markdown, "# " + text)
 
+      # nokogiri will mix encodings
+      # "\uD55C\uAE00" vs "한글"
+
       page = @wiki.page(page)
       assert_equal Gollum::Page, page.class
-      assert_equal '# ' + text, utf8(page.raw_data)
 
-      output = page.formatted_data
+      expected = nfd('# ' + text)
+      actual = nfd(utf8(page.raw_data))
+
+      assert_equal nfd(expected), nfd(actual)
+
+      expected = nfd(%Q(<h1><a class="anchor" id="#{text}" href="##{text}"><i class="fa fa-link"></i></a>#{text}</h1>))
+      actual = nfd(page.formatted_data)
 
       # UTF-8 headers should not be encoded.
-      assert_match /<h1>#{text}<a class="anchor" id="#{text}" href="##{text}"><\/a><\/h1>/,   output
+      assert_html_equal expected, actual
   end
 
   test "create and read non-latin page with anchor 2" do

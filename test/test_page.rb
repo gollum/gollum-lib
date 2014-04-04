@@ -16,7 +16,11 @@ context "Page" do
     page = @wiki.page('Bilbo Baggins')
     assert_equal Gollum::Page, page.class
     assert page.raw_data =~ /^# Bilbo Baggins\n\nBilbo Baggins/
-    assert page.formatted_data =~ %r{<h1>Bilbo Baggins<a class="anchor" id="Bilbo-Baggins" href="#Bilbo-Baggins"></a></h1>\n\n<p>Bilbo Baggins}
+
+    expected = "<h1><a class=\"anchor\" id=\"Bilbo-Baggins\" href=\"#Bilbo-Baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.-R.-R.-Tolkien\">J. R. R.\nTolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
+    actual = page.formatted_data
+    assert_html_equal expected, actual
+
     assert_equal 'Bilbo-Baggins.md', page.path
     assert_equal :markdown, page.format
     assert_equal @wiki.repo.commits.first.id, page.version.id
@@ -216,7 +220,11 @@ context "with a checkout" do
     page = @wiki.page("Hobbit")
     assert_equal Gollum::Page, page.class
     assert page.raw_data =~ /^# Bilbo Baggins\n\nBilbo Baggins/
-    assert page.formatted_data =~ %r{<h1>Bilbo Baggins<a class="anchor" id="Bilbo-Baggins" href="#Bilbo-Baggins"></a></h1>\n\n<p>Bilbo Baggins}
+
+    expected = "<h1><a class=\"anchor\" id=\"Bilbo-Baggins\" href=\"#Bilbo-Baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.-R.-R.-Tolkien\">J. R. R.\nTolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
+    actual = page.formatted_data
+    assert_html_equal expected, actual
+
     assert_equal 'Hobbit.md', page.path
     assert_equal :markdown, page.format
   end

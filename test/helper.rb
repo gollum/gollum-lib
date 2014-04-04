@@ -9,6 +9,7 @@ require 'rubygems'
 require 'shoulda'
 require 'mocha/setup'
 require 'minitest/reporters'
+require 'twitter_cldr'
 
 # internal
 require File.expand_path('../assertions', __FILE__)
