@@ -64,16 +64,64 @@ module Gollum
     #
     # Returns a new Gollum::Markup object, ready for rendering.
     def initialize(page)
-      @wiki    = page.wiki
-      @name    = page.filename
-      @data    = page.text_data
-      @version = page.version.id if page.version
-      @format  = page.format
-      @sub_page = page.sub_page
-      @parent_page = page.parent_page
-      @dir     = ::File.dirname(page.path)
+      if page
+        @wiki    = page.wiki
+        @name    = page.filename
+        @data    = page.text_data
+        @version = page.version.id if page.version
+        @format  = page.format
+        @sub_page = page.sub_page
+        @parent_page = page.parent_page
+        @dir     = ::File.dirname(page.path)
+      end
       @metadata = nil
       @to_xml_opts = { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML ^ 1, :indent => 0, :encoding => 'UTF-8' }
+    end
+
+   # Render data using default chain in the target format.
+   #
+   # data - the data to render
+   # format - format to use as a symbol
+   # name - name using the extension of the format
+   #
+   # Returns the processed data
+   def render_default data, format=:markdown, name='render_default.md'
+      # set instance vars so we're able to render data without a wiki or page.
+      @format = format
+      @name = name
+
+      chain = [:Metadata, :PlainText, :TOC, :RemoteCode, :Code, :Sanitize, :WSD, :Tags, :Render]
+
+      filter_chain = chain.map do |r|
+        Gollum::Filter.const_get(r).new(self)
+      end
+
+      process_chain data, filter_chain
+   end
+
+    # Process the filter chain
+    #
+    # data - the data to send through the chain
+    # filter_chain - the chain to process
+    #
+    # Returns the formatted data
+    def process_chain data, filter_chain
+      # First we extract the data through the chain...
+      filter_chain.each do |filter|
+        data = filter.extract(data)
+      end
+
+      # Then we process the data through the chain *backwards*
+      filter_chain.reverse.each do |filter|
+        data = filter.process(data)
+      end
+
+      # Finally, a little bit of cleanup, just because
+      data.gsub!(/<p><\/p>/) do
+        ''
+      end
+
+      data
     end
 
     # Render the content with Gollum wiki syntax on top of the file's own
@@ -104,22 +152,7 @@ module Gollum
         yield Nokogiri::HTML::DocumentFragment.parse(data)
       end
 
-      # First we extract the data through the chain...
-      filter_chain.each do |filter|
-        data = filter.extract(data)
-      end
-      
-      # Then we process the data through the chain *backwards*
-      filter_chain.reverse.each do |filter|
-        data = filter.process(data)
-      end
-
-      # Finally, a little bit of cleanup, just because
-      data.gsub!(/<p><\/p>/) do
-        ''
-      end
-
-      data
+      process_chain data, filter_chain
     end
 
     # Find the given file in the repo.
