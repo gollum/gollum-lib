@@ -14,6 +14,7 @@ require 'minitest/reporters'
 require File.expand_path('../assertions', __FILE__)
 
 # Fix locale warnings
+require 'i18n'
 I18n.enforce_available_locales = false
 
 MiniTest::Reporters.use!

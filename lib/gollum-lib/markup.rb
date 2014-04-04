@@ -6,6 +6,13 @@ require 'base64'
 
 require File.expand_path '../helpers', __FILE__
 
+# Use pygments if it's installed
+begin
+  require 'pygments'
+  Pygments.start
+rescue Exception
+end
+
 module Gollum
 
   class Markup
@@ -37,7 +44,6 @@ module Gollum
       def register(ext, name, options = {}, &block)
         regexp = options[:regexp] || Regexp.new(ext.to_s)
         @formats[ext] = { :name => name, :regexp => regexp }
-        GitHub::Markup.add_markup(regexp, &block) if block_given?
       end
     end
 
