@@ -27,7 +27,7 @@ class FakePage
 
   # From page.rb
   def self.strip_filename filename
-    ::File.basename( filename, ::File.extname( filename ))
+    ::File.basename(filename, ::File.extname(filename))
   end
 
   # From page.rb
@@ -38,7 +38,7 @@ end
 
 class FakePages
   def initialize filepath_array
-    @array = filepath_array.map { | filepath | FakePage.new filepath }
+    @array = filepath_array.map { |filepath| FakePage.new filepath }
   end
 
   def size
@@ -46,16 +46,16 @@ class FakePages
   end
 
   def [] index
-    @array[ index ]
+    @array[index]
   end
 end
 
 def view pages
-  Gollum::FileView.new( pages ).render_files
+  Gollum::FileView.new(pages).render_files
 end
 
 def test_path
-  @test_path ||= File.expand_path( '../file_view/' , __FILE__ ) + '/'
+  @test_path ||= File.expand_path('../file_view/', __FILE__) + '/'
 end
 
 def read file
@@ -65,7 +65,7 @@ end
 # For creating expected files.
 # write name, actual
 def write file, content
-  File.open(test_path + file + '.txt', 'w') do | f |
+  File.open(test_path + file + '.txt', 'w') do |f|
     f.write content
   end
 end
@@ -77,13 +77,13 @@ def to_html html
   end
 
   # Save as XHTML
-  doc.to_xml( { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML, :indent => 2, :encoding => 'UTF-8' } )
+  doc.to_xml({ :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML, :indent => 2, :encoding => 'UTF-8' })
 end
 
 def check name, pages_array
-  pages = FakePages.new pages_array
+  pages    = FakePages.new pages_array
   expected = read name
-  actual = to_html view pages
+  actual   = to_html view pages
 
   # Uncomment when updating tests
   # write name, actual
@@ -97,26 +97,26 @@ end
 # docs/sanitization.md => file within folder
 context 'file_view' do
   test 'one file' do
-    check '1_file', [ '0.md' ]
+    check '1_file', ['0.md']
   end
 
   test 'one folder' do
-    check '1_folder', [ 'folder0/' ]
+    check '1_folder', ['folder0/']
   end
 
   test 'one file with one folder' do
-    check '1_file_1_folder', [ 'folder0/0.md' ]
+    check '1_file_1_folder', ['folder0/0.md']
   end
 
   test 'two files with two folders' do
-    check '2_files_2_folders', [ 'folder0/0.md', 'folder1/1.md' ]
+    check '2_files_2_folders', ['folder0/0.md', 'folder1/1.md']
   end
 
   test 'two files with two folders and one root file' do
-    check '2_files_2_folders_1_root', [ 'root.md', 'folder0/0.md', 'folder1/1.md' ]
+    check '2_files_2_folders_1_root', ['root.md', 'folder0/0.md', 'folder1/1.md']
   end
 
   test 'nested folders' do
-    check 'nested_folders', [ 'folder0/folder1/folder2/0.md', 'folder0/folder1/folder3/1.md', 'folder4/2.md' ]
+    check 'nested_folders', ['folder0/folder1/folder2/0.md', 'folder0/folder1/folder3/1.md', 'folder4/2.md']
   end
 end # context

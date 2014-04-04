@@ -29,10 +29,10 @@ context "Unicode Support" do
     anchors = h1 / :a
     assert_equal 1, h1s.size
     assert_equal 1, anchors.size
-    assert_equal '#한글',  anchors[0]['href']
-    assert_equal  '한글',  anchors[0]['id']
+    assert_equal '#한글', anchors[0]['href']
+    assert_equal '한글', anchors[0]['id']
     assert_equal 'anchor', anchors[0]['class']
-    assert_equal '',       anchors[0].text
+    assert_equal '', anchors[0].text
   end
 
   def nfd utf8
@@ -40,24 +40,24 @@ context "Unicode Support" do
   end
 
   def check_h1 text, page
-      @wiki.write_page(page, :markdown, "# " + text)
+    @wiki.write_page(page, :markdown, "# " + text)
 
-      # nokogiri will mix encodings
-      # "\uD55C\uAE00" vs "한글"
+    # nokogiri will mix encodings
+    # "\uD55C\uAE00" vs "한글"
 
-      page = @wiki.page(page)
-      assert_equal Gollum::Page, page.class
+    page = @wiki.page(page)
+    assert_equal Gollum::Page, page.class
 
-      expected = nfd('# ' + text)
-      actual = nfd(utf8(page.raw_data))
+    expected = nfd('# ' + text)
+    actual   = nfd(utf8(page.raw_data))
 
-      assert_equal nfd(expected), nfd(actual)
+    assert_equal nfd(expected), nfd(actual)
 
-      expected = nfd(%Q(<h1><a class="anchor" id="#{text}" href="##{text}"><i class="fa fa-link"></i></a>#{text}</h1>))
-      actual = nfd(page.formatted_data)
+    expected = nfd(%Q(<h1><a class="anchor" id="#{text}" href="##{text}"><i class="fa fa-link"></i></a>#{text}</h1>))
+    actual   = nfd(page.formatted_data)
 
-      # UTF-8 headers should not be encoded.
-      assert_html_equal expected, actual
+    # UTF-8 headers should not be encoded.
+    assert_html_equal expected, actual
   end
 
   test "create and read non-latin page with anchor 2" do
@@ -84,9 +84,9 @@ context "Unicode Support" do
     assert_equal 1, h1s.size
     assert_equal 1, anchors.size
     assert_equal %q(#%22La%22-faune-d'Édiacara), anchors[0]['href']
-    assert_equal %q(%22La%22-faune-d'Édiacara),  anchors[0]['id']
-    assert_equal 'anchor',                 anchors[0]['class']
-    assert_equal '',                       anchors[0].text
+    assert_equal %q(%22La%22-faune-d'Édiacara), anchors[0]['id']
+    assert_equal 'anchor', anchors[0]['class']
+    assert_equal '', anchors[0].text
   end
 
   test "unicode with existing format rules" do

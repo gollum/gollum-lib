@@ -10,7 +10,7 @@ def assert_html_equal(expected, actual, msg = nil)
   msg = build_message(msg, "? expected to be HTML equivalent to ?.", expected, actual)
 
   expected = normal expected
-  actual = normal actual
+  actual   = normal actual
 
   assert_block(msg) do
     expected_doc = Nokogiri::HTML(expected) { |config| config.noblanks }

@@ -18,16 +18,16 @@ context "GitAccess" do
     assert @access.ref_map.empty?
     assert @access.tree_map.empty?
     @access.tree 'master'
-    assert_equal({"master"=>"874f597a5659b4c3b153674ea04e406ff393975e"}, @access.ref_map)
+    assert_equal({ "master" => "874f597a5659b4c3b153674ea04e406ff393975e" }, @access.ref_map)
 
     @access.tree '1db89ebba7e2c14d93b94ff98cfa3708a4f0d4e3'
     map = @access.tree_map['1db89ebba7e2c14d93b94ff98cfa3708a4f0d4e3']
-    assert_equal 'Bilbo-Baggins.md',        map[0].path
-    assert_equal '',                        map[0].dir
-    assert_equal map[0].path,               map[0].name
+    assert_equal 'Bilbo-Baggins.md', map[0].path
+    assert_equal '', map[0].dir
+    assert_equal map[0].path, map[0].name
     assert_equal 'Mordor/Eye-Of-Sauron.md', map[3].path
-    assert_equal '/Mordor',                 map[3].dir
-    assert_equal 'Eye-Of-Sauron.md',        map[3].name
+    assert_equal '/Mordor', map[3].dir
+    assert_equal 'Eye-Of-Sauron.md', map[3].name
   end
 
   test "#tree_map_for only caches tree for commit" do

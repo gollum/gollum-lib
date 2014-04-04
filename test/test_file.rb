@@ -16,8 +16,8 @@ context "File" do
     commit = @wiki.repo.commits.first
     file   = @wiki.file("Mordor/todo.txt")
     assert_equal "[ ] Write section on Ents\n", file.raw_data
-    assert_equal 'todo.txt',         file.name
-    assert_equal commit.id,          file.version.id
+    assert_equal 'todo.txt', file.name
+    assert_equal commit.id, file.version.id
     assert_equal commit.author.name, file.version.author.name
   end
 

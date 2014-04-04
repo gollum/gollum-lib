@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
 
   s.name              = 'gollum-lib'
   s.version           = '2.0.0'
-  s.date              = '2014-04-03'
+  s.date              = '2014-04-05'
   s.rubyforge_project = 'gollum-lib'
   s.license           = 'MIT'
 
