@@ -11,10 +11,10 @@ module Gollum
     #
     # Returns a newly initialized Gollum::File.
     def initialize(wiki)
-      @wiki = wiki
-      @blob = nil
-      @path = nil
-      @on_disk = false
+      @wiki         = wiki
+      @blob         = nil
+      @path         = nil
+      @on_disk      = false
       @on_disk_path = nil
     end
 
@@ -31,7 +31,7 @@ module Gollum
     #
     # Returns the String url_path
     def escaped_url_path
-      CGI.escape(self.url_path).gsub('%2F','/')
+      CGI.escape(self.url_path).gsub('%2F', '/')
     end
 
     # Public: The on-disk filename of the file.
@@ -41,6 +41,7 @@ module Gollum
       return @path if on_disk?
       @blob && @blob.name
     end
+
     alias filename name
 
     # Public: The raw contents of the page.
@@ -90,9 +91,9 @@ module Gollum
     #
     # Returns the populated Gollum::File.
     def populate(blob, path=nil)
-      @blob = blob
-      @path = "#{path}/#{blob.name}"[1..-1]
-      @on_disk = false
+      @blob         = blob
+      @path         = "#{path}/#{blob.name}"[1..-1]
+      @on_disk      = false
       @on_disk_path = nil
       self
     end
@@ -115,7 +116,7 @@ module Gollum
       # This will try to resolve symbolic links, as well
       pathname = Pathname.new(::File.expand_path(::File.join(@wiki.repo.path, '..', name)))
       if pathname.symlink?
-        source = ::File.readlink(pathname.to_path)
+        source   = ::File.readlink(pathname.to_path)
         realpath = ::File.join(::File.dirname(pathname.to_path), source)
         return false unless realpath && ::File.exist?(realpath)
         @on_disk_path = realpath.to_s

@@ -27,7 +27,7 @@ require File.expand_path('../gollum-lib/filter', __FILE__)
 
 # Set ruby to UTF-8 mode
 # This is required for Ruby 1.8.7 which gollum still supports.
-$KCODE = 'U' if RUBY_VERSION[0,3] == '1.8'
+$KCODE = 'U' if RUBY_VERSION[0, 3] == '1.8'
 
 module Gollum
   module Lib
@@ -37,11 +37,11 @@ module Gollum
   def self.assets_path
     ::File.expand_path('gollum/frontend/public', ::File.dirname(__FILE__))
   end
-  
+
   def self.set_git_timeout(time)
     Grit::Git.git_timeout = time
   end
-  
+
   def self.set_git_max_filesize(size)
     Grit::Git.git_max_size = size
   end
@@ -60,9 +60,9 @@ module Gollum
       super(message || "Cannot write #{@dir}/#{@attempted_path}, found #{@dir}/#{@existing_path}.")
     end
   end
-  
-  class InvalidGitRepositoryError < StandardError ; end
-  class NoSuchPathError < StandardError ; end
-  
+
+  class InvalidGitRepositoryError < StandardError; end
+  class NoSuchPathError < StandardError; end
+
 end
 

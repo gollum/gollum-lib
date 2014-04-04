@@ -16,12 +16,14 @@ class Gollum::Filter::Metadata < Gollum::Filter
       # HTML elements before parsing each line.
       $1.split("\n").each do |line|
         line.gsub!(/<[^>]*>/, '')
-        k, v = line.split(':', 2)
+        k, v                      = line.split(':', 2)
         @markup.metadata[k.strip] = (v ? v.strip : '') if k
       end
       ''
     end
   end
-  
-  def process(d) d; end
+
+  def process(d)
+    d
+  end
 end

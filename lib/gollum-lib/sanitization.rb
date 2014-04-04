@@ -6,50 +6,50 @@ module Gollum
   # See http://github.com/rgrove/sanitize/.
   class Sanitization
     # Default whitelisted elements.
-    ELEMENTS = [
-      'a', 'abbr', 'acronym', 'address', 'area', 'b', 'big',
-      'blockquote', 'br', 'button', 'caption', 'center', 'cite',
-      'code', 'col', 'colgroup', 'dd', 'del', 'dfn', 'dir',
-      'div', 'dl', 'dt', 'em', 'fieldset', 'font', 'form', 'h1',
-      'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'input',
-      'ins', 'kbd', 'label', 'legend', 'li', 'map', 'menu',
-      'ol', 'optgroup', 'option', 'p', 'pre', 'q', 's', 'samp',
-      'select', 'small', 'span', 'strike', 'strong', 'sub',
-      'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th',
-      'thead', 'tr', 'tt', 'u', 'ul', 'var'
+    ELEMENTS   = [
+        'a', 'abbr', 'acronym', 'address', 'area', 'b', 'big',
+        'blockquote', 'br', 'button', 'caption', 'center', 'cite',
+        'code', 'col', 'colgroup', 'dd', 'del', 'dfn', 'dir',
+        'div', 'dl', 'dt', 'em', 'fieldset', 'font', 'form', 'h1',
+        'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'input',
+        'ins', 'kbd', 'label', 'legend', 'li', 'map', 'menu',
+        'ol', 'optgroup', 'option', 'p', 'pre', 'q', 's', 'samp',
+        'select', 'small', 'span', 'strike', 'strong', 'sub',
+        'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th',
+        'thead', 'tr', 'tt', 'u', 'ul', 'var'
     ].freeze
 
     # Default whitelisted attributes.
     ATTRIBUTES = {
-      'a'   => ['href'],
-      'img' => ['src'],
-      :all  => ['abbr', 'accept', 'accept-charset',
-                'accesskey', 'action', 'align', 'alt', 'axis',
-                'border', 'cellpadding', 'cellspacing', 'char',
-                'charoff', 'class', 'charset', 'checked', 'cite',
-                'clear', 'cols', 'colspan', 'color',
-                'compact', 'coords', 'datetime', 'dir',
-                'disabled', 'enctype', 'for', 'frame',
-                'headers', 'height', 'hreflang',
-                'hspace', 'id', 'ismap', 'label', 'lang',
-                'longdesc', 'maxlength', 'media', 'method',
-                'multiple', 'name', 'nohref', 'noshade',
-                'nowrap', 'prompt', 'readonly', 'rel', 'rev',
-                'rows', 'rowspan', 'rules', 'scope',
-                'selected', 'shape', 'size', 'span',
-                'start', 'summary', 'tabindex', 'target',
-                'title', 'type', 'usemap', 'valign', 'value',
-                'vspace', 'width']
+        'a'   => ['href'],
+        'img' => ['src'],
+        :all  => ['abbr', 'accept', 'accept-charset',
+                  'accesskey', 'action', 'align', 'alt', 'axis',
+                  'border', 'cellpadding', 'cellspacing', 'char',
+                  'charoff', 'class', 'charset', 'checked', 'cite',
+                  'clear', 'cols', 'colspan', 'color',
+                  'compact', 'coords', 'datetime', 'dir',
+                  'disabled', 'enctype', 'for', 'frame',
+                  'headers', 'height', 'hreflang',
+                  'hspace', 'id', 'ismap', 'label', 'lang',
+                  'longdesc', 'maxlength', 'media', 'method',
+                  'multiple', 'name', 'nohref', 'noshade',
+                  'nowrap', 'prompt', 'readonly', 'rel', 'rev',
+                  'rows', 'rowspan', 'rules', 'scope',
+                  'selected', 'shape', 'size', 'span',
+                  'start', 'summary', 'tabindex', 'target',
+                  'title', 'type', 'usemap', 'valign', 'value',
+                  'vspace', 'width']
     }.freeze
 
     # Default whitelisted protocols for URLs.
-    PROTOCOLS = {
-      'a'   => {'href' => ['http', 'https', 'mailto', 'ftp', 'irc', 'apt', :relative]},
-      'img' => {'src'  => ['http', 'https', :relative]},
-      'form' => {'action' => ['http', 'https', :relative]}
+    PROTOCOLS  = {
+        'a'    => { 'href' => ['http', 'https', 'mailto', 'ftp', 'irc', 'apt', :relative] },
+        'img'  => { 'src' => ['http', 'https', :relative] },
+        'form' => { 'action' => ['http', 'https', :relative] }
     }.freeze
 
-    ADD_ATTRIBUTES = lambda do |env, node|
+    ADD_ATTRIBUTES  = lambda do |env, node|
       if add = env[:config][:add_attributes][node.name]
         add.each do |key, value|
           node[key] = value
@@ -60,34 +60,34 @@ module Gollum
     # Default elements whose contents will be removed in addition
     # to the elements themselve
     REMOVE_CONTENTS = [
-      'script',
-      'style'
-      ].freeze
+        'script',
+        'style'
+    ].freeze
 
     # Default transformers to force @id attributes with 'wiki-' prefix
-    TRANSFORMERS = [
-      lambda do |env|
-        node = env[:node]
-        return if env[:is_whitelisted] || !node.element?
-        prefix = env[:config][:id_prefix]
-        found_attrs = %w(id name).select do |key|
-          if value = node[key]
-            node[key] = value.gsub(/\A(#{prefix})?/, prefix)
+    TRANSFORMERS    = [
+        lambda do |env|
+          node = env[:node]
+          return if env[:is_whitelisted] || !node.element?
+          prefix      = env[:config][:id_prefix]
+          found_attrs = %w(id name).select do |key|
+            if value = node[key]
+              node[key] = value.gsub(/\A(#{prefix})?/, prefix)
+            end
           end
-        end
-        if found_attrs.size > 0
+          if found_attrs.size > 0
+            ADD_ATTRIBUTES.call(env, node)
+            {}
+          end
+        end,
+        lambda do |env|
+          node = env[:node]
+          return unless value = node['href']
+          prefix       = env[:config][:id_prefix]
+          node['href'] = value.gsub(/\A\#(#{prefix})?/, '#'+prefix)
           ADD_ATTRIBUTES.call(env, node)
           {}
         end
-      end,
-      lambda do |env|
-        node = env[:node]
-        return unless value = node['href']
-        prefix = env[:config][:id_prefix]
-        node['href'] = value.gsub(/\A\#(#{prefix})?/, '#'+prefix)
-        ADD_ATTRIBUTES.call(env, node)
-        {}
-      end
     ].freeze
 
     # Gets an Array of whitelisted HTML elements.  Default: ELEMENTS.
@@ -122,14 +122,14 @@ module Gollum
     attr_writer :allow_comments
 
     def initialize
-      @elements         = ELEMENTS.dup
-      @attributes       = ATTRIBUTES.dup
-      @protocols        = PROTOCOLS.dup
-      @transformers     = TRANSFORMERS.dup
-      @add_attributes   = {}
-      @remove_contents  = REMOVE_CONTENTS.dup
-      @allow_comments   = false
-      @id_prefix        = ''
+      @elements        = ELEMENTS.dup
+      @attributes      = ATTRIBUTES.dup
+      @protocols       = PROTOCOLS.dup
+      @transformers    = TRANSFORMERS.dup
+      @add_attributes  = {}
+      @remove_contents = REMOVE_CONTENTS.dup
+      @allow_comments  = false
+      @id_prefix       = ''
       yield self if block_given?
     end
 
@@ -146,7 +146,7 @@ module Gollum
     # Returns a Sanitization instance.
     def history_sanitization
       self.class.new do |sanitize|
-        sanitize.add_attributes['a'] = {'rel' => 'nofollow'}
+        sanitize.add_attributes['a'] = { 'rel' => 'nofollow' }
       end
     end
 
@@ -154,14 +154,14 @@ module Gollum
     #
     # Returns a Hash.
     def to_hash
-      { :elements         => elements,
-        :attributes       => attributes,
-        :protocols        => protocols,
-        :add_attributes   => add_attributes,
-        :remove_contents  => remove_contents,
-        :allow_comments   => allow_comments?,
-        :transformers     => transformers,
-        :id_prefix        => id_prefix
+      { :elements        => elements,
+        :attributes      => attributes,
+        :protocols       => protocols,
+        :add_attributes  => add_attributes,
+        :remove_contents => remove_contents,
+        :allow_comments  => allow_comments?,
+        :transformers    => transformers,
+        :id_prefix       => id_prefix
       }
     end
 

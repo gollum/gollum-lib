@@ -10,19 +10,19 @@ class Gollum::Filter::Tags < Gollum::Filter
         "[[#{$2}]]#{$3}"
       elsif $2.include?('][')
         if $2[0..4] == 'file:'
-          pre = $1
-          post = $3
-          parts = $2.split('][')
+          pre            = $1
+          post           = $3
+          parts          = $2.split('][')
           parts[0][0..4] = ""
-          link = "#{parts[1]}|#{parts[0].sub(/\.org/,'')}"
-          id = Digest::SHA1.hexdigest(link)
-          @map[id] = link
+          link           = "#{parts[1]}|#{parts[0].sub(/\.org/, '')}"
+          id             = Digest::SHA1.hexdigest(link)
+          @map[id]       = link
           "#{pre}#{id}#{post}"
         else
           $&
         end
       else
-        id = Digest::SHA1.hexdigest($2)
+        id       = Digest::SHA1.hexdigest($2)
         @map[id] = $2
         "#{$1}#{id}#{$3}"
       end
@@ -56,11 +56,12 @@ class Gollum::Filter::Tags < Gollum::Filter
   # data      - The String data (with placeholders).
   # id        - The String SHA1 hash.
   PREFORMATTED_TAGS = %w(code tt)
+
   def is_preformatted?(data, id)
-    doc = Nokogiri::HTML::DocumentFragment.parse(data)
+    doc  = Nokogiri::HTML::DocumentFragment.parse(data)
     node = doc.search("[text()*='#{id}']").first
     node && (PREFORMATTED_TAGS.include?(node.name) ||
-      node.ancestors.any? { |a| PREFORMATTED_TAGS.include?(a.name) })
+        node.ancestors.any? { |a| PREFORMATTED_TAGS.include?(a.name) })
   end
 
   # Process a single tag into its final HTML form.
@@ -84,7 +85,7 @@ class Gollum::Filter::Tags < Gollum::Filter
       process_page_link_tag(tag)
     end
   end
-  
+
   # Attempt to process the tag as an include tag
   #
   # tag - The String tag contents (the  stuff inside the double brackets).
@@ -94,8 +95,8 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   def process_include_tag(tag)
     return unless /^include:/.match(tag)
-    page_name = tag[8..-1]
-    resolved_page_name =  ::File.expand_path(page_name, "/"+@markup.dir)
+    page_name          = tag[8..-1]
+    resolved_page_name = ::File.expand_path(page_name, "/"+@markup.dir)
 
     if @markup.include_levels > 0
       page = find_page_from_name(resolved_page_name)
@@ -119,12 +120,12 @@ class Gollum::Filter::Tags < Gollum::Filter
     parts = tag.split('|')
     return if parts.size.zero?
 
-    name  = parts[0].strip
-    path  = if file = @markup.find_file(name)
-      ::File.join @markup.wiki.base_path, file.path
-    elsif name =~ /^https?:\/\/.+(jpg|png|gif|svg|bmp)$/i
-      name
-    end
+    name = parts[0].strip
+    path = if file = @markup.find_file(name)
+             ::File.join @markup.wiki.base_path, file.path
+           elsif name =~ /^https?:\/\/.+(jpg|png|gif|svg|bmp)$/i
+             name
+           end
 
     if path
       opts = parse_image_tag_options(tag)
@@ -137,7 +138,7 @@ class Gollum::Filter::Tags < Gollum::Filter
       align = opts['align']
       if opts['float']
         containered = true
-        align ||= 'left'
+        align       ||= 'left'
         if %w{left right}.include?(align)
           classes << "float-#{align}"
         end
@@ -171,11 +172,11 @@ class Gollum::Filter::Tags < Gollum::Filter
       if opts['frame'] || containered
         classes << 'frame' if opts['frame']
         %{<span class="#{classes.join(' ')}">} +
-        %{<span>} +
-        %{<img src="#{path}" #{attr_string}/>} +
-        (alt ? %{<span>#{alt}</span>} : '') +
-        %{</span>} +
-        %{</span>}
+            %{<span>} +
+            %{<img src="#{path}" #{attr_string}/>} +
+            (alt ? %{<span>#{alt}</span>} : '') +
+            %{</span>} +
+            %{</span>}
       else
         %{<img src="#{path}" #{attr_string}/>}
       end
@@ -192,7 +193,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   #   val - The String option value or true if it is a binary option.
   def parse_image_tag_options(tag)
     tag.split('|')[1..-1].inject({}) do |memo, attr|
-      parts = attr.split('=').map { |x| x.strip }
+      parts          = attr.split('=').map { |x| x.strip }
       memo[parts[0]] = (parts.size == 1 ? true : parts[1])
       memo
     end
@@ -209,15 +210,15 @@ class Gollum::Filter::Tags < Gollum::Filter
     parts = tag.split('|')
     return if parts.size.zero?
 
-    name  = parts[0].strip
-    path  = parts[1] && parts[1].strip
-    path  = if path && file = @markup.find_file(path)
-      ::File.join @markup.wiki.base_path, file.path
-    elsif path =~ %r{^https?://}
-      path
-    else
-      nil
-    end
+    name = parts[0].strip
+    path = parts[1] && parts[1].strip
+    path = if path && file = @markup.find_file(path)
+             ::File.join @markup.wiki.base_path, file.path
+           elsif path =~ %r{^https?://}
+             path
+           else
+             nil
+           end
 
     if name && path && file
       %{<a href="#{::File.join @markup.wiki.base_path, file.path}">#{name}</a>}
@@ -240,7 +241,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     parts.reverse! if @markup.format == :mediawiki
 
     name, page_name = *parts.compact.map(&:strip)
-    cname = @markup.wiki.page_class.cname(page_name || name)
+    cname           = @markup.wiki.page_class.cname(page_name || name)
 
     if name =~ %r{^https?://} && page_name.nil?
       %{<a href="#{name}">#{name}</a>}

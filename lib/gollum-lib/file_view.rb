@@ -10,9 +10,9 @@ module Gollum
     # set pages to wiki.pages and show_all to false
     # set pages to wiki.pages + wiki.files and show_all to true
     def initialize pages, options = {}
-      @pages = pages
+      @pages    = pages
       @show_all = options[:show_all] || false
-      @checked = options[:collapse_tree] ? '' : "checked"
+      @checked  = options[:collapse_tree] ? '' : "checked"
     end
 
     def enclose_tree string
@@ -52,18 +52,18 @@ module Gollum
       else
         url = ::File.join(::File.dirname(page.path), page.filename_stripped)
       end
-      url = url[2..-1] if url[0,2] == './'
+      url = url[2..-1] if url[0, 2] == './'
       url
     end
 
     def render_files
-      html = ''
-      count = @pages.size
+      html         = ''
+      count        = @pages.size
       folder_start = -1
 
       # Process all pages until folders start
-      count.times do | index |
-        page = @pages[ index ]
+      count.times do |index|
+        page = @pages[index]
         path = page.path
 
         unless path.include? '/'
@@ -81,7 +81,7 @@ module Gollum
 
       # Handle special case of only one folder.
       if (count - folder_start == 1)
-        page = @pages[ folder_start ]
+        page = @pages[folder_start]
         html += <<-HTML
         <li>
           <label>#{::File.dirname(page.path)}</label> <input type="checkbox" #{@checked} />
@@ -95,14 +95,14 @@ module Gollum
       end
 
       sorted_folders = []
-      (folder_start).upto count - 1 do | index |
-        sorted_folders += [[ @pages[ index ].path, index ]]
+      (folder_start).upto count - 1 do |index|
+        sorted_folders += [[@pages[index].path, index]]
       end
 
       # http://stackoverflow.com/questions/3482814/sorting-list-of-string-paths-in-vb-net
-      sorted_folders.sort! do |first,second|
-        a = first[0]
-        b = second[0]
+      sorted_folders.sort! do |first, second|
+        a           = first[0]
+        b           = second[0]
 
         # use :: operator because gollum defines its own conflicting File class
         dir_compare = ::File.dirname(a) <=> ::File.dirname(b)
@@ -118,34 +118,34 @@ module Gollum
 
       # keep track of folder depth, 0 = at root.
       cwd_array = []
-      changed = false
+      changed   = false
 
       # process rest of folders
-      (0...sorted_folders.size).each do | index |
-          page =  @pages[ sorted_folders[ index ][ 1 ] ]
-          path = page.path
-          folder = ::File.dirname path
+      (0...sorted_folders.size).each do |index|
+        page   = @pages[sorted_folders[index][1]]
+        path   = page.path
+        folder = ::File.dirname path
 
-          tmp_array = folder.split '/'
+        tmp_array = folder.split '/'
 
-          (0...tmp_array.size).each do | index |
-            if cwd_array[ index ].nil? || changed
-              html += new_sub_folder tmp_array[ index ]
-              next
-            end
-
-            if cwd_array[ index ] != tmp_array[ index ]
-              changed = true
-              (cwd_array.size - index).times do
-                html += end_folder
-              end
-              html += new_sub_folder tmp_array[ index ]
-            end
+        (0...tmp_array.size).each do |index|
+          if cwd_array[index].nil? || changed
+            html += new_sub_folder tmp_array[index]
+            next
           end
 
-          html += new_page page
-          cwd_array = tmp_array
-          changed = false
+          if cwd_array[index] != tmp_array[index]
+            changed = true
+            (cwd_array.size - index).times do
+              html += end_folder
+            end
+            html += new_sub_folder tmp_array[index]
+          end
+        end
+
+        html      += new_page page
+        cwd_array = tmp_array
+        changed   = false
       end
 
       # return the completed html

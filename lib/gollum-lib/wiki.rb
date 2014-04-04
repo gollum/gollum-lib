@@ -41,33 +41,33 @@ module Gollum
       # Default: Gollum::Page.
       def page_class
         @page_class ||
-          if superclass.respond_to?(:page_class)
-            superclass.page_class
-          else
-            ::Gollum::Page
-          end
+            if superclass.respond_to?(:page_class)
+              superclass.page_class
+            else
+              ::Gollum::Page
+            end
       end
 
       # Gets the file class used by all instances of this Wiki.
       # Default: Gollum::File.
       def file_class
         @file_class ||
-          if superclass.respond_to?(:file_class)
-            superclass.file_class
-          else
-            ::Gollum::File
-          end
+            if superclass.respond_to?(:file_class)
+              superclass.file_class
+            else
+              ::Gollum::File
+            end
       end
 
       # Gets the markup class used by all instances of this Wiki.
       # Default: Gollum::Markup
       def markup_classes
         @markup_classes ||=
-          if superclass.respond_to?(:markup_classes)
-            superclass.markup_classes
-          else
-            Hash.new(::Gollum::Markup)
-          end
+            if superclass.respond_to?(:markup_classes)
+              superclass.markup_classes
+            else
+              Hash.new(::Gollum::Markup)
+            end
       end
 
       # Gets the default markup class used by all instances of this Wiki.
@@ -100,18 +100,18 @@ module Gollum
       def history_sanitization
         if @history_sanitization.nil?
           @history_sanitization = sanitization ?
-            sanitization.history_sanitization  :
-            false
+              sanitization.history_sanitization :
+              false
         end
         @history_sanitization
       end
     end
 
-    self.default_ref = 'master'
+    self.default_ref             = 'master'
     self.default_committer_name  = 'Anonymous'
     self.default_committer_email = 'anon@anon.com'
 
-    self.default_ws_subs = ['_','-']
+    self.default_ws_subs = ['_', '-']
     self.default_options = {}
 
     # The String base path to prefix to internal links. For example, when set
@@ -150,7 +150,7 @@ module Gollum
 
     # Gets side on which the sidebar should be shown
     attr_reader :bar_side
-    
+
     # An array of symbols which refer to classes under Gollum::Filter,
     # each of which is an element in the "filtering chain".  See
     # the documentation for Gollum::Filter for more on how this chain
@@ -230,12 +230,12 @@ module Gollum
       @h1_title             = options.fetch :h1_title, false
       @index_page           = options.fetch :index_page, 'Home'
       @bar_side             = options.fetch :sidebar, :right
-      @user_icons           = ['gravatar', 'identicon'].include?( options[:user_icons] ) ?
-                              options[:user_icons] : 'none'
+      @user_icons           = ['gravatar', 'identicon'].include?(options[:user_icons]) ?
+          options[:user_icons] : 'none'
       @allow_uploads        = options.fetch :allow_uploads, false
       @per_page_uploads     = options.fetch :per_page_uploads, false
       @filter_chain         = options.fetch :filter_chain,
-                              [:Metadata, :PlainText, :TOC, :RemoteCode, :Code, :Sanitize, :WSD, :Tags, :Render]
+                                            [:Metadata, :PlainText, :TOC, :RemoteCode, :Code, :Sanitize, :WSD, :Tags, :Render]
     end
 
     # Public: check whether the wiki's git repo exists on the filesystem.
@@ -326,7 +326,7 @@ module Gollum
       dir.gsub!(' ', '-')
 
       multi_commit = !!commit[:committer]
-      committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
+      committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       filename = Gollum::Page.cname(name)
 
@@ -364,12 +364,12 @@ module Gollum
 
       (target_dir, target_name) = ::File.split(rename)
       (source_dir, source_name) = ::File.split(page.path)
-      source_name = page.filename_stripped
+      source_name               = page.filename_stripped
 
       # File.split gives us relative paths with ".", commiter.add_to_index doesn't like that.
-      target_dir = '' if target_dir == '.'
-      source_dir = '' if source_dir == '.'
-      target_dir = target_dir.gsub(/^\//, '')
+      target_dir                = '' if target_dir == '.'
+      source_dir                = '' if source_dir == '.'
+      target_dir                = target_dir.gsub(/^\//, '')
 
       # if the rename is a NOOP, abort
       if source_dir == target_dir and source_name == target_name
@@ -377,7 +377,7 @@ module Gollum
       end
 
       multi_commit = !!commit[:committer]
-      committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
+      committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       committer.delete(page.path)
       committer.add_to_index(target_dir, target_name, page.format, page.raw_data)
@@ -414,15 +414,15 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
     def update_page(page, name, format, data, commit = {})
-      name   ||= page.name
-      format ||= page.format
+      name     ||= page.name
+      format   ||= page.format
       dir      = ::File.dirname(page.path)
       dir      = '' if dir == '.'
       filename = (rename = page.name != name) ?
-        Gollum::Page.cname(name) : page.filename_stripped
+          Gollum::Page.cname(name) : page.filename_stripped
 
       multi_commit = !!commit[:committer]
-      committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
+      committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       if !rename && page.format == format
         committer.add(page.path, normalize(data))
@@ -459,7 +459,7 @@ module Gollum
     def delete_page(page, commit)
 
       multi_commit = !!commit[:committer]
-      committer = multi_commit ? commit[:committer] : Committer.new(self, commit)
+      committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       committer.delete(page.path)
 
@@ -496,9 +496,9 @@ module Gollum
         sha2   = nil
       end
 
-      patch     = full_reverse_diff_for(page, sha1, sha2)
-      committer = Committer.new(self, commit)
-      parent    = committer.parents[0]
+      patch                    = full_reverse_diff_for(page, sha1, sha2)
+      committer                = Committer.new(self, commit)
+      parent                   = committer.parents[0]
       committer.options[:tree] = @repo.git.apply_patch(parent.sha, patch)
       return false unless committer.options[:tree]
       committer.after_commit do |index, sha|
@@ -592,12 +592,12 @@ module Gollum
       results = {}
 
       @repo.git.grep(*args).split("\n").each do |line|
-        result = line.split(':')
-        result_1 = result[1]
+        result             = line.split(':')
+        result_1           = result[1]
         # Remove ext only from known extensions.
         # test.pdf => test.pdf, test.md => test
-        file_name = Page::valid_page_name?(result_1) ? result_1.chomp(::File.extname(result_1)) :
-                    result_1
+        file_name          = Page::valid_page_name?(result_1) ? result_1.chomp(::File.extname(result_1)) :
+            result_1
         results[file_name] = result[2].to_i
       end
 
@@ -605,14 +605,14 @@ module Gollum
       # Spaces are converted to dashes when saving pages to disk.
       @repo.git.ls_files({}, "*#{ query.gsub(' ', '-') }*").split("\n").each do |line|
         # Remove ext only from known extensions.
-        file_name = Page::valid_page_name?(line) ? line.chomp(::File.extname(line)) :
-                    line
+        file_name          = Page::valid_page_name?(line) ? line.chomp(::File.extname(line)) :
+            line
         # If there's not already a result for file_name then
         # the value is nil and nil.to_i is 0.
         results[file_name] = results[file_name].to_i + 1;
       end
 
-      results.map do |key,val|
+      results.map do |key, val|
         { :count => val, :name => key }
       end
     end
@@ -655,7 +655,7 @@ module Gollum
         @history_sanitizer ||= options.to_sanitize
       end
     end
-    
+
     # Public: Add an additional link to the filter chain.
     #
     # name - A symbol which represents the name of a class under the
@@ -675,7 +675,7 @@ module Gollum
         raise ArgumentError,
               "Invalid filter name #{name.inspect} (must be a symbol)"
       end
-      
+
       case loc
         when :first
           @filter_chain.unshift(name)
@@ -690,10 +690,10 @@ module Gollum
             raise ArgumentError,
                   "Invalid location specifier"
           end
-          
-          next_to = loc.values.first
+
+          next_to  = loc.values.first
           relative = loc.keys.first
-          
+
           i = @filter_chain.index(next_to)
           if i.nil?
             raise ArgumentError,
@@ -707,7 +707,7 @@ module Gollum
                 "Invalid location specifier"
       end
     end
-    
+
     # Remove the named filter from the filter chain.
     #
     # Returns nothing.  Raises `ArgumentError` if the named filter doesn't
@@ -717,7 +717,7 @@ module Gollum
         raise ArgumentError,
               "Invalid filter name #{name.inspect} (must be a symbol)"
       end
-      
+
       unless @filter_chain.delete(name)
         raise ArgumentError,
               "#{name.inspect} not found in filter chain"
@@ -840,7 +840,7 @@ module Gollum
         path = (page.respond_to?(:path) ? page.path : page.to_s)
         return repo.diff(sha2, sha1, path).first.diff
       end
-      repo.diff(sha2, sha1).map{|d| d.diff}.join("\n")
+      repo.diff(sha2, sha1).map { |d| d.diff }.join("\n")
     end
 
     # Creates a reverse diff for the given SHAs.

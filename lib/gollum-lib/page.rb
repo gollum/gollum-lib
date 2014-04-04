@@ -84,9 +84,9 @@ module Gollum
     #
     # Returns a newly initialized Gollum::Page.
     def initialize(wiki)
-      @wiki = wiki
-      @blob = @header = @footer = @sidebar = nil
-      @doc = nil
+      @wiki        = wiki
+      @blob        = @header = @footer = @sidebar = nil
+      @doc         = nil
       @parent_page = nil
     end
 
@@ -139,10 +139,10 @@ module Gollum
     # Returns the String url_path
     def url_path
       path = if self.path.include?('/')
-        self.path.sub(/\/[^\/]+$/, '/')
-      else
-        ''
-      end
+               self.path.sub(/\/[^\/]+$/, '/')
+             else
+               ''
+             end
 
       path << Page.cname(self.name, '-', '-')
       path
@@ -180,7 +180,7 @@ module Gollum
     #
     # Returns the String url_path
     def escaped_url_path
-      CGI.escape(self.url_path).gsub('%2F','/')
+      CGI.escape(self.url_path).gsub('%2F', '/')
     end
 
     # Public: The raw contents of the page.
@@ -284,9 +284,9 @@ module Gollum
     # Public: The first 7 characters of the current version.
     #
     # Returns the first 7 characters of the current version.
-   def version_short
-     version.to_s[0,7]
-   end
+    def version_short
+      version.to_s[0, 7]
+    end
 
     # Public: The header Page.
     #
@@ -341,8 +341,8 @@ module Gollum
     # Returns the String canonical name.
     def self.cname(name, char_white_sub = '-', char_other_sub = '-')
       name.respond_to?(:gsub) ?
-        name.gsub(%r{\s},char_white_sub).gsub(%r{[<>+]}, char_other_sub) :
-        ''
+          name.gsub(%r{\s}, char_white_sub).gsub(%r{[<>+]}, char_other_sub) :
+          ''
     end
 
     # Convert a format Symbol into an extension String.
@@ -380,7 +380,7 @@ module Gollum
       map = @wiki.tree_map_for(version.to_s)
       if page = find_page_in_tree(map, name, dir, exact)
         page.version    = version.is_a?(Grit::Commit) ?
-          version : @wiki.commit_for(version)
+            version : @wiki.commit_for(version)
         page.historical = page.version.to_s == version.to_s
         page
       end
@@ -400,7 +400,7 @@ module Gollum
 
       checked_dir = BlobEntry.normalize_dir(checked_dir)
       checked_dir = '' if exact && checked_dir.nil?
-      name = ::File.join(checked_dir, name) if checked_dir
+      name        = ::File.join(checked_dir, name) if checked_dir
 
       map.each do |entry|
         next if entry.name.to_s.empty?

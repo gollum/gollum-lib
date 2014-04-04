@@ -30,7 +30,7 @@ module Gollum
       #
       # Returns Hash with :max_count and :skip keys.
       def log_pagination_options(options = {})
-        skip = page_to_skip(options.delete(:page))
+        skip                = page_to_skip(options.delete(:page))
         options[:max_count] = [options.delete(:per_page).to_i, per_page].max
         options[:skip]      = skip if skip > 0
         options

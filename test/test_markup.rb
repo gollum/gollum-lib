@@ -933,7 +933,17 @@ end
     output = "<pre>Plain text&lt;br/&gt;with a&lt;ahref=\"http://example.com\"&gt;HTML link&lt;/a&gt;</pre>"
     compare(content, output, "txt")
   end
-  
+
+  test 'static rendering' do
+    uses_wiki = false
+    markup = Gollum::Markup.new uses_wiki
+
+    expected = "<h1>hi<a class=\"anchor\" id=\"hi\" href=\"#hi\"></a></h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
+    actual = markup.render_default "#hi\n[[_TOC_]]"
+
+    assert_html_equal expected, actual
+  end
+
   #########################################################################
   #
   # Helpers

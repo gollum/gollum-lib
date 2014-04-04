@@ -12,7 +12,7 @@ module Gollum
     # Returns this instance.
     def initialize(path, page_file_dir = nil, bare = false)
       @page_file_dir = page_file_dir
-      @path = path
+      @path          = path
       begin
         @repo = Grit::Repo.new(path, { :is_bare => bare })
       rescue Grit::InvalidGitRepositoryError
@@ -40,11 +40,11 @@ module Gollum
       ref = ref.to_s
       return if ref.empty?
       sha =
-        if sha?(ref)
-          ref
-        else
-          get_cache(:ref, ref) { ref_to_sha!(ref) }
-        end.to_s
+          if sha?(ref)
+            ref
+          else
+            get_cache(:ref, ref) { ref_to_sha!(ref) }
+          end.to_s
       sha.empty? ? nil : sha
     end
 
@@ -84,7 +84,7 @@ module Gollum
           commit(sha)
         else
           if cm = commit!(ref)
-            set_cache(:ref,    ref,   cm.id)
+            set_cache(:ref, ref, cm.id)
             set_cache(:commit, cm.id, cm)
           end
         end
@@ -163,11 +163,11 @@ module Gollum
     #
     # Returns an Array of BlobEntry instances.
     def tree!(sha)
-      tree = @repo.lstree(sha, {:recursive => true})
+      tree  = @repo.lstree(sha, { :recursive => true })
       items = []
       tree.each do |entry|
         if entry[:type] == 'blob'
-          items << BlobEntry.new(entry[:sha], entry[:path], entry[:size], entry[:mode].to_i(8)) 
+          items << BlobEntry.new(entry[:sha], entry[:path], entry[:size], entry[:mode].to_i(8))
         end
       end
       if dir = @page_file_dir
@@ -184,7 +184,7 @@ module Gollum
     #
     # Returns the String content of the Git object.
     def cat_file!(sha)
-      @repo.git.cat_file({:p => true}, sha)
+      @repo.git.cat_file({ :p => true }, sha)
     end
 
     # Reads a Git commit.
@@ -244,7 +244,7 @@ module Gollum
     def decode_git_path(path)
       if path[0] == ?" && path[-1] == ?"
         path = path[1...-1]
-        path.gsub!(/\\\d{3}/)   { |m| m[1..-1].to_i(8).chr }
+        path.gsub!(/\\\d{3}/) { |m| m[1..-1].to_i(8).chr }
       end
       path.gsub!(/\\[rn"\\]/) { |m| eval(%("#{m.to_s}")) }
       path

@@ -7,7 +7,7 @@ module Grit
     end
 
     def symlink_target(base_path = nil)
-      target = self.data
+      target   = self.data
       new_path = File.expand_path(File.join('..', target), base_path)
 
       if File.file? new_path
