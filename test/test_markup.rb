@@ -934,14 +934,16 @@ __TOC__
     compare(content, output, "txt")
   end
 
-  test 'static rendering' do
+  test 'static rendering and font awesome class' do
     uses_wiki = false
     markup    = Gollum::Markup.new uses_wiki
 
+    # must expect <i class="fa fa-link">
     expected = "<h1><a class=\"anchor\" id=\"hi\" href=\"#hi\"><i class=\"fa fa-link\"></i></a>hi</h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
     actual   = markup.render_default "#hi\n[[_TOC_]]"
 
-    assert_html_equal expected, actual
+    # assert_html_equal ignores class values due to using nokogiri diff so use assert_equal
+    assert_equal expected, actual
   end
 
   #########################################################################
