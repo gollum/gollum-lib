@@ -1,9 +1,9 @@
 gollum lib -- A wiki built on top of Git
 ========================================
 
-[![Gem Version](https://badge.fury.io/rb/gollum-lib.png)](http://rubygems.org/gems/gollum-lib)
-[![Build Status](https://travis-ci.org/gollum/gollum-lib.png)](https://travis-ci.org/gollum/gollum-lib)
-[![Dependency Status](https://gemnasium.com/gollum/gollum-lib.png)](https://gemnasium.com/gollum/gollum-lib)
+[![Gem Version](https://badge.fury.io/rb/gollum-lib.svg)](http://badge.fury.io/rb/gollum-lib)
+[![Build Status](https://travis-ci.org/gollum/gollum-lib.svg?branch=master)](https://travis-ci.org/gollum/gollum-lib)
+[![Dependency Status](https://gemnasium.com/gollum/gollum-lib.svg)](https://gemnasium.com/gollum/gollum-lib)
 
 ## DESCRIPTION
 
