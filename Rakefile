@@ -119,7 +119,7 @@ task :release => :build do
     exit!
   end
   sh "git commit --allow-empty -a -m 'Release #{version}'"
-  sh "git pull"
+  sh "git pull --rebase origin master"
   sh "git tag v#{version}"
   sh "git push origin master"
   sh "git push origin v#{version}"
