@@ -22,10 +22,10 @@ Gem::Specification.new do |s|
   s.rdoc_options = ['--charset=UTF-8']
   s.extra_rdoc_files = %w[README.md LICENSE]
 
-  s.add_dependency 'gitlab-grit', '~> 2.6.4'
+  s.add_dependency 'gitlab-grit', '~> 2.6.5'
   s.add_dependency 'rouge', '~> 1.3.3'
   s.add_dependency 'nokogiri', '~> 1.6.1'
-  s.add_dependency 'stringex', '~> 2.5.0'
+  s.add_dependency 'stringex', '~> 2.5.1'
   s.add_dependency 'sanitize', '~> 2.1.0'
   s.add_dependency 'github-markup', '~> 1.1.0'
 
@@ -35,7 +35,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'mocha', '~> 1.0.0'
   s.add_development_dependency 'shoulda', '~> 3.5.0'
   s.add_development_dependency 'wikicloth', '~> 0.8.1'
-  s.add_development_dependency 'rake', '~> 10.0.3'
+  s.add_development_dependency 'rake', '~> 10.2.2'
   s.add_development_dependency 'pry', '~> 0.9.12'
   # required by pry
   s.add_development_dependency 'rb-readline', '~> 0.5.1'
