@@ -26,7 +26,9 @@ class Gollum::Filter::TOC < Gollum::Filter
       level = h.name.gsub(/[hH]/, '').to_i
 
       # Add anchors
-      h.add_child(%Q{<a class="anchor" id="#{h_name}" href="##{h_name}"></a>})
+      anchor_element = %Q(<a class="anchor" id="#{h_name}" href="##{h_name}"><i class="fa fa-link"></i></a>)
+      # Add anchor element as the first child (before h.content)
+      h.children.before anchor_element
 
       # Build TOC
       toc        ||= Nokogiri::XML::DocumentFragment.parse('<div class="toc"><div class="toc-title">Table of Contents</div></div>')

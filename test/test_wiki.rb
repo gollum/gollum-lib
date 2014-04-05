@@ -3,7 +3,7 @@ require File.expand_path(File.join(File.dirname(__FILE__), "helper"))
 
 context "Wiki" do
   setup do
-    @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"))
+    @wiki                       = Gollum::Wiki.new(testpath("examples/lotr.git"))
     Gollum::Wiki.markup_classes = nil
   end
 
@@ -12,12 +12,12 @@ context "Wiki" do
   end
 
   test "#default_markup_class= doesn't clobber alternate markups" do
-    custom = Class.new(Gollum::Markup)
+    custom    = Class.new(Gollum::Markup)
     custom_md = Class.new(Gollum::Markup)
 
-    Gollum::Wiki.markup_classes = Hash.new Gollum::Markup
+    Gollum::Wiki.markup_classes            = Hash.new Gollum::Markup
     Gollum::Wiki.markup_classes[:markdown] = custom_md
-    Gollum::Wiki.default_markup_class = custom
+    Gollum::Wiki.default_markup_class      = custom
 
     assert_equal custom, Gollum::Wiki.default_markup_class
     assert_equal custom, Gollum::Wiki.markup_classes[:orgmode]
@@ -35,19 +35,19 @@ context "Wiki" do
 
   test "shows paginated log with no page" do
     Gollum::Wiki.per_page = 3
-    commits = @wiki.repo.commits[0..2].map { |x| x.id }
+    commits               = @wiki.repo.commits[0..2].map { |x| x.id }
     assert_equal commits, @wiki.log.map { |c| c.id }
   end
 
   test "shows paginated log with 1st page" do
     Gollum::Wiki.per_page = 3
-    commits = @wiki.repo.commits[0..2].map { |x| x.id }
+    commits               = @wiki.repo.commits[0..2].map { |x| x.id }
     assert_equal commits, @wiki.log(:page => 1).map { |c| c.id }
   end
 
   test "shows paginated log with next page" do
     Gollum::Wiki.per_page = 3
-    commits = @wiki.repo.commits[3..5].map { |x| x.id }
+    commits               = @wiki.repo.commits[3..5].map { |x| x.id }
     assert_equal commits, @wiki.log(:page => 2).map { |c| c.id }
   end
 
@@ -91,14 +91,14 @@ context "Wiki" do
   test "gets reverse diff for a page" do
     diff  = @wiki.full_reverse_diff_for('_Sidebar.md', 'a8ad3c09dd842a3517085bfadd37718856dee813')
     regex = /a\/Mordor\/\_Sidebar\.md/
-    assert_match    "a/_Sidebar.md", diff
+    assert_match "a/_Sidebar.md", diff
     assert_no_match regex, diff
   end
 
   test "gets scoped page from specified directory" do
     @path = cloned_testpath('examples/lotr.git')
     begin
-      wiki = Gollum::Wiki.new(@path)
+      wiki  = Gollum::Wiki.new(@path)
       index = wiki.repo.index
       index.read_tree 'master'
       index.add('Foobar/Elrond.md', 'Baz')
@@ -115,15 +115,15 @@ end
 
 context "Wiki page previewing" do
   setup do
-    @path = testpath("examples/lotr.git")
-    Gollum::Wiki.default_options = {:universal_toc => false}
-    @wiki = Gollum::Wiki.new(@path)
+    @path                        = testpath("examples/lotr.git")
+    Gollum::Wiki.default_options = { :universal_toc => false }
+    @wiki                        = Gollum::Wiki.new(@path)
   end
 
   test "preview_page" do
     page = @wiki.preview_page("Test", "# Bilbo", :markdown)
     assert_equal "# Bilbo", page.raw_data
-    assert_html_equal %Q{<h1>Bilbo<a class=\"anchor\" id=\"Bilbo\" href=\"#Bilbo\"></a></h1>}, page.formatted_data
+    assert_html_equal "<h1><a class=\"anchor\" id=\"Bilbo\" href=\"#Bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
     assert_equal "Test.md", page.filename
     assert_equal "Test", page.name
   end
@@ -131,15 +131,15 @@ end
 
 context "Wiki TOC" do
   setup do
-    @path = testpath("examples/lotr.git")
-    options = {:universal_toc => true}
-    @wiki = Gollum::Wiki.new(@path, options)
+    @path   = testpath("examples/lotr.git")
+    options = { :universal_toc => true }
+    @wiki   = Gollum::Wiki.new(@path, options)
   end
 
   test "toc_generation" do
     page = @wiki.preview_page("Test", "# Bilbo", :markdown)
     assert_equal "# Bilbo", page.raw_data
-    assert_html_equal '<h1>Bilbo<a class="anchor" id="Bilbo" href="#Bilbo"></a></h1>', page.formatted_data
+    assert_html_equal "<h1><a class=\"anchor\" id=\"Bilbo\" href=\"#Bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
     assert_html_equal %{<div class="toc"><div class="toc-title">Table of Contents</div><ul><li><a href="#Bilbo">Bilbo</a></li></ul></div>}, page.toc_data
   end
 
@@ -149,7 +149,7 @@ context "Wiki TOC" do
   test "' in link" do
     page = @wiki.preview_page("Test", "# a'b", :markdown)
     assert_equal "# a'b", page.raw_data
-    assert_html_equal %q{<h1>a'b<a class="anchor" id="a'b" href="#a'b"></a></h1>}, page.formatted_data
+    assert_html_equal "<h1><a class=\"anchor\" id=\"a'b\" href=\"#a'b\"><i class=\"fa fa-link\"></i></a>a'b</h1>", page.formatted_data
     assert_html_equal %{<div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#a'b\">a'b</a></li></ul></div>}, page.toc_data
   end
 end
@@ -173,7 +173,7 @@ context "Wiki page writing" do
     cd2 = { :message => "Updating Bilbo", :author => "Samwise" }
     @wiki.write_page("Bilbo", :markdown, "# Bilbo", cd2)
 
-    commits = @wiki.repo.commits
+    commits      = @wiki.repo.commits
     # FIXME Grit commits ordering is not predictable. See #13.
     # The following line should be: commit = commits.first
     first_commit = commits.find { |c| c.message == "Updating Bilbo" }
@@ -189,7 +189,7 @@ context "Wiki page writing" do
   test "write page is not allowed to overwrite file" do
     @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
     assert_raises Gollum::DuplicatePageError do
-      @wiki.write_page("ABC DEF", :textile,  "# Gollum", commit_details)
+      @wiki.write_page("ABC DEF", :textile, "# Gollum", commit_details)
     end
   end
 
@@ -197,12 +197,12 @@ context "Wiki page writing" do
     @wiki.write_page("Gollum", :markdown, "# Gollum", commit_details)
     page = @wiki.page("Gollum")
     @wiki.update_page(page, page.name, :markdown, "# Smeagol", {
-      :message => "Leave now, and never come back!",
-      :name => "Smeagol",
-      :email => "smeagol@example.org"
+        :message => "Leave now, and never come back!",
+        :name    => "Smeagol",
+        :email   => "smeagol@example.org"
     })
 
-    commits = @wiki.repo.commits
+    commits      = @wiki.repo.commits
     # FIXME Grit commits ordering is not predictable. See #13.
     # The following line should be: first_commit = commits.first
     first_commit = commits.find { |c| c.author.name == "Smeagol" }
@@ -223,15 +223,15 @@ context "Wiki page writing" do
     end
   end
 
-if $METADATA
-  test "page title override with metadata" do
-    @wiki.write_page("Gollum", :markdown, "<!-- --- title: Over -->", commit_details)
+  if $METADATA
+    test "page title override with metadata" do
+      @wiki.write_page("Gollum", :markdown, "<!-- --- title: Over -->", commit_details)
 
-    page = @wiki.page("Gollum")
+      page = @wiki.page("Gollum")
 
-    assert_equal 'Over', page.url_path_title
+      assert_equal 'Over', page.url_path_title
+    end
   end
-end
 
   test "update page with format change" do
     @wiki.write_page("Gollum", :markdown, "# Gollum", commit_details)
@@ -480,10 +480,10 @@ end
 
 context "page_file_dir option" do
   setup do
-    @path = cloned_testpath('examples/page_file_dir')
-    @repo = Grit::Repo.init(@path)
+    @path          = cloned_testpath('examples/page_file_dir')
+    @repo          = Grit::Repo.init(@path)
     @page_file_dir = 'docs'
-    @wiki = Gollum::Wiki.new(@path, :page_file_dir => @page_file_dir)
+    @wiki          = Gollum::Wiki.new(@path, :page_file_dir => @page_file_dir)
   end
 
   test "write a page in sub directory" do
@@ -532,7 +532,7 @@ context "Wiki page writing with different branch" do
 
     # We need an initial commit to create the master branch
     # before we can create new branches
-    cd = commit_details
+    cd    = commit_details
     @wiki.write_page("Gollum", :markdown, "# Gollum", cd)
 
     # Create our test branch and check it out
@@ -637,7 +637,7 @@ context "Renames directory traversal" do
     source = @wiki.paged("H", "G")
 
     # G/H.md => G/H.md
-    res = @wiki.rename_page(source, "/G/H", rename_commit_details)
+    res    = @wiki.rename_page(source, "/G/H", rename_commit_details)
     assert !res, "NOOP rename did not abort"
   end
 
