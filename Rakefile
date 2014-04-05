@@ -126,6 +126,9 @@ task :release => :build do
   sh "gem push pkg/#{name}-#{version}.gem"
 end
 
+desc 'Publish to rubygems. Same as release'
+task :publish => :release
+
 desc 'Build gem'
 task :build => :gemspec do
   sh "mkdir -p pkg"
