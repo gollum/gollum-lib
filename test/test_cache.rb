@@ -10,6 +10,15 @@ context "Cache" do
     assert_equal "value", @cache.read("key")
   end
 
+  test "read value that doesn't exist gives nil" do
+    refute @cache.read("key")
+  end
+
+  test "fetch nil value two times shouldn't trigger two writes" do
+    @cache.fetch("key") { nil }
+    @cache.fetch("key") { raise("Cache should detect key is set to nil") }
+  end
+
   test "write and read nil value" do
     @cache.write("key", nil)
     assert_equal nil, @cache.read("value")

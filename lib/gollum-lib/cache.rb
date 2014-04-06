@@ -1,7 +1,5 @@
 module Gollum
   class Cache
-    NIL_STRING = "__nil".freeze
-
     attr_accessor :store
 
     def initialize
@@ -10,8 +8,8 @@ module Gollum
 
     def fetch(key, &block)
       value = read(key)
-      write(key, value = yield) if block_given? && value.nil?
-      value == NIL_STRING ? nil : value
+      write(key, value = yield) if block_given? && value.nil? && !store.has_key?(key)
+      value
     end
 
     def clear
@@ -23,7 +21,7 @@ module Gollum
     end
 
     def write(key, value)
-      store[key] = value || NIL_STRING
+      store[key] = value
     end
   end
 end
