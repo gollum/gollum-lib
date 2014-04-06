@@ -217,7 +217,7 @@ module Gollum
     # Returns the String data.
     def formatted_data(encoding = nil, include_levels = 10, &block)
       if @blob
-        @doc ||= Gollum.cache.fetch("gollum:page:doc:#{Page.cname(self.path).downcase}") {
+        @doc ||= Gollum.cache.fetch("gollum:page:doc:#{page_cache_suffix}") {
           markup_class.render(historical?, encoding, include_levels)
         }
         return yield(@doc) if block_given?
@@ -473,8 +473,6 @@ module Gollum
       key = "gollum:page:sub:#{page_cache_suffix}"
 
       Gollum.cache.fetch(key) do
-        puts "find_sub_page: cache miss for #{key}"
-
         dirs = self.path.split('/')
         dirs.pop
         map = @wiki.tree_map_for(@wiki.ref, true)
@@ -499,6 +497,8 @@ module Gollum
     def inspect
       %(#<#{self.class.name}:#{object_id} #{name} (#{format}) @wiki=#{@wiki.repo.path.inspect}>)
     end
+
+    private
 
     def page_cache_suffix
       Page.cname(self.path).downcase
