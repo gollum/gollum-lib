@@ -20,7 +20,6 @@ module Gollum
       rescue Grit::NoSuchPathError
         raise Gollum::NoSuchPathError
       end
-      clear
     end
 
     # Public: Determines whether the Git repository exists on disk.
@@ -95,9 +94,7 @@ module Gollum
     #
     # Returns nothing.
     def clear
-      @ref_map    = {}
-      @tree_map   = {}
-      @commit_map = {}
+      Gollum.cache.clear
     end
 
     # Public: Refreshes just the cached Git reference data.  This should
@@ -105,7 +102,7 @@ module Gollum
     #
     # Returns nothing.
     def refresh
-      @ref_map.clear
+      clear
     end
 
     #########################################################################
@@ -119,24 +116,6 @@ module Gollum
 
     # Gets the Grit::Repo instance for the Git repository.
     attr_reader :repo
-
-    # Gets a Hash cache of refs to commit SHAs.
-    #
-    #   {"master" => "abc123", ...}
-    #
-    attr_reader :ref_map
-
-    # Gets a Hash cache of commit SHAs to a recursive tree of blobs.
-    #
-    #   {"abc123" => [<BlobEntry>, <BlobEntry>]}
-    #
-    attr_reader :tree_map
-
-    # Gets a Hash cache of commit SHAs to the Grit::Commit instance.
-    #
-    #     {"abcd123" => <Grit::Commit>}
-    #
-    attr_reader :commit_map
 
     # Checks to see if the given String is a 40 character hex SHA.
     #
@@ -204,13 +183,8 @@ module Gollum
     #
     # Yields a block to pass to the cache.
     # Returns the cached result.
-    def get_cache(name, key)
-      cache = instance_variable_get("@#{name}_map")
-      value = cache[key]
-      if value.nil? && block_given?
-        set_cache(name, key, value = yield)
-      end
-      value == :_nil ? nil : value
+    def get_cache(name, key, &block)
+      Gollum.cache.fetch("#{name}_#{key}", &block)
     end
 
     # Writes some data to the internal cache.
@@ -221,8 +195,7 @@ module Gollum
     #
     # Returns nothing.
     def set_cache(name, key, value)
-      cache      = instance_variable_get("@#{name}_map")
-      cache[key] = value || :_nil
+      Gollum.cache.write("#{name}_#{key}", value)
     end
 
     # Parses a line of output from the `ls-tree` command.
