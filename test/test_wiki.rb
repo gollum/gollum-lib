@@ -69,6 +69,10 @@ context "Wiki" do
     assert_equal 9, @wiki.size
   end
 
+  test "latest changes in repo" do
+    assert_equal @wiki.latest_changes({:max_count => 1}).first.id, "874f597a5659b4c3b153674ea04e406ff393975e"
+  end
+  
   test "text_data" do
     wiki = Gollum::Wiki.new(testpath("examples/yubiwa.git"))
     if String.instance_methods.include?(:encoding)

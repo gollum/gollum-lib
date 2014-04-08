@@ -628,6 +628,17 @@ module Gollum
       @repo.log(@ref, nil, log_pagination_options(options))
     end
 
+    # Returns the latest changes in the wiki (globally)
+    #
+    # options - The options Hash:
+    #           :max_count  - The Integer number of items to return.
+    #
+    # Returns an Array of Grit::Commit.
+    def latest_changes(options={})
+      max_count = options.fetch(:max_count, 10)      
+      @repo.log(@ref, nil, options)
+    end
+    
     # Public: Refreshes just the cached Git reference data.  This should
     # be called after every Gollum update.
     #
