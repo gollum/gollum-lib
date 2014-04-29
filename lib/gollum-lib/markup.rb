@@ -114,6 +114,11 @@ module Gollum
       # Then we process the data through the chain *backwards*
       filter_chain.reverse.each do |filter|
         data = filter.process(data)
+        if filter.class == Gollum::Filter::TOC
+          if  @sub_page && @parent_page && @parent_page.toc_data
+            data += @parent_page.toc_data
+          end
+        end
       end
 
       # Finally, a little bit of cleanup, just because
