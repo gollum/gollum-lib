@@ -197,6 +197,12 @@ context "Wiki page writing" do
     end
   end
 
+  test "write_page does not mutate input parameters" do
+    name = "Hello There"
+    @wiki.write_page(name, :markdown, 'content', commit_details)
+    assert_equal name, "Hello There"
+  end
+
   test "update_page" do
     @wiki.write_page("Gollum", :markdown, "# Gollum", commit_details)
     page = @wiki.page("Gollum")
