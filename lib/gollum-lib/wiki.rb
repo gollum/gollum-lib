@@ -322,19 +322,19 @@ module Gollum
     # Gollum::Committer instance if this is part of a batch update.
     def write_page(name, format, data, commit = {}, dir = '')
       # spaces must be dashes
-      name.gsub!(' ', '-')
-      dir.gsub!(' ', '-')
+      sanitized_name = name.gsub(' ', '-')
+      sanitized_dir  = dir.gsub(' ', '-')
 
       multi_commit = !!commit[:committer]
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
-      filename = Gollum::Page.cname(name)
+      filename = Gollum::Page.cname(sanitized_name)
 
-      committer.add_to_index(dir, filename, format, data)
+      committer.add_to_index(sanitized_dir, filename, format, data)
 
       committer.after_commit do |index, sha|
         @access.refresh
-        index.update_working_dir(dir, filename, format)
+        index.update_working_dir(sanitized_dir, filename, format)
       end
 
       multi_commit ? committer : committer.commit
