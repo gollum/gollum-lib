@@ -12,6 +12,7 @@ class Gollum::Filter::TOC < Gollum::Filter
     doc.css('h1,h2,h3,h4,h5,h6').each do |h|
       # must escape "
       h_name               = h.content.gsub(' ', '-').gsub('"', '%22')
+      next if h_name.empty?
 
       # Ensure repeat anchors have a unique prefix or the
       # toc will break
