@@ -85,6 +85,9 @@ class Gollum::Filter::Code < Gollum::Filter
         end
       else # Rouge
         begin
+          # if `lang` was not defined then assume plaintext
+          # if `lang` is defined but cannot be found then wrap it and escape it
+          lang ||= 'plaintext'
           if Rouge::Lexer.find(lang).nil?
             lexer     = Rouge::Lexers::PlainText.new
             formatter = Rouge::Formatters::HTML.new(:wrap => false)
