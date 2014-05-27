@@ -943,7 +943,7 @@ __TOC__
     actual   = markup.render_default "#hi\n[[_TOC_]]"
 
     # assert_html_equal ignores class values due to using nokogiri diff so use assert_equal
-    assert_equal expected, actual
+    assert_equal expected, actual.strip
   end
 
   #########################################################################
