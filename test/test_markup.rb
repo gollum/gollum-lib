@@ -880,6 +880,28 @@ __TOC__
     compare(content, output, :markdown)
   end
 
+  test "anchor names are normalized" do
+    content = <<-MARKDOWN
+__TOC__
+# Summary '"' stuff
+# Summary !@#$%^&*() stuff
+    MARKDOWN
+
+    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"Summary-stuff\" href=\"#Summary-stuff\"><i class=\"fa fa-link\"></i></a>Summary '\"' stuff</h1>\n\n<h1><a class=\"anchor\" id=\"2-Summary-stuff\" href=\"#2-Summary-stuff\"><i class=\"fa fa-link\"></i></a>Summary !@#$%^&*() stuff</h1>"
+    compare(content, output, :markdown)
+  end
+
+  test 'anchor names contain the ancestor' do
+    content = <<-MARKDOWN
+__TOC__
+# Summary
+## Horse
+    MARKDOWN
+
+    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"Summary\" href=\"#Summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h2><a class=\"anchor\" id=\"Summary-horse\" href=\"#Summary-horse\"><i class=\"fa fa-link\"></i></a>Horse</h1>"
+    compare(content, output, :markdown)
+  end
+
   if ENV['ASCIIDOC']
     #########################################################################
     # Asciidoc
