@@ -44,7 +44,7 @@ class Gollum::Filter::WSD < Gollum::Filter
   def render_wsd(code, style)
     response = Net::HTTP.post_form(URI.parse(WSD_URL), 'style' => style, 'message' => code)
     if response.body =~ /img: "(.+)"/
-      url = "http://www.websequencediagrams.com/#{$1}"
+      url = "//www.websequencediagrams.com/#{$1}"
       "<img src=\"#{url}\" />"
     else
       puts response.body
