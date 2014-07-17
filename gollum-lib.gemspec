@@ -65,6 +65,7 @@ Gem::Specification.new do |s|
     lib/gollum-lib/file_view.rb
     lib/gollum-lib/filter.rb
     lib/gollum-lib/filter/code.rb
+    lib/gollum-lib/filter/macro.rb
     lib/gollum-lib/filter/metadata.rb
     lib/gollum-lib/filter/plain_text.rb
     lib/gollum-lib/filter/remote_code.rb
@@ -78,6 +79,8 @@ Gem::Specification.new do |s|
     lib/gollum-lib/grit_ext.rb
     lib/gollum-lib/helpers.rb
     lib/gollum-lib/hook.rb
+    lib/gollum-lib/macro.rb
+    lib/gollum-lib/macro/all_pages.rb
     lib/gollum-lib/markup.rb
     lib/gollum-lib/markups.rb
     lib/gollum-lib/page.rb
