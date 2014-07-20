@@ -53,6 +53,7 @@ module Gollum
     attr_reader :sanitize
     attr_reader :format
     attr_reader :wiki
+    attr_reader :page
     attr_reader :name
     attr_reader :include_levels
     attr_reader :to_xml_opts
@@ -72,6 +73,7 @@ module Gollum
         @format      = page.format
         @sub_page    = page.sub_page
         @parent_page = page.parent_page
+        @page        = page
         @dir         = ::File.dirname(page.path)
       end
       @metadata    = nil
