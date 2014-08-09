@@ -13,13 +13,7 @@ module Gollum
     def initialize(path, page_file_dir = nil, bare = false)
       @page_file_dir = page_file_dir
       @path          = path
-      begin
-        @repo = Grit::Repo.new(path, { :is_bare => bare })
-      rescue Grit::InvalidGitRepositoryError
-        raise Gollum::InvalidGitRepositoryError
-      rescue Grit::NoSuchPathError
-        raise Gollum::NoSuchPathError
-      end
+      @repo = Gollum::Git::Repo.new(path, { :is_bare => bare })
       clear
     end
 
@@ -75,7 +69,7 @@ module Gollum
     #
     # ref - A String Git SHA or ref.
     #
-    # Returns a Grit::Commit.
+    # Returns a Gollum::Git::Commit.
     def commit(ref)
       if sha?(ref)
         get_cache(:commit, ref) { commit!(ref) }
@@ -117,7 +111,7 @@ module Gollum
     # Gets the String path to the Git repository.
     attr_reader :path
 
-    # Gets the Grit::Repo instance for the Git repository.
+    # Gets the Gollum::Git::Repo instance for the Git repository.
     attr_reader :repo
 
     # Gets a Hash cache of refs to commit SHAs.
@@ -132,9 +126,9 @@ module Gollum
     #
     attr_reader :tree_map
 
-    # Gets a Hash cache of commit SHAs to the Grit::Commit instance.
+    # Gets a Hash cache of commit SHAs to the Gollum::Git::Commit instance.
     #
-    #     {"abcd123" => <Grit::Commit>}
+    #     {"abcd123" => <Gollum::Git::Commit>}
     #
     attr_reader :commit_map
 
@@ -191,7 +185,7 @@ module Gollum
     #
     # sha - The string SHA of the Git commit.
     #
-    # Returns a Grit::Commit.
+    # Returns a Gollum::Git::Commit.
     def commit!(sha)
       @repo.commit(sha)
     end

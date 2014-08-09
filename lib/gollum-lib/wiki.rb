@@ -310,7 +310,7 @@ module Gollum
     #          :message   - The String commit message.
     #          :name      - The String author full name.
     #          :email     - The String email address.
-    #          :parent    - Optional Grit::Commit parent to this update.
+    #          :parent    - Optional Gollum::Git::Commit parent to this update.
     #          :tree      - Optional String SHA of the tree to create the
     #                       index from.
     #          :committer - Optional Gollum::Committer instance.  If provided,
@@ -348,7 +348,7 @@ module Gollum
     #          :message   - The String commit message.
     #          :name      - The String author full name.
     #          :email     - The String email address.
-    #          :parent    - Optional Grit::Commit parent to this update.
+    #          :parent    - Optional Gollum::Git::Commit parent to this update.
     #          :tree      - Optional String SHA of the tree to create the
     #                       index from.
     #          :committer - Optional Gollum::Committer instance.  If provided,
@@ -404,7 +404,7 @@ module Gollum
     #          :message   - The String commit message.
     #          :name      - The String author full name.
     #          :email     - The String email address.
-    #          :parent    - Optional Grit::Commit parent to this update.
+    #          :parent    - Optional Gollum::Git::Commit parent to this update.
     #          :tree      - Optional String SHA of the tree to create the
     #                       index from.
     #          :committer - Optional Gollum::Committer instance.  If provided,
@@ -447,7 +447,7 @@ module Gollum
     #          :message   - The String commit message.
     #          :name      - The String author full name.
     #          :email     - The String email address.
-    #          :parent    - Optional Grit::Commit parent to this update.
+    #          :parent    - Optional Gollum::Git::Commit parent to this update.
     #          :tree      - Optional String SHA of the tree to create the
     #                       index from.
     #          :committer - Optional Gollum::Committer instance.  If provided,
@@ -486,7 +486,7 @@ module Gollum
     #          :message - The String commit message.
     #          :name    - The String author full name.
     #          :email   - The String email address.
-    #          :parent  - Optional Grit::Commit parent to this update.
+    #          :parent  - Optional Gollum::Git::Commit parent to this update.
     #
     # Returns a String SHA1 of the new commit, or nil if the reverse diff does
     # not apply.
@@ -576,7 +576,7 @@ module Gollum
       tree_map_for(ref || @ref).inject(0) do |num, entry|
         num + (@page_class.valid_page_name?(entry.name) ? 1 : 0)
       end
-    rescue Grit::GitRuby::Repository::NoSuchShaFound
+    rescue Gollum::Git::NoSuchShaFound
       0
     end
 
@@ -586,27 +586,22 @@ module Gollum
     #
     # Returns an Array with Objects of page name and count of matches
     def search(query)
-      args = [{}, '-i', '-c', query, @ref, '--']
-      args << '--' << @page_file_dir if @page_file_dir
-
+      options = {:path => page_file_dir, :ref => ref}
       results = {}
-
-      @repo.git.grep(*args).split("\n").each do |line|
-        result             = line.split(':')
-        result_1           = result[1]
+      @repo.git.grep(query, options).each do |hit|
+        name = hit[:name]
+        count = hit[:count]
         # Remove ext only from known extensions.
         # test.pdf => test.pdf, test.md => test
-        file_name          = Page::valid_page_name?(result_1) ? result_1.chomp(::File.extname(result_1)) :
-            result_1
-        results[file_name] = result[2].to_i
+        file_name = Page::valid_page_name?(name) ? name.chomp(::File.extname(name)) : name
+        results[file_name] = count
       end
 
       # Use git ls-files '*query*' to search for file names. Grep only searches file content.
       # Spaces are converted to dashes when saving pages to disk.
-      @repo.git.ls_files({}, "*#{ query.gsub(' ', '-') }*").split("\n").each do |line|
+      @repo.git.ls_files(query.gsub(' ','-'), options).each do |path|
         # Remove ext only from known extensions.
-        file_name          = Page::valid_page_name?(line) ? line.chomp(::File.extname(line)) :
-            line
+        file_name          = Page::valid_page_name?(path) ? path.chomp(::File.extname(path)) : path
         # If there's not already a result for file_name then
         # the value is nil and nil.to_i is 0.
         results[file_name] = results[file_name].to_i + 1;
@@ -623,7 +618,7 @@ module Gollum
     #           :page     - The Integer page number (default: 1).
     #           :per_page - The Integer max count of items to return.
     #
-    # Returns an Array of Grit::Commit.
+    # Returns an Array of Gollum::Git::Commit.
     def log(options = {})
       @repo.log(@ref, nil, log_pagination_options(options))
     end
@@ -633,7 +628,7 @@ module Gollum
     # options - The options Hash:
     #           :max_count  - The Integer number of items to return.
     #
-    # Returns an Array of Grit::Commit.
+    # Returns an Array of Gollum::Git::Commit.
     def latest_changes(options={})
       max_count = options.fetch(:max_count, 10)      
       @repo.log(@ref, nil, options)
@@ -741,9 +736,9 @@ module Gollum
     #
     #########################################################################
 
-    # The Grit::Repo associated with the wiki.
+    # The Gollum::Git::Repo associated with the wiki.
     #
-    # Returns the Grit::Repo.
+    # Returns the Gollum::Git::Repo.
     attr_reader :repo
 
     # The String path to the Git repository that holds the Gollum site.
@@ -885,10 +880,10 @@ module Gollum
     #
     # ref - A string ref or SHA pointing to a valid commit.
     #
-    # Returns a Grit::Commit instance.
+    # Returns a Gollum::Git::Commit instance.
     def commit_for(ref)
       @access.commit(ref)
-    rescue Grit::GitRuby::Repository::NoSuchShaFound
+    rescue Gollum::Git::NoSuchShaFound
     end
 
     # Finds a full listing of files and their blob SHA for a given ref.  Each
@@ -905,7 +900,7 @@ module Gollum
       else
         @access.tree(ref)
       end
-    rescue Grit::GitRuby::Repository::NoSuchShaFound
+    rescue Gollum::Git::NoSuchShaFound
       []
     end
 

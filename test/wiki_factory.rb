@@ -2,7 +2,7 @@
 class WikiFactory
   def self.create p, opt={}
     path = testpath "examples/test.git"
-    Grit::Repo.init_bare(path)
+    Gollum::Git::Repo.init_bare(path)
     Gollum::Wiki.default_options = { :universal_toc => false }.merge(opt)
     cleanup                      = Proc.new { FileUtils.rm_r File.join(File.dirname(__FILE__), *%w[examples test.git]) }
     wiki                         = Gollum::Wiki.new(path)
