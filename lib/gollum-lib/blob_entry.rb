@@ -31,13 +31,13 @@ module Gollum
       @name ||= ::File.basename(@path)
     end
 
-    # Gets a Grit::Blob instance for this blob.
+    # Gets a Gollum::Git::Blob instance for this blob.
     #
-    # repo - Grit::Repo instance for the Grit::Blob.
+    # repo - Gollum::Git::Repo instance for the Gollum::Git::Blob.
     #
-    # Returns an unbaked Grit::Blob instance.
+    # Returns an unbaked Gollum::Git::Blob instance.
     def blob(repo)
-      @blob ||= Grit::Blob.create(repo,
+      @blob ||= Gollum::Git::Blob.create(repo,
                                   :id => @sha, :name => name, :size => @size, :mode => @mode)
     end
 

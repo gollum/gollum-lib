@@ -105,7 +105,7 @@ page.format
 # => :markdown
 
 vsn = page.version
-# => <Grit::Commit>
+# => <Gollum::Git::Commit>
 
 vsn.id
 # => '3ca43e12377ea1e32ea5c9ce5992ec8bf266e3e5'
@@ -129,7 +129,7 @@ Get a list of versions for a given page:
 
 ```ruby
 vsns = wiki.page('page-name').versions
-# => [<Grit::Commit, <Grit::Commit, <Grit::Commit>]
+# => [<Gollum::Git::Commit, <Gollum::Git::Commit, <Gollum::Git::Commit>]
 
 vsns.first.id
 # => '3ca43e12377ea1e32ea5c9ce5992ec8bf266e3e5'
@@ -154,7 +154,7 @@ file.raw_data
 # => "alert('hello');"
 
 file.version
-# => <Grit::Commit>
+# => <Gollum::Git::Commit>
 ```
 
 Get a specific version of a given static file:

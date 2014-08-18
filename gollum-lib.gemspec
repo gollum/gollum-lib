@@ -22,7 +22,6 @@ Gem::Specification.new do |s|
   s.rdoc_options = ['--charset=UTF-8']
   s.extra_rdoc_files = %w[README.md LICENSE]
 
-  s.add_dependency 'gitlab-grit', '~> 2.6.5'
   s.add_dependency 'rouge', '~> 1.3.3'
   s.add_dependency 'nokogiri', '~> 1.6.1'
   s.add_dependency 'stringex', '~> 2.5.1'
@@ -76,7 +75,6 @@ Gem::Specification.new do |s|
     lib/gollum-lib/filter/wsd.rb
     lib/gollum-lib/git_access.rb
     lib/gollum-lib/gitcode.rb
-    lib/gollum-lib/grit_ext.rb
     lib/gollum-lib/helpers.rb
     lib/gollum-lib/hook.rb
     lib/gollum-lib/macro.rb

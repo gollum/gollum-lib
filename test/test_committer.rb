@@ -96,9 +96,9 @@ context "Wiki" do
 
     @wiki.repo.stubs(:bare).returns(false)
     Gollum::Committer.any_instance.stubs(:add_to_index).returns(true)
-    Grit::Index.any_instance.stubs(:commit).returns(true)
+    Gollum::Git::Index.any_instance.stubs(:commit).returns(true)
 
-    @wiki.repo.git.expects(:checkout).with(anything, anything, anything, "#{page_file_dir}#{dir}/#{name}.md")
+    @wiki.repo.git.expects(:checkout).with("#{page_file_dir}#{dir}/#{name}.md", "HEAD")
     @wiki.write_page(name, format, "foo bar baz", commit_details, dir)
   end
 
@@ -109,10 +109,10 @@ context "Wiki" do
     @wiki         = Gollum::Wiki.new(testpath("examples/lotr.git"), { :page_file_dir => page_file_dir })
 
     @wiki.repo.stubs(:bare).returns(false)
-    Grit::Index.any_instance.stubs(:commit).returns(true)
+    Gollum::Git::Index.any_instance.stubs(:commit).returns(true)
 
     page = @wiki.page(name)
-    @wiki.repo.git.expects(:checkout).at_least(1).with(anything, anything, anything, "#{page_file_dir}/#{name}.md")
+    @wiki.repo.git.expects(:checkout).at_least(1).with("#{page_file_dir}/#{name}.md", "HEAD")
     @wiki.update_page(page, page.name, format, "# Elrond", commit_details())
   end
 end

@@ -73,7 +73,7 @@ module Gollum
       return @on_disk_path
     end
 
-    # Public: The Grit::Commit version of the file.
+    # Public: The Gollum::Git::Commit version of the file.
     attr_accessor :version
 
     # Public: The String path of the file.
@@ -86,7 +86,7 @@ module Gollum
 
     # Populate the File with information from the Blob.
     #
-    # blob - The Grit::Blob that contains the info.
+    # blob - The Gollum::Git::Blob that contains the info.
     # path - The String directory path of the file.
     #
     # Returns the populated Gollum::File.
@@ -139,7 +139,7 @@ module Gollum
     def find(name, version, try_on_disk=false)
       checked = name.downcase
       map     = @wiki.tree_map_for(version)
-      commit  = version.is_a?(Grit::Commit) ? version : @wiki.commit_for(version)
+      commit  = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
 
       if entry = map.detect { |entry| entry.path.downcase == checked }
         @path    = name
