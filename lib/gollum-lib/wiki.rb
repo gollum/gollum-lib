@@ -592,13 +592,13 @@ module Gollum
       results = {}
 
       @repo.git.grep(*args).split("\n").each do |line|
-        result             = line.split(':')
-        result_1           = result[1]
+        result, _, count     = line.rpartition(':')
+        branch, _, file_name = result.partition(':')
         # Remove ext only from known extensions.
         # test.pdf => test.pdf, test.md => test
-        file_name          = Page::valid_page_name?(result_1) ? result_1.chomp(::File.extname(result_1)) :
-            result_1
-        results[file_name] = result[2].to_i
+        file_name            = Page::valid_page_name?(file_name) ? file_name.chomp(::File.extname(file_name)) :
+            file_name
+        results[file_name]   = count.to_i
       end
 
       # Use git ls-files '*query*' to search for file names. Grep only searches file content.

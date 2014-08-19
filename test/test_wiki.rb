@@ -528,6 +528,15 @@ context "page_file_dir option" do
     assert_equal 2, results[0][:count]
   end
 
+  test "search results should be able to return a filename with an embedded colon" do
+    # This file contains the word 'foo' and is called 'foo', so it should
+    # have a count of 2, not 1...
+    results = @wiki.search("find_the_colon")
+    assert_not_nil results
+    assert_equal 1, results[0][:count]
+    assert_equal "docs/has:colon", results[0][:name]
+  end
+
   teardown do
     FileUtils.rm_r(@path)
   end
