@@ -1,1 +1,3 @@
 0000000000000000000000000000000000000000 22b404803c966dd92865614d86ff22ca12e50c1e rick <technoweenie@gmail.com> 1295287591 -0800	commit (initial): initial commit
+22b404803c966dd92865614d86ff22ca12e50c1e 65804130b13297afa36a110aaaad1379e1f6218a Jason Mobarak <mobarakj@lab126.com> 1408425695 -0700	commit: Test data for "has colon" fix
+65804130b13297afa36a110aaaad1379e1f6218a 71badb1ddea3a989cd232df0d59754a580f93f41 Jason Mobarak <mobarakj@lab126.com> 1408426055 -0700	commit (amend): Test data for "has colon" fix
