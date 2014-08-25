@@ -764,3 +764,58 @@ context "Renames directory traversal" do
   end
 end
 
+context "Wiki subclassing" do
+  setup do
+    @path = testpath("examples/test.git")
+    FileUtils.rm_rf(@path)
+    Gollum::Git::Repo.init_bare(@path)
+    @wiki = Class.new(Gollum::Wiki).new(@path)
+  end
+
+  test "wiki page can be written by subclass" do
+    details = commit_details
+    @wiki.write_page("Gollum", :markdown, "# Gollum", details)
+    page = @wiki.page("Gollum")
+    first_commit = @wiki.repo.commits.first
+
+    assert_equal 1, @wiki.repo.commits.size
+    assert_equal details[:name], first_commit.author.name
+    assert_equal details[:email], first_commit.author.email
+    assert_equal details[:message], first_commit.message
+    assert_equal "# Gollum", page.raw_data
+  end
+
+  test "wiki page can be updated by subclass" do
+    @wiki.write_page("Gollum", :markdown, "# Gollum", commit_details)
+    page = @wiki.page("Gollum")
+
+    @wiki.update_page(page, page.name, :markdown, "# Smeagol", {
+        :name    => "Smeagol",
+        :email   => "smeagol@example.org",
+        :message => "Leave now, and never come back!"
+    })
+    page = @wiki.page("Gollum")
+    first_commit = @wiki.repo.commits.find { |c| c.author.name == "Smeagol" }
+
+    assert_equal 2, @wiki.repo.commits.size
+    assert_equal "Smeagol", first_commit.author.name
+    assert_equal "smeagol@example.org", first_commit.author.email
+    assert_equal "Leave now, and never come back!", first_commit.message
+    assert_equal "# Smeagol", page.raw_data
+  end
+
+  test "wiki page can be deleted by subclass" do
+    @wiki.write_page("Gollum", :markdown, "# Gollum", commit_details)
+    page = @wiki.page("Gollum")
+
+    @wiki.delete_page(page, commit_details)
+    page = @wiki.page("Gollum")
+
+    assert_equal 2, @wiki.repo.commits.size
+    assert_nil page
+  end
+
+  teardown do
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+  end
+end
