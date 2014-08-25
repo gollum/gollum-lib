@@ -14,16 +14,16 @@ module Gollum
       attr_writer :markup_classes
 
       # Sets the default ref for the wiki.
-      attr_accessor :default_ref
+      attr_writer :default_ref
 
       # Sets the default name for commits.
-      attr_accessor :default_committer_name
+      attr_writer :default_committer_name
 
       # Sets the default email for commits.
-      attr_accessor :default_committer_email
+      attr_writer :default_committer_email
 
       # Array of chars to substitute whitespace for when trying to locate file in git repo.
-      attr_accessor :default_ws_subs
+      attr_writer :default_ws_subs
 
       # Sets sanitization options. Set to false to deactivate
       # sanitization altogether.
@@ -35,7 +35,7 @@ module Gollum
 
       # Hash for setting different default wiki options
       # These defaults can be overridden by options passed directly to initialize()
-      attr_accessor :default_options
+      attr_writer :default_options
 
       # Gets the page class used by all instances of this Wiki.
       # Default: Gollum::Page.
@@ -105,14 +105,27 @@ module Gollum
         end
         @history_sanitization
       end
+
+      def default_ref
+        @default_ref || 'master'
+      end
+
+      def default_committer_name
+        @default_committer_name || 'Anonymous'
+      end
+
+      def default_committer_email
+        @default_committer_email || 'anon@anon.com'
+      end
+
+      def default_ws_subs
+        @default_ws_subs || ['_', '-']
+      end
+
+      def default_options
+        @default_options || {}
+      end
     end
-
-    self.default_ref             = 'master'
-    self.default_committer_name  = 'Anonymous'
-    self.default_committer_email = 'anon@anon.com'
-
-    self.default_ws_subs = ['_', '-']
-    self.default_options = {}
 
     # The String base path to prefix to internal links. For example, when set
     # to "/wiki", the page "Hobbit" will be linked as "/wiki/Hobbit". Defaults
