@@ -194,7 +194,7 @@ context "Markup" do
     @wiki.write_page("Potato", :markdown, "a [[Potato Heaad|Potato]] ", commit_details)
     page   = @wiki.page("Potato")
     output = page.formatted_data
-    assert_html_equal "<p>a<aclass=\"internalpresent\"href=\"/Potato\">PotatoHeaad</a></p>", output
+    assert_html_equal "<p>a<a class=\"internal present\" href=\"/Potato\">Potato Heaad</a></p>", output
   end
 
   test "page link with different text on mediawiki" do
@@ -473,7 +473,7 @@ context "Markup" do
 
   test "image with alt" do
     content = "a [[alpha.jpg|alt=Alpha Dog]] b"
-    output  = %{<p>a<imgsrc=\"/greek/alpha.jpg\"alt=\"AlphaDog\"/>b</p>}
+    output  = %{<p>a<img src=\"/greek/alpha.jpg\" alt=\"Alpha Dog\"/>b</p>}
     relative_image(content, output)
   end
 
@@ -481,7 +481,7 @@ context "Markup" do
     %w{em px}.each do |unit|
       %w{width height}.each do |dim|
         content = "a [[alpha.jpg|#{dim}=100#{unit}]] b"
-        output  = "<p>a<imgsrc=\"/greek/alpha.jpg\"#{dim}=\"100#{unit}\"/>b</p>"
+        output  = "<p>a<img src=\"/greek/alpha.jpg\"#{dim}=\"100#{unit}\"/>b</p>"
         relative_image(content, output)
       end
     end
@@ -490,7 +490,7 @@ context "Markup" do
   test "image with bogus dimension" do
     %w{width height}.each do |dim|
       content = "a [[alpha.jpg|#{dim}=100]] b"
-      output  = "<p>a<imgsrc=\"/greek/alpha.jpg\"/>b</p>"
+      output  = "<p>a<img src=\"/greek/alpha.jpg\"/>b</p>"
       relative_image(content, output)
     end
   end
@@ -498,7 +498,7 @@ context "Markup" do
   test "image with vertical align" do
     %w{top texttop middle absmiddle bottom absbottom baseline}.each do |align|
       content = "a [[alpha.jpg|align=#{align}]] b"
-      output  = %Q{<p>a<imgsrc=\"/greek/alpha.jpg\"align=\"#{align}\"/>b</p>}
+      output  = %Q{<p>a<img src=\"/greek/alpha.jpg\"align=\"#{align}\"/>b</p>}
       relative_image(content, output)
     end
   end
@@ -506,40 +506,40 @@ context "Markup" do
   test "image with horizontal align" do
     %w{left center right}.each do |align|
       content = "a [[alpha.jpg|align=#{align}]] b"
-      output  = "<p>a<spanclass=\"align-#{align}\"><span><imgsrc=\"/greek/alpha.jpg\"/></span></span>b</p>"
+      output  = "<p>a<span class=\"align-#{align}\"><span><img src=\"/greek/alpha.jpg\"/></span></span>b</p>"
       relative_image(content, output)
     end
   end
 
   test "image with float" do
     content = "a\n\n[[alpha.jpg|float]]\n\nb"
-    output  = "<p>a</p><p><spanclass=\"float-left\"><span><imgsrc=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"float-left\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
   test "image with float and align" do
     %w{left right}.each do |align|
       content = "a\n\n[[alpha.jpg|float|align=#{align}]]\n\nb"
-      output  = "<p>a</p><p><spanclass=\"float-#{align}\"><span><imgsrc=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
+      output  = "<p>a</p><p><span class=\"float-#{align}\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
       relative_image(content, output)
     end
   end
 
   test "image with frame" do
     content = "a\n\n[[alpha.jpg|frame]]\n\nb"
-    output  = "<p>a</p><p><spanclass=\"frame\"><span><imgsrc=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
   test "absolute image with frame" do
     content = "a\n\n[[http://example.com/bilbo.jpg|frame]]\n\nb"
-    output  = "<p>a</p><p><spanclass=\"frame\"><span><imgsrc=\"http://example.com/bilbo.jpg\"/></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"http://example.com/bilbo.jpg\"/></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
   test "image with frame and alt" do
     content = "a\n\n[[alpha.jpg|frame|alt=Alpha]]\n\nb"
-    output  = "<p>a</p><p><spanclass=\"frame\"><span><imgsrc=\"/greek/alpha.jpg\"alt=\"Alpha\"/><span>Alpha</span></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"/greek/alpha.jpg\"alt=\"Alpha\"/><span>Alpha</span></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
@@ -644,7 +644,7 @@ context "Markup" do
 
   test "code blocks with ascii characters" do
     content = "a\n\n```\n├─foo\n```\n\nb"
-    output  = %(<p>a</p><preclass=\"highlight\">├─foo</pre><p>b</p>)
+    output  = %(<p>a</p><pre class=\"highlight\">├─foo</pre><p>b</p>)
     compare(content, output)
   end
 
@@ -786,13 +786,13 @@ np.array([[2,2],[1,3]],np.float)
 
   test "strips javscript protocol urls" do
     content = "[Hack me](javascript:hacked=true)"
-    output  = "<p><a>Hackme</a></p>"
+    output  = "<p><a>Hack me</a></p>"
     compare(content, output)
   end
 
   test "allows apt uri schemes" do
     content = "[Hack me](apt:gettext)"
-    output  = "<p><a href=\"apt:gettext\">Hackme</a></p>"
+    output  = "<p><a href=\"apt:gettext\">Hack me</a></p>"
     compare(content, output)
   end
 
@@ -930,7 +930,7 @@ __TOC__
 
   test "plain text (.txt) is rendered with inline HTML escaped" do
     content = "Plain text <br/> with a <a href=\"http://example.com\">HTML link</a>"
-    output  = "<pre>Plain text&lt;br/&gt;with a&lt;ahref=\"http://example.com\"&gt;HTML link&lt;/a&gt;</pre>"
+    output  = "<pre>Plain text &lt;br/&gt; with a &lt;a href=\"http://example.com\"&gt;HTML link&lt;/a&gt;</pre>"
     compare(content, output, "txt")
   end
 
@@ -942,8 +942,7 @@ __TOC__
     expected = "<h1><a class=\"anchor\" id=\"hi\" href=\"#hi\"><i class=\"fa fa-link\"></i></a>hi</h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
     actual   = markup.render_default "#hi\n[[_TOC_]]"
 
-    # assert_html_equal ignores class values due to using nokogiri diff so use assert_equal
-    assert_equal expected, actual.strip
+    assert_html_equal expected, actual
   end
 
   #########################################################################
