@@ -15,51 +15,53 @@ class Gollum::Filter::Tags < Gollum::Filter
           parts          = $2.split('][')
           parts[0][0..4] = ""
           link           = "#{parts[1]}|#{parts[0].sub(/\.org/, '')}"
-          id             = Digest::SHA1.hexdigest(link)
-          @map[id]       = link
+          id             = register_tag(link)
           "#{pre}#{id}#{post}"
         else
           $&
         end
       else
-        id       = Digest::SHA1.hexdigest($2)
-        @map[id] = $2
+        id = register_tag($2)
         "#{$1}#{id}#{$3}"
       end
     end
     data
   end
 
-  # Process all tags from the tagmap and replace the placeholders with the
+  def register_tag(tag)
+    id       = "TAG#{Digest::SHA1.hexdigest(tag)}TAG"
+    @map[id] = tag
+    id
+  end
+
+  # Process all text nodes from the doc and replace the placeholders with the
   # final markup.
-  def process(data)
-    @map.each do |id, tag|
-      # If it's preformatted, just put the tag back
-      if is_preformatted?(data, id)
-        data.gsub!(id) do
-          "[[#{tag}]]"
+  def process(rendered_data)
+    doc  = Nokogiri::HTML::DocumentFragment.parse(rendered_data)
+    doc.traverse do |node|
+      if node.text? then
+        content = node.content
+        content.gsub!(/TAG[a-f0-9]+TAG/) do |id|
+          if tag = @map[id] then
+            if is_preformatted?(node) then
+              "[[#{tag}]]"
+            else
+              process_tag(tag).gsub('%2f', '/')
+            end
+          end
         end
-      else
-        data.gsub!(id) do
-          process_tag(tag).gsub('%2F', '/')
-        end
+        node.replace(content) if content != node.content
       end
     end
 
-    data
+    doc.to_html
   end
 
   private
-  # Find `id` within `data` and determine if it's within
-  # preformatted tags.
-  #
-  # data      - The String data (with placeholders).
-  # id        - The String SHA1 hash.
+
   PREFORMATTED_TAGS = %w(code tt)
 
-  def is_preformatted?(data, id)
-    doc  = Nokogiri::HTML::DocumentFragment.parse(data)
-    node = doc.search("[text()*='#{id}']").first
+  def is_preformatted?(node)
     node && (PREFORMATTED_TAGS.include?(node.name) ||
         node.ancestors.any? { |a| PREFORMATTED_TAGS.include?(a.name) })
   end
