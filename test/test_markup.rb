@@ -46,7 +46,13 @@ context "Markup" do
       assert_kind_of Nokogiri::HTML::DocumentFragment, doc
       yielded = true
     end
-    assert yielded
+    assert yielded, "Gollum::Page#formatted_data should yield a document"
+
+    yielded = false
+    page.formatted_data do
+      yielded = true
+    end
+    assert yielded, "Gollum::Page#formatted_data should yield a document even when formatted_data is taken from cache"
   end
 
   test "Gollum::Markup#formats returns all formats by default" do
