@@ -84,10 +84,11 @@ module Gollum
     #
     # Returns a newly initialized Gollum::Page.
     def initialize(wiki)
-      @wiki        = wiki
-      @blob        = @header = @footer = @sidebar = nil
-      @doc         = nil
-      @parent_page = nil
+      @wiki           = wiki
+      @blob           = @header = @footer = @sidebar = nil
+      @formatted_data = nil
+      @doc            = nil
+      @parent_page    = nil
     end
 
     # Public: The on-disk filename of the page including extension.
@@ -216,10 +217,18 @@ module Gollum
     #
     # Returns the String data.
     def formatted_data(encoding = nil, include_levels = 10, &block)
-      @blob && markup_class.render(historical?, encoding, include_levels) do |doc|
-        @doc = doc
-        yield doc if block_given?
+      return nil unless @blob
+
+      if @formatted_data && @doc then
+        yield @doc if block_given?
+      else
+        @formatted_data = markup_class.render(historical?, encoding, include_levels) do |doc|
+          @doc = doc
+          yield doc if block_given?
+        end
       end
+
+      @formatted_data
     end
 
     # Public: The table of contents of the page.
