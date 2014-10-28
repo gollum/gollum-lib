@@ -327,6 +327,29 @@ context "Wiki page writing" do
   end
 end
 
+context "Wiki search" do
+  setup do
+    @path = testpath("examples/test.git")
+    FileUtils.rm_rf(@path)
+    Gollum::Git::Repo.init_bare(@path)
+    @wiki = Class.new(Gollum::Wiki).new(@path)
+  end
+  
+  test "search results should be able to return a filename with an embedded colon" do
+    details = commit_details
+    @wiki.write_page("filename:with:colons", :markdown, "# Filename with colons", details)
+    page = @wiki.page("filename:with:colons")
+    results = @wiki.search("colons")
+    assert_not_nil results
+    assert_equal "filename:with:colons", results.first[:name]
+    assert_equal "1", results.first[:count]
+  end
+  
+  teardown do
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+  end
+end
+
 context "Wiki page writing with whitespace (filename contains whitespace)" do
   setup do
     @path = cloned_testpath("examples/lotr.git")
