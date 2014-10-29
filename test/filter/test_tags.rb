@@ -6,7 +6,6 @@ require File.expand_path(path)
 context "Gollum::Filter::Tags" do
   setup do
     @path          = cloned_testpath('examples/page_file_dir')
-    @repo          = Grit::Repo.init(@path)
     @page_file_dir = 'docs'
     @wiki          = Gollum::Wiki.new(@path, :page_file_dir => @page_file_dir)
   end
