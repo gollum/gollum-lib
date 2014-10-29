@@ -158,6 +158,31 @@ context "Wiki TOC" do
   end
 end
 
+context "Wiki TOC in _Sidebar.md" do
+  setup do
+    @path = testpath("examples/test.git")
+    FileUtils.rm_rf(@path)
+    Gollum::Git::Repo.init_bare(@path)
+    options = { :universal_toc => true }
+    @wiki = Class.new(Gollum::Wiki).new(@path, options)
+  end
+  
+  test "_Sidebar.md with [[_TOC_]] renders TOC" do
+    cd = commit_details
+    @wiki.write_page("Gollum", :markdown, "# Gollum", cd)
+    page = @wiki.page("Gollum")
+    @wiki.write_page("_Sidebar", :markdown, "[[_TOC_]]", cd)
+    sidebar = @wiki.page("_Sidebar")
+    sidebar.parent_page = page
+    assert_not_equal "\n", sidebar.formatted_data
+    assert_html_equal "<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#Gollum\">Gollum</a></li></ul></div></p>\n", sidebar.formatted_data
+  end
+  
+  teardown do
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+  end
+end
+
 context "Wiki page writing" do
   setup do
     @path = testpath("examples/test.git")

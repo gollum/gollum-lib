@@ -54,6 +54,8 @@ module Gollum
     attr_reader :format
     attr_reader :wiki
     attr_reader :page
+    attr_reader :parent_page
+    attr_reader :sub_page
     attr_reader :name
     attr_reader :include_levels
     attr_reader :to_xml_opts
@@ -107,7 +109,7 @@ module Gollum
     # filter_chain - the chain to process
     #
     # Returns the formatted data
-    def process_chain data, filter_chain
+    def process_chain(data, filter_chain)
       # First we extract the data through the chain...
       filter_chain.each do |filter|
         data = filter.extract(data)
