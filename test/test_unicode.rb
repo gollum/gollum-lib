@@ -83,8 +83,8 @@ context "Unicode Support" do
     anchors = h1 / :a
     assert_equal 1, h1s.size
     assert_equal 1, anchors.size
-    assert_equal %q(#%22La%22-faune-d'Édiacara), anchors[0]['href']
-    assert_equal %q(%22La%22-faune-d'Édiacara), anchors[0]['id']
+    assert_equal %q(#la-faune-d-Édiacara), anchors[0]['href']
+    assert_equal %q(la-faune-d-Édiacara), anchors[0]['id']
     assert_equal 'anchor', anchors[0]['class']
     assert_equal '', anchors[0].text
   end
