@@ -53,7 +53,7 @@ context "Unicode Support" do
 
     assert_equal nfd(expected), nfd(actual)
 
-    expected = nfd(%Q(<h1><a class="anchor" id="#{text}" href="##{text}"><i class="fa fa-link"></i></a>#{text}</h1>))
+    expected = nfd(%Q(<h1><a class="anchor" id="#{text.downcase}" href="##{text.downcase}"><i class="fa fa-link"></i></a>#{text}</h1>))
     actual   = nfd(page.formatted_data)
 
     # UTF-8 headers should not be encoded.
@@ -83,8 +83,8 @@ context "Unicode Support" do
     anchors = h1 / :a
     assert_equal 1, h1s.size
     assert_equal 1, anchors.size
-    assert_equal %q(#%22La%22-faune-d'Édiacara), anchors[0]['href']
-    assert_equal %q(%22La%22-faune-d'Édiacara), anchors[0]['id']
+    assert_equal %q(#la-faune-d-Édiacara), anchors[0]['href']
+    assert_equal %q(la-faune-d-Édiacara), anchors[0]['id']
     assert_equal 'anchor', anchors[0]['class']
     assert_equal '', anchors[0].text
   end
