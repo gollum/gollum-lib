@@ -13,7 +13,9 @@ class Gollum::Filter::TOC < Gollum::Filter
       toc = @markup.parent_page.toc_data
     else
     
-      doc.css('h1,h2,h3,h4,h5,h6').each do |h|
+      doc.css('h1,h2,h3,h4,h5,h6').each_with_index do |h, i|
+        # omit the first H1 (the page title) from the TOC if so configured
+        next if (i == 0 && h.name =~ /[Hh]1/) && @markup.wiki && @markup.wiki.h1_title
         # must escape "
         h_name               = h.content.gsub(' ', '-').gsub('"', '%22').strip
         next if h_name.empty?
