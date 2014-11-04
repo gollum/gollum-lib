@@ -874,6 +874,14 @@ np.array([[2,2],[1,3]],np.float)
         /name="wiki-Header"/
     ]
   end
+  
+  test "toc with h1_title does not include page title" do
+    @wiki.instance_variable_set(:@h1_title, true)
+    @wiki.write_page("H1Test", :markdown, "# This is the page title\n\n# Testing\n\nTest", commit_details)
+    page = @wiki.page("H1Test")
+    assert_html_equal page.toc_data, "<div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#Testing\">Testing</a></li></ul></div>"
+    @wiki.instance_variable_set(:@h1_title, false)
+  end
 
   test "identical headers in TOC have unique prefix" do
     content = <<-MARKDOWN
