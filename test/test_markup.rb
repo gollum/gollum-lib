@@ -855,13 +855,13 @@ np.array([[2,2],[1,3]],np.float)
 
   test "id with prefix ok" do
     content = "h2(example#wiki-foo). xxxx"
-    output  = "<h2 class=\"example\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"><i class=\"fa fa-link\"></i></a>xxxx</h2>"
+    output  = "<h2 class=\"example\" id=\"wiki-foo\"><a class=\"anchor\" id=\"_xxxx\" href=\"#_xxxx\"><i class=\"fa fa-link\"></i></a>xxxx</h2>"
     compare(content, output, :textile)
   end
 
   test "id prefix added" do
     content = "h2(#foo). xxxx[1]\n\nfn1.footnote"
-    output  = "<h2 id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx1\" href=\"#xxxx1\"><i class=\"fa fa-link\"></i></a>xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup></h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
+    output  = "<h2 id=\"wiki-foo\"><a class=\"anchor\" id=\"_xxxx1\" href=\"#_xxxx1\"><i class=\"fa fa-link\"></i></a>xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup>\n</h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
     compare(content, output, :textile)
   end
 
@@ -879,7 +879,7 @@ np.array([[2,2],[1,3]],np.float)
     @wiki.instance_variable_set(:@h1_title, true)
     @wiki.write_page("H1Test", :markdown, "# This is the page title\n\n# Testing\n\nTest", commit_details)
     page = @wiki.page("H1Test")
-    assert_html_equal page.toc_data, "<div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#Testing\">Testing</a></li></ul></div>"
+    assert_html_equal page.toc_data, "<div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#testing\">Testing</a></li></ul></div>"
     @wiki.instance_variable_set(:@h1_title, false)
   end
 
@@ -890,9 +890,32 @@ __TOC__
 # Summary
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"Summary\" href=\"#Summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h1><a class=\"anchor\" id=\"2-Summary\" href=\"#2-Summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h1><a class=\"anchor\" id=\"1-summary\" href=\"#1-summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>"
     compare(content, output, :markdown)
   end
+
+  test "anchor names are normalized" do
+    content = <<-MARKDOWN
+__TOC__
+# Summary '"' stuff
+# Summary !@$#%^&*() stuff
+    MARKDOWN
+
+    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary-stuff\" href=\"#summary-stuff\"><i class=\"fa fa-link\"></i></a>Summary '\"' stuff</h1>\n\n<h1><a class=\"anchor\" id=\"1-summary-stuff\" href=\"#1-summary-stuff\"><i class=\"fa fa-link\"></i></a>Summary !@$#%^&*() stuff</h1>"
+    compare(content, output, :markdown)
+  end
+
+  test 'anchor names contain the ancestor' do
+    content = <<-MARKDOWN
+__TOC__
+# Summary
+## Horse
+    MARKDOWN
+
+    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h2><a class=\"anchor\" id=\"summary_horse\" href=\"#summary_horse\"><i class=\"fa fa-link\"></i></a>Horse</h1>"
+    compare(content, output, :markdown)
+  end
+
 
   if ENV['ASCIIDOC']
     #########################################################################

@@ -127,7 +127,7 @@ context "Wiki page previewing" do
   test "preview_page" do
     page = @wiki.preview_page("Test", "# Bilbo", :markdown)
     assert_equal "# Bilbo", page.raw_data
-    assert_html_equal "<h1><a class=\"anchor\" id=\"Bilbo\" href=\"#Bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
+    assert_html_equal "<h1><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
     assert_equal "Test.md", page.filename
     assert_equal "Test", page.name
   end
@@ -143,8 +143,8 @@ context "Wiki TOC" do
   test "toc_generation" do
     page = @wiki.preview_page("Test", "# Bilbo", :markdown)
     assert_equal "# Bilbo", page.raw_data
-    assert_html_equal "<h1><a class=\"anchor\" id=\"Bilbo\" href=\"#Bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
-    assert_html_equal %{<div class="toc"><div class="toc-title">Table of Contents</div><ul><li><a href="#Bilbo">Bilbo</a></li></ul></div>}, page.toc_data
+    assert_html_equal "<h1><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
+    assert_html_equal %{<div class="toc"><div class="toc-title">Table of Contents</div><ul><li><a href="#bilbo">Bilbo</a></li></ul></div>}, page.toc_data
   end
 
   # Ensure ' creates valid links in TOC
@@ -153,8 +153,8 @@ context "Wiki TOC" do
   test "' in link" do
     page = @wiki.preview_page("Test", "# a'b", :markdown)
     assert_equal "# a'b", page.raw_data
-    assert_html_equal "<h1><a class=\"anchor\" id=\"a'b\" href=\"#a'b\"><i class=\"fa fa-link\"></i></a>a'b</h1>", page.formatted_data
-    assert_html_equal %{<div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#a'b\">a'b</a></li></ul></div>}, page.toc_data
+    assert_html_equal "<h1><a class=\"anchor\" id=\"a-b\" href=\"#a-b\"><i class=\"fa fa-link\"></i></a>a'b</h1>", page.formatted_data
+    assert_html_equal %{<div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#a-b\">a'b</a></li></ul></div>}, page.toc_data
   end
 end
 
@@ -175,7 +175,7 @@ context "Wiki TOC in _Sidebar.md" do
     sidebar = @wiki.page("_Sidebar")
     sidebar.parent_page = page
     assert_not_equal "\n", sidebar.formatted_data
-    assert_html_equal "<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#Gollum\">Gollum</a></li></ul></div></p>\n", sidebar.formatted_data
+    assert_html_equal "<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#gollum\">Gollum</a></li></ul></div></p>\n", sidebar.formatted_data
   end
   
   teardown do
