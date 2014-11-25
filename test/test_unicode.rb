@@ -36,7 +36,7 @@ context "Unicode Support" do
   end
 
   def nfd utf8
-    TwitterCldr::Normalization::NFD.normalize utf8
+    TwitterCldr::Normalization.normalize utf8
   end
 
   def check_h1 text, page

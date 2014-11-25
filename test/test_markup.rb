@@ -239,7 +239,7 @@ context "Markup" do
         DATA
         ), commit_details)
     output   = @wiki.page(page).formatted_data
-    expected = %Q{<pre><code>      <pre class=\"highlight\">rot13='tr '\\''A-Za-z'\\'' '\\''N-ZA-Mn-za-m'\\'</pre>\n</code></pre>}
+    expected = %Q{<pre><code>      <pre class=\"highlight\"><code>rot13='tr '\\''A-Za-z'\\'' '\\''N-ZA-Mn-za-m'\\'</code></pre>\n</code></pre>}
     assert_html_equal expected, output
   end
 
@@ -252,7 +252,7 @@ context "Markup" do
 ~~~
       ), commit_details)
     output   = @wiki.page(page).formatted_data
-    expected = %Q{<pre class=\"highlight\">'hi'</pre>}
+    expected = %Q{<pre class=\"highlight\"><code>'hi'</code></pre>}
 
     assert_html_equal expected, output
   end
@@ -265,7 +265,7 @@ context "Markup" do
 ~~~
       ), commit_details)
     output   = @wiki.page(page).formatted_data
-    expected = %Q{<pre class=\"highlight\"><span class=\"s1\">'hi'</span></pre>}
+    expected = %Q{<pre class=\"highlight\"><code><span class=\"s1\">'hi'</span></code></pre>}
     assert_html_equal expected, output
   end
 
@@ -278,7 +278,7 @@ context "Markup" do
 ~~~
       ), commit_details)
     output   = @wiki.page(page).formatted_data
-    expected = %Q{<pre class=\"highlight\"><span class=\"s1\">'hi'</span></pre>}
+    expected = %Q{<pre class=\"highlight\"><code><span class=\"s1\">'hi'</span></code></pre>}
 
     assert_html_equal expected, output
   end
@@ -293,7 +293,7 @@ context "Markup" do
 ~~~~~~
       ), commit_details)
     output   = @wiki.page(page).formatted_data
-    expected = %Q{<pre class=\"highlight\"><span class=\"o\">~~</span>\n<span class=\"s1\">'hi'</span><span class=\"o\">~</span></pre>}
+    expected = %Q{<pre class=\"highlight\"><code><span class=\"o\">~~</span>\n<span class=\"s1\">'hi'</span><span class=\"o\">~</span></code></pre>}
 
     assert_html_equal expected, output
   end
@@ -605,7 +605,7 @@ context "Markup" do
 
   test "regular code blocks" do
     content = "a\n\n```ruby\nx = 1\n```\n\nb"
-    output  = %Q{<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span></pre>\n\n<p>b</p>}
+    output  = %Q{<p>a</p>\n\n<pre class=\"highlight\"><code><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span></code></pre>\n\n<p>b</p>}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
@@ -618,7 +618,7 @@ context "Markup" do
 
   test "code blocks with carriage returns" do
     content = "a\r\n\r\n```ruby\r\nx = 1\r\n```\r\n\r\nb"
-    output  = %Q{<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span></pre>\n\n<p>b</p>}
+    output  = %Q{<p>a</p>\n\n<pre class=\"highlight\"><code><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span></code></pre>\n\n<p>b</p>}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
@@ -631,25 +631,25 @@ context "Markup" do
 
   test "code blocks with two-space indent" do
     content = "a\n\n```ruby\n  x = 1\n\n  y = 2\n```\n\nb"
-    output  = "<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">" +
+    output  = "<p>a</p>\n\n<pre class=\"highlight\"><code><span class=\"n\">" +
         "x</span> <span class=\"o\">=</span> <span class=\"mi\">1" +
         "</span>\n\n<span class=\"n\">y</span> <span class=\"o\">=" +
-        "</span> <span class=\"mi\">2</span>\n</pre>\n\n\n<p>b</p>"
+        "</span> <span class=\"mi\">2</span>\n</code></pre>\n\n\n<p>b</p>"
     compare(content, output)
   end
 
   test "code blocks with one-tab indent" do
     content = "a\n\n```ruby\n\tx = 1\n\n\ty = 2\n```\n\nb"
-    output  = "<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">" +
+    output  = "<p>a</p>\n\n<pre class=\"highlight\"><code><span class=\"n\">" +
         "x</span> <span class=\"o\">=</span> <span class=\"mi\">1" +
         "</span>\n\n<span class=\"n\">y</span> <span class=\"o\">=" +
-        "</span> <span class=\"mi\">2</span>\n</pre>\n\n\n<p>b</p>"
+        "</span> <span class=\"mi\">2</span>\n</code></pre>\n\n\n<p>b</p>"
     compare(content, output)
   end
 
   test "code blocks with multibyte characters indent" do
     content = "a\n\n```ruby\ns = 'やくしまるえつこ'\n```\n\nb"
-    output  = %Q{<p>a</p>\n\n<pre class=\"highlight\"><span class=\"n\">s</span> <span class=\"o\">=</span> <span class=\"s1\">'やくしまるえつこ'</span></pre>\n\n<p>b</p>}
+    output  = %Q{<p>a</p>\n\n<pre class=\"highlight\"><code><span class=\"n\">s</span> <span class=\"o\">=</span> <span class=\"s1\">'やくしまるえつこ'</span></code></pre>\n\n<p>b</p>}
     index   = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
     index.commit("Add alpha.jpg")
@@ -661,7 +661,7 @@ context "Markup" do
 
   test "code blocks with ascii characters" do
     content = "a\n\n```\n├─foo\n```\n\nb"
-    output  = %(<p>a</p><pre class=\"highlight\">├─foo</pre><p>b</p>)
+    output  = %(<p>a</p><pre class=\"highlight\"><code>├─foo</code></pre><p>b</p>)
     compare(content, output)
   end
 
