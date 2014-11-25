@@ -4,7 +4,21 @@ require 'digest/md5'
 require 'digest/sha1'
 require 'ostruct'
 
-require 'grit_adapter'
+KNOWN_ADAPTERS = {
+  /grit/i => 'grit_adapter',
+  /rugged/i => 'rugged_adapter',
+}
+
+DEFAULT_ADAPTER = 'grit_adapter'
+
+if defined?(Gollum::GIT_ADAPTER)
+  adapter_key = KNOWN_ADAPTERS.keys.select {|key| key =~ Gollum::GIT_ADAPTER }.first
+  adapter = KNOWN_ADAPTERS[adapter_key] || DEFAULT_ADAPTER
+else
+  adapter = DEFAULT_ADAPTER
+end
+
+require adapter
 
 # external
 require 'github/markup'
