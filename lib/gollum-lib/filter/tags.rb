@@ -81,6 +81,8 @@ class Gollum::Filter::Tags < Gollum::Filter
       html
     elsif html = process_image_tag(tag)
       html
+    elsif html = process_external_link_tag(tag)
+      html
     elsif html = process_file_link_tag(tag)
       html
     else
@@ -201,6 +203,35 @@ class Gollum::Filter::Tags < Gollum::Filter
     end
   end
 
+  # Return the String HTML if the tag is a valid external link tag or
+  # nil if it is not.
+  def process_external_link_tag(tag)
+    parts = tag.split('|')
+    return if parts.size.zero?
+    if parts.size == 1
+      url = parts[0].strip
+    else
+      name, url = *parts.compact.map(&:strip)      
+    end
+    accepted_protocols = @markup.wiki.sanitization.protocols['a']['href'].dup
+    if accepted_protocols.include?(:relative)
+      accepted_protocols.select!{|protocol| protocol != :relative}
+      regexp = %r{^((#{accepted_protocols.join("|")}):)?(//)}
+    else
+      regexp = %r{^((#{accepted_protocols.join("|")}):)}
+    end
+    if url =~ regexp
+      if name.nil?
+        %{<a href="#{url}">#{url}</a>}
+      else
+        %{<a href="#{url}">#{name}</a>}
+      end
+    else
+      nil
+    end
+    
+  end
+
   # Attempt to process the tag as a file link tag.
   #
   # tag       - The String tag contents (the stuff inside the double
@@ -216,8 +247,6 @@ class Gollum::Filter::Tags < Gollum::Filter
     path = parts[1] && parts[1].strip
     path = if path && file = @markup.find_file(path)
              ::File.join @markup.wiki.base_path, file.path
-           elsif path =~ %r{^https?://}
-             path
            else
              nil
            end
@@ -245,25 +274,21 @@ class Gollum::Filter::Tags < Gollum::Filter
     name, page_name = *parts.compact.map(&:strip)
     cname           = @markup.wiki.page_class.cname(page_name || name)
 
-    if name =~ %r{^https?://} && page_name.nil?
-      %{<a href="#{name}">#{name}</a>}
-    else
-      presence    = "absent"
-      link_name   = cname
-      page, extra = find_page_from_name(cname)
-      if page
-        link_name = @markup.wiki.page_class.cname(page.name)
-        presence  = "present"
-      end
-      link = ::File.join(@markup.wiki.base_path, page ? page.escaped_url_path : CGI.escape(link_name))
-
-      # //page is invalid
-      # strip all duplicate forward slashes using helpers.rb trim_leading_slash
-      # //page => /page
-      link = trim_leading_slash link
-
-      %{<a class="internal #{presence}" href="#{link}#{extra}">#{name}</a>}
+    presence    = "absent"
+    link_name   = cname
+    page, extra = find_page_from_name(cname)
+    if page
+      link_name = @markup.wiki.page_class.cname(page.name)
+      presence  = "present"
     end
+    link = ::File.join(@markup.wiki.base_path, page ? page.escaped_url_path : CGI.escape(link_name))
+
+    # //page is invalid
+    # strip all duplicate forward slashes using helpers.rb trim_leading_slash
+    # //page => /page
+    link = trim_leading_slash link
+
+    %{<a class="internal #{presence}" href="#{link}#{extra}">#{name}</a>}
   end
 
   # Find a page from a given cname.  If the page has an anchor (#) and has

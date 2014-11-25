@@ -191,9 +191,20 @@ context "Markup" do
 
   test "external page link" do
     @wiki.write_page("Bilbo Baggins", :markdown, "a [[http://example.com]] b", commit_details)
-
     page = @wiki.page("Bilbo Baggins")
     assert_html_equal "<p>a <a href=\"http://example.com\">http://example.com</a> b</p>", page.formatted_data
+  end
+  
+  test "external page link with different text" do
+    @wiki.write_page("Bilbo Baggins", :markdown, "a [[Words|http://example.com]] b", commit_details)
+    page = @wiki.page("Bilbo Baggins")
+    assert_html_equal "<p>a <a href=\"http://example.com\">Words</a> b</p>", page.formatted_data
+  end
+
+  test "external page link with agnostic protocol" do
+    @wiki.write_page("Bilbo Baggins", :markdown, "a [[Words|//example.com]] b", commit_details)
+    page = @wiki.page("Bilbo Baggins")
+    assert_html_equal "<p>a <a href=\"//example.com\">Words</a> b</p>", page.formatted_data
   end
 
   test "page link with different text" do
