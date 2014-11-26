@@ -18,7 +18,7 @@ module Gollum
     #           :message   - The String commit message.
     #           :name      - The String author full name.
     #           :email     - The String email address.
-    #           :parent    - Optional Grit::Commit parent to this update.
+    #           :parent    - Optional Gollum::Git::Commit parent to this update.
     #           :tree      - Optional String SHA of the tree to create the
     #                        index from.
     #           :committer - Optional Gollum::Committer instance.  If provided,
@@ -35,7 +35,7 @@ module Gollum
 
     # Public: References the Git index for this commit.
     #
-    # Returns a Grit::Index.
+    # Returns a Gollum::Git::Index.
     def index
       @index ||= begin
         idx = @wiki.repo.index
@@ -50,18 +50,18 @@ module Gollum
 
     # Public: The committer for this commit.
     #
-    # Returns a Grit::Actor.
+    # Returns a Gollum::Git::Actor.
     def actor
       @actor ||= begin
         @options[:name]  = @wiki.default_committer_name if @options[:name].to_s.empty?
         @options[:email] = @wiki.default_committer_email if @options[:email].to_s.empty?
-        Grit::Actor.new(@options[:name], @options[:email])
+        Gollum::Git::Actor.new(@options[:name], @options[:email])
       end
     end
 
     # Public: The parent commits to this pending commit.
     #
-    # Returns an array of Grit::Commit instances.
+    # Returns an array of Gollum::Git::Commit instances.
     def parents
       @parents ||= begin
         arr = [@options[:parent] || @wiki.repo.commit(@wiki.ref)]
@@ -155,9 +155,9 @@ module Gollum
 
         Dir.chdir(::File.join(@wiki.repo.path, '..')) do
           if file_path_scheduled_for_deletion?(index.tree, path)
-            @wiki.repo.git.rm({ 'f' => true }, '--', path)
+            @wiki.repo.git.rm(path, :force => true)
           else
-            @wiki.repo.git.checkout({}, 'HEAD', '--', path)
+            @wiki.repo.git.checkout(path, 'HEAD')
           end
         end
       end

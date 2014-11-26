@@ -113,7 +113,8 @@ class Gollum::Filter::Code < Gollum::Filter
           "<pre><code>#{CGI.escapeHTML(spec[:code])}</code></pre>"
         end
       end
-      data.gsub!(id) do
+      # Removes paragraph tags surrounding <pre> blocks, see issue https://github.com/gollum/gollum-lib/issues/97
+      data.gsub!(/(<p>#{id}<\/p>|#{id})/) do
         body
       end
     end

@@ -4,9 +4,15 @@ require 'digest/md5'
 require 'digest/sha1'
 require 'ostruct'
 
+DEFAULT_ADAPTER = 'grit_adapter'
+
+if defined?(Gollum::GIT_ADAPTER)
+  require "#{Gollum::GIT_ADAPTER.downcase}_adapter"
+else
+  require DEFAULT_ADAPTER
+end
+
 # external
-require 'grit'
-require File.expand_path('../gollum-lib/grit_ext', __FILE__)
 require 'github/markup'
 require 'sanitize'
 
@@ -18,6 +24,7 @@ require File.expand_path('../gollum-lib/pagination', __FILE__)
 require File.expand_path('../gollum-lib/blob_entry', __FILE__)
 require File.expand_path('../gollum-lib/wiki', __FILE__)
 require File.expand_path('../gollum-lib/page', __FILE__)
+require File.expand_path('../gollum-lib/macro', __FILE__)
 require File.expand_path('../gollum-lib/file', __FILE__)
 require File.expand_path('../gollum-lib/file_view', __FILE__)
 require File.expand_path('../gollum-lib/markup', __FILE__)
@@ -31,19 +38,11 @@ $KCODE = 'U' if RUBY_VERSION[0, 3] == '1.8'
 
 module Gollum
   module Lib
-    VERSION = '3.0.0'
+    VERSION = '4.0.0'
   end
 
   def self.assets_path
     ::File.expand_path('gollum/frontend/public', ::File.dirname(__FILE__))
-  end
-
-  def self.set_git_timeout(time)
-    Grit::Git.git_timeout = time
-  end
-
-  def self.set_git_max_filesize(size)
-    Grit::Git.git_max_size = size
   end
 
   class Error < StandardError; end

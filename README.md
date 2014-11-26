@@ -43,7 +43,7 @@ In order to use the various formats that Gollum supports, you will need to
 separately install the necessary dependencies for each format. You only need
 to install the dependencies for the formats that you plan to use.
 
-* [ASCIIDoc](http://www.methods.co.nz/asciidoc/) -- `brew install asciidoc` on mac or `apt-get install -y asciidoc` on Ubuntu
+* [AsciiDoc](http://www.methods.co.nz/asciidoc/) -- `gem install asciidoctor`
 * [Creole](http://wikicreole.org/) -- `gem install creole`
 * [Markdown](http://daringfireball.net/projects/markdown/) -- `gem install redcarpet`
 * [GitHub Flavored Markdown](https://help.github.com/articles/github-flavored-markdown) -- `gem install github-markdown`
@@ -105,7 +105,7 @@ page.format
 # => :markdown
 
 vsn = page.version
-# => <Grit::Commit>
+# => <Gollum::Git::Commit>
 
 vsn.id
 # => '3ca43e12377ea1e32ea5c9ce5992ec8bf266e3e5'
@@ -129,7 +129,7 @@ Get a list of versions for a given page:
 
 ```ruby
 vsns = wiki.page('page-name').versions
-# => [<Grit::Commit, <Grit::Commit, <Grit::Commit>]
+# => [<Gollum::Git::Commit, <Gollum::Git::Commit, <Gollum::Git::Commit>]
 
 vsns.first.id
 # => '3ca43e12377ea1e32ea5c9ce5992ec8bf266e3e5'
@@ -154,7 +154,7 @@ file.raw_data
 # => "alert('hello');"
 
 file.version
-# => <Grit::Commit>
+# => <Gollum::Git::Commit>
 ```
 
 Get a specific version of a given static file:

@@ -84,10 +84,11 @@ module Gollum
     #
     # Returns a newly initialized Gollum::Page.
     def initialize(wiki)
-      @wiki        = wiki
-      @blob        = @header = @footer = @sidebar = nil
-      @doc         = nil
-      @parent_page = nil
+      @wiki           = wiki
+      @blob           = @header = @footer = @sidebar = nil
+      @formatted_data = nil
+      @doc            = nil
+      @parent_page    = nil
     end
 
     # Public: The on-disk filename of the page including extension.
@@ -216,10 +217,18 @@ module Gollum
     #
     # Returns the String data.
     def formatted_data(encoding = nil, include_levels = 10, &block)
-      @blob && markup_class.render(historical?, encoding, include_levels) do |doc|
-        @doc = doc
-        yield doc if block_given?
+      return nil unless @blob
+
+      if @formatted_data && @doc then
+        yield @doc if block_given?
+      else
+        @formatted_data = markup_class.render(historical?, encoding, include_levels) do |doc|
+          @doc = doc
+          yield doc if block_given?
+        end
       end
+
+      @formatted_data
     end
 
     # Public: The table of contents of the page.
@@ -257,7 +266,7 @@ module Gollum
 
     # Public: The current version of the page.
     #
-    # Returns the Grit::Commit.
+    # Returns the Gollum::Git::Commit.
     attr_reader :version
 
     # Public: All of the versions that have touched the Page.
@@ -265,20 +274,11 @@ module Gollum
     # options - The options Hash:
     #           :page     - The Integer page number (default: 1).
     #           :per_page - The Integer max count of items to return.
-    #           :follow   - Follow's a file across renames, but falls back
-    #                       to a slower Grit native call (implicit in repo.git.log).  (default: false)
+    #           :follow   - Follow's a file across renames, slower.  (default: false)
     #
-    # Returns an Array of Grit::Commit.
+    # Returns an Array of Gollum::Git::Commit.
     def versions(options = {})
-      if options[:follow]
-        options[:pretty] = 'raw'
-        options.delete :max_count
-        options.delete :skip
-        log = @wiki.repo.git.log(options, @wiki.ref, "--", @path)
-        Grit::Commit.list_from_string(@wiki.repo, log)
-      else
-        @wiki.repo.log(@wiki.ref, @path, log_pagination_options(options))
-      end
+      @wiki.repo.git.versions_for_path(@path, @wiki.ref, log_pagination_options(options))
     end
 
     # Public: The first 7 characters of the current version.
@@ -365,7 +365,7 @@ module Gollum
     # Returns the Gollum::Wiki containing the page.
     attr_reader :wiki
 
-    # Set the Grit::Commit version of the page.
+    # Set the Gollum::Git::Commit version of the page.
     #
     # Returns nothing.
     attr_writer :version
@@ -379,12 +379,12 @@ module Gollum
     def find(name, version, dir = nil, exact = false)
       map = @wiki.tree_map_for(version.to_s)
       if page = find_page_in_tree(map, name, dir, exact)
-        page.version    = version.is_a?(Grit::Commit) ?
+        page.version    = version.is_a?(Gollum::Git::Commit) ?
             version : @wiki.commit_for(version)
         page.historical = page.version.to_s == version.to_s
         page
       end
-    rescue Grit::GitRuby::Repository::NoSuchShaFound
+    rescue Gollum::Git::NoSuchShaFound
     end
 
     # Find a page in a given tree.
@@ -414,7 +414,7 @@ module Gollum
 
     # Populate the Page with information from the Blob.
     #
-    # blob - The Grit::Blob that contains the info.
+    # blob - The Gollum::Git::Blob that contains the info.
     # path - The String directory path of the page file.
     #
     # Returns the populated Gollum::Page.
@@ -427,7 +427,7 @@ module Gollum
     # The full directory path for the given tree.
     #
     # treemap - The Hash treemap containing parentage information.
-    # tree    - The Grit::Tree for which to compute the path.
+    # tree    - The Gollum::Git::Tree for which to compute the path.
     #
     # Returns the String path.
     def tree_path(treemap, tree)

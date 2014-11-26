@@ -15,51 +15,53 @@ class Gollum::Filter::Tags < Gollum::Filter
           parts          = $2.split('][')
           parts[0][0..4] = ""
           link           = "#{parts[1]}|#{parts[0].sub(/\.org/, '')}"
-          id             = Digest::SHA1.hexdigest(link)
-          @map[id]       = link
+          id             = register_tag(link)
           "#{pre}#{id}#{post}"
         else
           $&
         end
       else
-        id       = Digest::SHA1.hexdigest($2)
-        @map[id] = $2
+        id = register_tag($2)
         "#{$1}#{id}#{$3}"
       end
     end
     data
   end
 
-  # Process all tags from the tagmap and replace the placeholders with the
+  def register_tag(tag)
+    id       = "TAG#{Digest::SHA1.hexdigest(tag)}TAG"
+    @map[id] = tag
+    id
+  end
+
+  # Process all text nodes from the doc and replace the placeholders with the
   # final markup.
-  def process(data)
-    @map.each do |id, tag|
-      # If it's preformatted, just put the tag back
-      if is_preformatted?(data, id)
-        data.gsub!(id) do
-          "[[#{tag}]]"
+  def process(rendered_data)
+    doc  = Nokogiri::HTML::DocumentFragment.parse(rendered_data)
+    doc.traverse do |node|
+      if node.text? then
+        content = node.content
+        content.gsub!(/TAG[a-f0-9]+TAG/) do |id|
+          if tag = @map[id] then
+            if is_preformatted?(node) then
+              "[[#{tag}]]"
+            else
+              process_tag(tag).gsub('%2f', '/')
+            end
+          end
         end
-      else
-        data.gsub!(id) do
-          process_tag(tag).gsub('%2F', '/')
-        end
+        node.replace(content) if content != node.content
       end
     end
 
-    data
+    doc.to_html
   end
 
   private
-  # Find `id` within `data` and determine if it's within
-  # preformatted tags.
-  #
-  # data      - The String data (with placeholders).
-  # id        - The String SHA1 hash.
+
   PREFORMATTED_TAGS = %w(code tt)
 
-  def is_preformatted?(data, id)
-    doc  = Nokogiri::HTML::DocumentFragment.parse(data)
-    node = doc.search("[text()*='#{id}']").first
+  def is_preformatted?(node)
     node && (PREFORMATTED_TAGS.include?(node.name) ||
         node.ancestors.any? { |a| PREFORMATTED_TAGS.include?(a.name) })
   end
@@ -78,6 +80,8 @@ class Gollum::Filter::Tags < Gollum::Filter
     elsif html = process_include_tag(tag)
       html
     elsif html = process_image_tag(tag)
+      html
+    elsif html = process_external_link_tag(tag)
       html
     elsif html = process_file_link_tag(tag)
       html
@@ -199,6 +203,35 @@ class Gollum::Filter::Tags < Gollum::Filter
     end
   end
 
+  # Return the String HTML if the tag is a valid external link tag or
+  # nil if it is not.
+  def process_external_link_tag(tag)
+    parts = tag.split('|')
+    return if parts.size.zero?
+    if parts.size == 1
+      url = parts[0].strip
+    else
+      name, url = *parts.compact.map(&:strip)      
+    end
+    accepted_protocols = @markup.wiki.sanitization.protocols['a']['href'].dup
+    if accepted_protocols.include?(:relative)
+      accepted_protocols.select!{|protocol| protocol != :relative}
+      regexp = %r{^((#{accepted_protocols.join("|")}):)?(//)}
+    else
+      regexp = %r{^((#{accepted_protocols.join("|")}):)}
+    end
+    if url =~ regexp
+      if name.nil?
+        %{<a href="#{url}">#{url}</a>}
+      else
+        %{<a href="#{url}">#{name}</a>}
+      end
+    else
+      nil
+    end
+    
+  end
+
   # Attempt to process the tag as a file link tag.
   #
   # tag       - The String tag contents (the stuff inside the double
@@ -214,8 +247,6 @@ class Gollum::Filter::Tags < Gollum::Filter
     path = parts[1] && parts[1].strip
     path = if path && file = @markup.find_file(path)
              ::File.join @markup.wiki.base_path, file.path
-           elsif path =~ %r{^https?://}
-             path
            else
              nil
            end
@@ -243,25 +274,21 @@ class Gollum::Filter::Tags < Gollum::Filter
     name, page_name = *parts.compact.map(&:strip)
     cname           = @markup.wiki.page_class.cname(page_name || name)
 
-    if name =~ %r{^https?://} && page_name.nil?
-      %{<a href="#{name}">#{name}</a>}
-    else
-      presence    = "absent"
-      link_name   = cname
-      page, extra = find_page_from_name(cname)
-      if page
-        link_name = @markup.wiki.page_class.cname(page.name)
-        presence  = "present"
-      end
-      link = ::File.join(@markup.wiki.base_path, page ? page.escaped_url_path : CGI.escape(link_name))
-
-      # //page is invalid
-      # strip all duplicate forward slashes using helpers.rb trim_leading_slash
-      # //page => /page
-      link = trim_leading_slash link
-
-      %{<a class="internal #{presence}" href="#{link}#{extra}">#{name}</a>}
+    presence    = "absent"
+    link_name   = cname
+    page, extra = find_page_from_name(cname)
+    if page
+      link_name = @markup.wiki.page_class.cname(page.name)
+      presence  = "present"
     end
+    link = ::File.join(@markup.wiki.base_path, page ? page.escaped_url_path : CGI.escape(link_name))
+
+    # //page is invalid
+    # strip all duplicate forward slashes using helpers.rb trim_leading_slash
+    # //page => /page
+    link = trim_leading_slash link
+
+    %{<a class="internal #{presence}" href="#{link}#{extra}">#{name}</a>}
   end
 
   # Find a page from a given cname.  If the page has an anchor (#) and has

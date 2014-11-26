@@ -29,7 +29,7 @@ context "Wiki" do
   end
 
   test "git repo" do
-    assert_equal Grit::Repo, @wiki.repo.class
+    assert_equal Gollum::Git::Repo, @wiki.repo.class
     assert @wiki.exist?
   end
 
@@ -106,7 +106,7 @@ context "Wiki" do
       index = wiki.repo.index
       index.read_tree 'master'
       index.add('Foobar/Elrond.md', 'Baz')
-      index.commit 'Add Foobar/Elrond.', [wiki.repo.commits.last], Grit::Actor.new('Tom Preston-Werner', 'tom@github.com')
+      index.commit 'Add Foobar/Elrond.', [wiki.repo.commits.last], Gollum::Git::Actor.new('Tom Preston-Werner', 'tom@github.com')
 
       assert_equal 'Rivendell/Elrond.md', wiki.page('Elrond', nil, 'Rivendell').path
       # test paged as well.
@@ -127,7 +127,7 @@ context "Wiki page previewing" do
   test "preview_page" do
     page = @wiki.preview_page("Test", "# Bilbo", :markdown)
     assert_equal "# Bilbo", page.raw_data
-    assert_html_equal "<h1><a class=\"anchor\" id=\"Bilbo\" href=\"#Bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
+    assert_html_equal "<h1><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
     assert_equal "Test.md", page.filename
     assert_equal "Test", page.name
   end
@@ -143,8 +143,8 @@ context "Wiki TOC" do
   test "toc_generation" do
     page = @wiki.preview_page("Test", "# Bilbo", :markdown)
     assert_equal "# Bilbo", page.raw_data
-    assert_html_equal "<h1><a class=\"anchor\" id=\"Bilbo\" href=\"#Bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
-    assert_html_equal %{<div class="toc"><div class="toc-title">Table of Contents</div><ul><li><a href="#Bilbo">Bilbo</a></li></ul></div>}, page.toc_data
+    assert_html_equal "<h1><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
+    assert_html_equal %{<div class="toc"><div class="toc-title">Table of Contents</div><ul><li><a href="#bilbo">Bilbo</a></li></ul></div>}, page.toc_data
   end
 
   # Ensure ' creates valid links in TOC
@@ -153,8 +153,33 @@ context "Wiki TOC" do
   test "' in link" do
     page = @wiki.preview_page("Test", "# a'b", :markdown)
     assert_equal "# a'b", page.raw_data
-    assert_html_equal "<h1><a class=\"anchor\" id=\"a'b\" href=\"#a'b\"><i class=\"fa fa-link\"></i></a>a'b</h1>", page.formatted_data
-    assert_html_equal %{<div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#a'b\">a'b</a></li></ul></div>}, page.toc_data
+    assert_html_equal "<h1><a class=\"anchor\" id=\"a-b\" href=\"#a-b\"><i class=\"fa fa-link\"></i></a>a'b</h1>", page.formatted_data
+    assert_html_equal %{<div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#a-b\">a'b</a></li></ul></div>}, page.toc_data
+  end
+end
+
+context "Wiki TOC in _Sidebar.md" do
+  setup do
+    @path = testpath("examples/test.git")
+    FileUtils.rm_rf(@path)
+    Gollum::Git::Repo.init_bare(@path)
+    options = { :universal_toc => true }
+    @wiki = Class.new(Gollum::Wiki).new(@path, options)
+  end
+  
+  test "_Sidebar.md with [[_TOC_]] renders TOC" do
+    cd = commit_details
+    @wiki.write_page("Gollum", :markdown, "# Gollum", cd)
+    page = @wiki.page("Gollum")
+    @wiki.write_page("_Sidebar", :markdown, "[[_TOC_]]", cd)
+    sidebar = @wiki.page("_Sidebar")
+    sidebar.parent_page = page
+    assert_not_equal "\n", sidebar.formatted_data
+    assert_html_equal "<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#gollum\">Gollum</a></li></ul></div></p>\n", sidebar.formatted_data
+  end
+  
+  teardown do
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
   end
 end
 
@@ -162,7 +187,7 @@ context "Wiki page writing" do
   setup do
     @path = testpath("examples/test.git")
     FileUtils.rm_rf(@path)
-    Grit::Repo.init_bare(@path)
+    Gollum::Git::Repo.init_bare(@path)
     @wiki = Gollum::Wiki.new(@path)
   end
 
@@ -327,6 +352,29 @@ context "Wiki page writing" do
   end
 end
 
+context "Wiki search" do
+  setup do
+    @path = testpath("examples/test.git")
+    FileUtils.rm_rf(@path)
+    Gollum::Git::Repo.init_bare(@path)
+    @wiki = Class.new(Gollum::Wiki).new(@path)
+  end
+  
+  test "search results should be able to return a filename with an embedded colon" do
+    details = commit_details
+    @wiki.write_page("filename:with:colons", :markdown, "# Filename with colons", details)
+    page = @wiki.page("filename:with:colons")
+    results = @wiki.search("colons")
+    assert_not_nil results
+    assert_equal "filename:with:colons", results.first[:name]
+    assert_equal "1", results.first[:count]
+  end
+  
+  teardown do
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+  end
+end
+
 context "Wiki page writing with whitespace (filename contains whitespace)" do
   setup do
     @path = cloned_testpath("examples/lotr.git")
@@ -388,7 +436,7 @@ end
 context "Wiki sync with working directory" do
   setup do
     @path = testpath('examples/wdtest')
-    Grit::Repo.init(@path)
+    Gollum::Git::Repo.init(@path)
     @wiki = Gollum::Wiki.new(@path)
   end
 
@@ -491,7 +539,7 @@ end
 context "page_file_dir option" do
   setup do
     @path          = cloned_testpath('examples/page_file_dir')
-    @repo          = Grit::Repo.init(@path)
+    @repo          = Gollum::Git::Repo.init(@path)
     @page_file_dir = 'docs'
     @wiki          = Gollum::Wiki.new(@path, :page_file_dir => @page_file_dir)
   end
@@ -537,7 +585,7 @@ context "Wiki page writing with different branch" do
   setup do
     @path = testpath("examples/test.git")
     FileUtils.rm_rf(@path)
-    @repo = Grit::Repo.init_bare(@path)
+    @repo = Gollum::Git::Repo.init_bare(@path)
     @wiki = Gollum::Wiki.new(@path)
 
     # We need an initial commit to create the master branch
@@ -764,3 +812,58 @@ context "Renames directory traversal" do
   end
 end
 
+context "Wiki subclassing" do
+  setup do
+    @path = testpath("examples/test.git")
+    FileUtils.rm_rf(@path)
+    Gollum::Git::Repo.init_bare(@path)
+    @wiki = Class.new(Gollum::Wiki).new(@path)
+  end
+
+  test "wiki page can be written by subclass" do
+    details = commit_details
+    @wiki.write_page("Gollum", :markdown, "# Gollum", details)
+    page = @wiki.page("Gollum")
+    first_commit = @wiki.repo.commits.first
+
+    assert_equal 1, @wiki.repo.commits.size
+    assert_equal details[:name], first_commit.author.name
+    assert_equal details[:email], first_commit.author.email
+    assert_equal details[:message], first_commit.message
+    assert_equal "# Gollum", page.raw_data
+  end
+
+  test "wiki page can be updated by subclass" do
+    @wiki.write_page("Gollum", :markdown, "# Gollum", commit_details)
+    page = @wiki.page("Gollum")
+
+    @wiki.update_page(page, page.name, :markdown, "# Smeagol", {
+        :name    => "Smeagol",
+        :email   => "smeagol@example.org",
+        :message => "Leave now, and never come back!"
+    })
+    page = @wiki.page("Gollum")
+    first_commit = @wiki.repo.commits.find { |c| c.author.name == "Smeagol" }
+
+    assert_equal 2, @wiki.repo.commits.size
+    assert_equal "Smeagol", first_commit.author.name
+    assert_equal "smeagol@example.org", first_commit.author.email
+    assert_equal "Leave now, and never come back!", first_commit.message
+    assert_equal "# Smeagol", page.raw_data
+  end
+
+  test "wiki page can be deleted by subclass" do
+    @wiki.write_page("Gollum", :markdown, "# Gollum", commit_details)
+    page = @wiki.page("Gollum")
+
+    @wiki.delete_page(page, commit_details)
+    page = @wiki.page("Gollum")
+
+    assert_equal 2, @wiki.repo.commits.size
+    assert_nil page
+  end
+
+  teardown do
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+  end
+end
