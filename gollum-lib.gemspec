@@ -22,32 +22,32 @@ Gem::Specification.new do |s|
   s.rdoc_options = ['--charset=UTF-8']
   s.extra_rdoc_files = %w[README.md LICENSE]
 
-  s.add_dependency 'rouge', '~> 1.3.3'
-  s.add_dependency 'nokogiri', '~> 1.6.1'
+  s.add_dependency 'rouge', '~> 1.7.4'
+  s.add_dependency 'nokogiri', '~> 1.6.4'
   s.add_dependency 'stringex', '~> 2.5.1'
   s.add_dependency 'sanitize', '~> 2.1.0'
-  s.add_dependency 'github-markup', '~> 1.3.0'
+  s.add_dependency 'github-markup', '~> 1.3.1'
 
-  s.add_development_dependency 'org-ruby', '~> 0.9.3'
-  s.add_development_dependency 'github-markdown', '~> 0.6.5'
+  s.add_development_dependency 'org-ruby', '~> 0.9.9'
+  s.add_development_dependency 'github-markdown', '~> 0.6.7'
   s.add_development_dependency 'RedCloth', '~> 4.2.9'
-  s.add_development_dependency 'mocha', '~> 1.0.0'
+  s.add_development_dependency 'mocha', '~> 1.1.0'
   s.add_development_dependency 'shoulda', '~> 3.5.0'
   s.add_development_dependency 'wikicloth', '~> 0.8.1'
-  s.add_development_dependency 'rake', '~> 10.2.2'
-  s.add_development_dependency 'pry', '~> 0.9.12'
+  s.add_development_dependency 'rake', '~> 10.4.0'
+  s.add_development_dependency 'pry', '~> 0.10.1'
   # required by pry
   s.add_development_dependency 'rb-readline', '~> 0.5.1'
   # updating minitest-reporters requires a new minitest which fails with gollum's tests.
   s.add_development_dependency 'minitest-reporters', '~> 0.14.16'
   s.add_development_dependency 'nokogiri-diff', '~> 0.2.0'
   # required by guard
-  s.add_development_dependency 'guard', '~> 2.6.0'
-  s.add_development_dependency 'guard-minitest', '~> 2.2.0'
+  s.add_development_dependency 'guard', '~> 2.8.2'
+  s.add_development_dependency 'guard-minitest', '~> 2.3.2'
   s.add_development_dependency 'rb-inotify', '~> 0.9.3'
   s.add_development_dependency 'rb-fsevent', '~> 0.9.4'
   s.add_development_dependency 'rb-fchange', '~> 0.0.6'
-  s.add_development_dependency 'twitter_cldr', '~> 2.4.2'
+  s.add_development_dependency 'twitter_cldr', '~> 3.1.0'
   # = MANIFEST =
   s.files = %w[
     Gemfile
