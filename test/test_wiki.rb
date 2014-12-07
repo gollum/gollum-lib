@@ -106,7 +106,7 @@ context "Wiki" do
       index = wiki.repo.index
       index.read_tree 'master'
       index.add('Foobar/Elrond.md', 'Baz')
-      index.commit 'Add Foobar/Elrond.', [wiki.repo.commits.last], Gollum::Git::Actor.new('Tom Preston-Werner', 'tom@github.com')
+      index.commit 'Add Foobar/Elrond.', [wiki.repo.head.commit], Gollum::Git::Actor.new('Tom Preston-Werner', 'tom@github.com')
 
       assert_equal 'Rivendell/Elrond.md', wiki.page('Elrond', nil, 'Rivendell').path
       # test paged as well.
@@ -367,7 +367,7 @@ context "Wiki search" do
     results = @wiki.search("colons")
     assert_not_nil results
     assert_equal "filename:with:colons", results.first[:name]
-    assert_equal "1", results.first[:count]
+    assert_equal 2, results.first[:count]
   end
   
   teardown do
