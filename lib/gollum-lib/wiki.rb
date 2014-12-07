@@ -607,7 +607,7 @@ module Gollum
         # Remove ext only from known extensions.
         # test.pdf => test.pdf, test.md => test
         file_name = Page::valid_page_name?(name) ? name.chomp(::File.extname(name)) : name
-        results[file_name] = count
+        results[file_name] = count.to_i
       end
 
       # Use git ls-files '*query*' to search for file names. Grep only searches file content.
