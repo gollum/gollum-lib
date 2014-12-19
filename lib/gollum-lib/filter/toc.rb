@@ -9,7 +9,7 @@ class Gollum::Filter::TOC < Gollum::Filter
     @doc               = Nokogiri::HTML::DocumentFragment.parse(data)
     @toc               = nil
     @anchor_names      = {}
-    @current_ancestors = ""
+    @current_ancestors = []
 
     if @markup.sub_page && @markup.parent_page
       @toc = @markup.parent_page.toc_data
@@ -57,12 +57,9 @@ class Gollum::Filter::TOC < Gollum::Filter
     name.gsub!(/-$/, "")
     name.downcase!
 
-    anchor_name = name
-
-    # Set and/or add the ancestors to the name
-    @current_ancestors = name if level == 1
-    anchor_name = (level == 1) ? name : "#{@current_ancestors}_#{name}"
-    @current_ancestors+= "_#{name}" if level > 1
+    @current_ancestors[level - 1] = name
+    @current_ancestors = @current_ancestors.take(level)
+    anchor_name = @current_ancestors.compact.join("_")
 
     # Ensure duplicate anchors have a unique prefix or the toc will break
     index = increment_anchor_index(anchor_name)
