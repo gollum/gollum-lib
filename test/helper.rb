@@ -24,6 +24,10 @@ dir = File.dirname(File.expand_path(__FILE__))
 $LOAD_PATH.unshift(File.join(dir, '..', 'lib'))
 $LOAD_PATH.unshift(dir)
 
+module Gollum
+end
+Gollum::GIT_ADAPTER = ENV['GIT_ADAPTER'] if ENV['GIT_ADAPTER']
+
 ENV['RACK_ENV'] = 'test'
 require 'gollum-lib'
 
