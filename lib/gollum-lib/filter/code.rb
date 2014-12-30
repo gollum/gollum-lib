@@ -46,8 +46,8 @@ class Gollum::Filter::Code < Gollum::Filter
     end
 
     if @markup.format == :asciidoc then
-      data.gsub!(/^(\[source,(.*)\]\n)?----\n(.*)\n----$/m) do
-        lang     = $2
+      data.gsub!(/^(\[source,([^\n]*)\]\n)?----\n(.+?)\n----$/m) do
+        lang     = $2.empty? ? nil : $2
         id       = Digest::SHA1.hexdigest("#{lang}.#{$3}")
         cached   = @markup.check_cache(:code, id)
         @map[id] = cached ?
