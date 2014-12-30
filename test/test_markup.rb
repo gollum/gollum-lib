@@ -227,6 +227,20 @@ context "Markup" do
     assert_html_equal "<p><code>sed -i '' 's/[[:space:]]*$//'</code></p>", page.formatted_data
   end
 
+  test "wiki link within org code block" do
+    code = <<-org
+#+HEADERS: blah blah
+#+HEADER: blah
+#+NAME: org test block
+  #+BEGIN_SRC bash some switches
+sed -i '' 's/[[:space:]]*$//'
+#+END_SRC
+org
+    @wiki.write_page("Pipe", :org, code, commit_details)
+    page = @wiki.page("Pipe")
+    assert_html_equal "<pre class=\"highlight\"><code>sed -i <span class=\"s1\">''</span> <span class=\"s1\">'s/[[:space:]]*$//'</span></code></pre>", page.formatted_data
+  end
+
   test "regexp gsub! backref (#383)" do
     # bug only triggers on "```" syntax
     # not `code`
@@ -928,10 +942,27 @@ __TOC__
   end
 
 
-  if ENV['ASCIIDOC']
+  if defined?(Asciidoctor)
     #########################################################################
     # Asciidoc
     #########################################################################
+    test "asciidoc syntax highlighting" do
+      input = <<-ASCIIDOC
+[source,python]
+----
+''' A multi-line
+    comment.'''
+def sub_word(mo):
+    ''' Single line comment.'''
+    word = mo.group('word')   # Inline comment
+    if word in keywords[language]:
+        return quote + word + quote
+    else:
+        return word
+----
+      ASCIIDOC
+      compare(input, nil, 'asciidoc', [/\<code\>\<span class=\"s\">''' A multi-line\n    comment.'''\<\/span\>/])
+    end
 
     test "asciidoc header" do
       compare("= Book Title\n\n== Heading", '<div class="sect1"><h2 id="wiki-_heading">Heading<a class="anchor" id="Heading" href="#Heading"></a></h2><div class="sectionbody"></div></div>', 'asciidoc')

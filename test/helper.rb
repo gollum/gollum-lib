@@ -11,6 +11,12 @@ require 'mocha/setup'
 require 'minitest/reporters'
 require 'twitter_cldr'
 
+# markup
+begin
+  require 'asciidoctor'
+rescue Exception
+end
+
 # internal
 require File.expand_path('../assertions', __FILE__)
 
