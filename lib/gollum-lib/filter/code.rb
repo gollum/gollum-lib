@@ -45,6 +45,18 @@ class Gollum::Filter::Code < Gollum::Filter
       "#{$1}#{id}" # print the SHA1 ID with the proper indentation
     end
 
+    if @markup.format == :asciidoc then
+      data.gsub!(/^(\[source,([^\n]*)\]\n)?----\n(.+?)\n----$/m) do
+        lang     = $2.empty? ? nil : $2
+        id       = Digest::SHA1.hexdigest("#{lang}.#{$3}")
+        cached   = @markup.check_cache(:code, id)
+        @map[id] = cached ?
+            { :output => cached } :
+            { :lang => lang, :code => $3, :indent => "" }
+        id
+      end
+    end
+
     data
   end
 
