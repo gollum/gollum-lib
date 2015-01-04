@@ -928,28 +928,10 @@ __TOC__
   end
 
 
-  if defined?(Asciidoctor)
+  if ENV['ASCIIDOC']
     #########################################################################
     # Asciidoc
     #########################################################################
-
-    test "asciidoc syntax highlighting" do
-      input = <<-ASCIIDOC
-[source,python]
-----
-''' A multi-line
-    comment.'''
-def sub_word(mo):
-    ''' Single line comment.'''
-    word = mo.group('word')   # Inline comment
-    if word in keywords[language]:
-        return quote + word + quote
-    else:
-        return word
-----
-      ASCIIDOC
-      compare(input, nil, 'asciidoc', [/\<code\>\<span class=\"s\">''' A multi-line\n    comment.'''\<\/span\>/])
-    end
 
     test "asciidoc header" do
       compare("= Book Title\n\n== Heading", '<div class="sect1"><h2 id="wiki-_heading">Heading<a class="anchor" id="Heading" href="#Heading"></a></h2><div class="sectionbody"></div></div>', 'asciidoc')
