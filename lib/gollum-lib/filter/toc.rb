@@ -36,7 +36,7 @@ class Gollum::Filter::TOC < Gollum::Filter
     end
   end
 
-  private
+  module Gollum::TOC
 
   # Generates the anchor name from the given header element 
   # removing all non alphanumeric characters, replacing them
@@ -57,12 +57,9 @@ class Gollum::Filter::TOC < Gollum::Filter
     name.gsub!(/-$/, "")
     name.downcase!
 
-    anchor_name = name
-
-    # Set and/or add the ancestors to the name
-    @current_ancestors = name if level == 1
-    anchor_name = (level == 1) ? name : "#{@current_ancestors}_#{name}"
-    @current_ancestors+= "_#{name}" if level > 1
+    @current_ancestors[level - 1] = name
+    @current_ancestors = @current_ancestors.take(level)
+    anchor_name = @current_ancestors.compact.join("_")
 
     # Ensure duplicate anchors have a unique prefix or the toc will break
     index = increment_anchor_index(anchor_name)
@@ -71,12 +68,26 @@ class Gollum::Filter::TOC < Gollum::Filter
     anchor_name
   end
 
+  # Increments the number of anchors with the given name
+  # and returns the current index
+  def increment_anchor_index(name)
+    @anchor_names = {} if @anchor_names.nil?
+    @anchor_names[name].nil? ? @anchor_names[name] = 0 : @anchor_names[name] += 1
+  end
+
+  end
+
+  include Gollum::TOC
+
+  private
+
   # Creates an anchor element with the given name and adds it before
   # the given header element.
   def add_anchor_to_header(header, name)
     anchor_element = %Q(<a class="anchor" id="#{name}" href="##{name}"><i class="fa fa-link"></i></a>)
     header.children.before anchor_element # Add anchor element before the header
   end
+
 
   # Adds an entry to the TOC for the given header.  The generated entry
   # is a link to the given anchor name
@@ -101,12 +112,5 @@ class Gollum::Filter::TOC < Gollum::Filter
     # % -> %25 so anchors work on Firefox. See issue #475
     node.add_child(%Q{<a href="##{name}">#{header.content}</a>})
     tail.add_child(node)
-  end
-
-  # Increments the number of anchors with the given name
-  # and returns the current index
-  def increment_anchor_index(name)
-    @anchor_names = {} if @anchor_names.nil?
-    @anchor_names[name].nil? ? @anchor_names[name] = 0 : @anchor_names[name] += 1
   end
 end
