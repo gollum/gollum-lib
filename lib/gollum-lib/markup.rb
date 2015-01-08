@@ -42,8 +42,9 @@ module Gollum
       # If given a block, that block will be registered with GitHub::Markup to
       # render any matching pages
       def register(ext, name, options = {}, &block)
-        regexp        = options[:regexp] || Regexp.new(ext.to_s)
-        @formats[ext] = { :name => name, :regexp => regexp }
+        @formats[ext] = { :name => name,
+          :regexp => options.fetch(:regexp, Regexp.new(ext.to_s)),
+          :reverse_links => options.fetch(:reverse_links, false) }
       end
     end
 
@@ -80,6 +81,10 @@ module Gollum
       end
       @metadata    = nil
       @to_xml_opts = { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML ^ 1, :indent => 0, :encoding => 'UTF-8' }
+    end
+
+    def reverse_links?
+      self.class.formats[@format][:reverse_links]
     end
 
     # Render data using default chain in the target format.

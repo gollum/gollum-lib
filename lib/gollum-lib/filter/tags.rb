@@ -207,6 +207,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   # nil if it is not.
   def process_external_link_tag(tag)
     parts = tag.split('|')
+    parts.reverse! if @markup.reverse_links?
     return if parts.size.zero?
     if parts.size == 1
       url = parts[0].strip
@@ -269,7 +270,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   #   if it is not.
   def process_page_link_tag(tag)
     parts = tag.split('|')
-    parts.reverse! if @markup.format == :mediawiki
+    parts.reverse! if @markup.reverse_links?
 
     name, page_name = *parts.compact.map(&:strip)
     cname           = @markup.wiki.page_class.cname(page_name || name)

@@ -38,6 +38,36 @@ context "Macros" do
     @wiki.write_page("AllPagesMacroPage", :markdown, "<<AllPages()>>", commit_details)
     assert_match /<li>AllPagesMacroPage/, @wiki.pages[0].formatted_data
   end
+
+  test "GlobalTOC macro displays global table of contents" do
+    @wiki.write_page("GlobalTOCMacroPage", :markdown, "<<GlobalTOC(Pages in this Wiki)>>", commit_details)
+    assert_match /<div class="toc">(.*)Pages in this Wiki(.*)<li><a href="GlobalTOCMacroPage">GlobalTOCMacroPage/, @wiki.pages[0].formatted_data
+  end
+
+  test "Series macro displays series links with and without series prefix" do
+    @wiki.write_page("test-series1", :markdown, "<<Series(test)>>", commit_details)
+    testseries1 = @wiki.page("test-series1")
+    @wiki.write_page("test-series2", :markdown, "<<Series(test)>>", commit_details)
+    testseries2 = @wiki.page("test-series2")
+
+    # Now create pages that are alphanumerically earlier, but don't match the 'test' prefix
+    @wiki.write_page("ta-series1", :markdown, "<<Series()>>", commit_details)
+    taseries1 = @wiki.page("ta-series1")
+    @wiki.write_page("ta-series2", :markdown, "<<Series()>>", commit_details)
+    taseries2 = @wiki.page("ta-series2")
+
+    assert_match /Next(.*)test-series2/, testseries1.formatted_data
+    assert_no_match /Previous/, testseries1.formatted_data
+    assert_match /Next(.*)ta-series2/, taseries1.formatted_data
+    assert_match /Previous(.*)ta-series1/, taseries2.formatted_data
+    assert_match /Previous(.*)test-series1/, testseries2.formatted_data
+
+    @wiki.write_page("test-series3", :markdown, "<<SeriesEnd(test)>>", commit_details)
+    testseries3 = @wiki.page("test-series3")
+    @wiki.write_page("test-series4", :markdown, "<<SeriesStart(test)>>", commit_details)
+    testseries4 = @wiki.page("test-series4")
+    assert_no_match /Previous/, testseries4.formatted_data
+  end
   
   test "ListArgs with no args" do
     @wiki.write_page("ListArgsMacroPage", :markdown, "<<ListArgs()>>", commit_details)

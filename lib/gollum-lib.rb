@@ -31,6 +31,7 @@ require File.expand_path('../gollum-lib/markup', __FILE__)
 require File.expand_path('../gollum-lib/markups', __FILE__)
 require File.expand_path('../gollum-lib/sanitization', __FILE__)
 require File.expand_path('../gollum-lib/filter', __FILE__)
+require File.expand_path('../gollum-lib/sections', __FILE__)
 
 # Set ruby to UTF-8 mode
 # This is required for Ruby 1.8.7 which gollum still supports.
