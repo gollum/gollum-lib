@@ -53,8 +53,8 @@ module Gollum
     # Returns a Gollum::Git::Actor.
     def actor
       @actor ||= begin
-        @options[:name]  = @wiki.default_committer_name if @options[:name].to_s.empty?
-        @options[:email] = @wiki.default_committer_email if @options[:email].to_s.empty?
+        @options[:name]  = @wiki.default_committer_name if @options[:name].nil?
+        @options[:email] = @wiki.default_committer_email if @options[:email].nil?
         Gollum::Git::Actor.new(@options[:name], @options[:email])
       end
     end
