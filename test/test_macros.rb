@@ -30,7 +30,7 @@ context "Macros" do
 
   test "AllPages macro does something interesting" do
     @wiki.write_page("AllPagesMacroPage", :markdown, "<<AllPages()>>", commit_details)
-    assert_match /<li>AllPagesMacroPage/, @wiki.pages[0].formatted_data
+    assert_match /<li><a href="AllPagesMacroPage">AllPagesMacroPage/, @wiki.pages[0].formatted_data
   end
 
   test "GlobalTOC macro displays global table of contents" do
@@ -62,7 +62,7 @@ context "Macros" do
     testseries4 = @wiki.page("test-series4")
     assert_no_match /Previous/, testseries4.formatted_data
   end
-  
+
   test "ListArgs with no args" do
     @wiki.write_page("ListArgsMacroPage", :markdown, "<<ListArgs()>>", commit_details)
     assert_no_match /@/, @wiki.pages[0].formatted_data
@@ -109,7 +109,7 @@ context "Macros" do
     assert_match /@wombat@/, @wiki.pages[0].formatted_data
     assert_match /@funny things@/, @wiki.pages[0].formatted_data
   end
-  
+
   test "Args parser doesn't overstep its boundaries" do
     @wiki.write_page("MultiMacroPage", :markdown, "<<ListArgs(Foo)>>\n\n<<NonExistentMacro()>>", commit_details)
     assert_match(/@Foo@/, @wiki.pages[0].formatted_data)
