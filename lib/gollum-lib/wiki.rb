@@ -885,8 +885,9 @@ module Gollum
     #
     # Returns the String email address.
     def default_committer_email
-      @default_committer_email ||= \
-        @repo.config['user.email'] || self.class.default_committer_email
+      email = @repo.config['user.email']
+      email = email.delete('<>') if email
+      @default_committer_email ||= email || self.class.default_committer_email
     end
 
     # Gets the commit object for the given ref or sha.
