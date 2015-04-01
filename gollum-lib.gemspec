@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ['--charset=UTF-8']
   s.extra_rdoc_files = %w[README.md LICENSE]
 
-  s.add_dependency 'gollum-grit_adapter', '~> 0.1', '>= 0.1.1'
+  s.add_dependency 'gollum-grit_adapter', '~> 1.0'
   s.add_dependency 'rouge', '~> 1.7.4'
   s.add_dependency 'nokogiri', '~> 1.6.4'
   s.add_dependency 'stringex', '~> 2.5.1'
