@@ -10,7 +10,7 @@ module Gollum
     # page_file_dir - String the directory in which all page files reside
     #
     # Returns this instance.
-    def initialize(path, page_file_dir = nil, bare = false)
+    def initialize(path, page_file_dir = nil, bare = nil)
       @page_file_dir = page_file_dir
       @path          = path
       @repo = Gollum::Git::Repo.new(path, { :is_bare => bare })
