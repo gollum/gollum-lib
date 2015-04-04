@@ -30,11 +30,11 @@ Gem::Specification.new do |s|
   s.add_dependency 'github-markup', '~> 1.3.3'
 
   s.add_development_dependency 'org-ruby', '~> 0.9.9'
-  s.add_development_dependency 'github-markdown', '~> 0.6.7'
+  s.add_development_dependency 'kramdown', '~> 1.6.0'
   s.add_development_dependency 'RedCloth', '~> 4.2.9'
   s.add_development_dependency 'mocha', '~> 1.1.0'
   s.add_development_dependency 'shoulda', '~> 3.5.0'
-  s.add_development_dependency 'wikicloth', '~> 0.8.1'
+  s.add_development_dependency 'wikicloth', '~> 0.8.3'
   s.add_development_dependency 'rake', '~> 10.4.0'
   s.add_development_dependency 'pry', '~> 0.10.1'
   # required by pry

@@ -714,8 +714,8 @@ np.array([[2,2],[1,3]],np.float)
   end
 
   test "embed code page absolute link" do
-    @wiki.write_page("base", :markdown, "a\n!base\b", commit_details)
-    @wiki.write_page("a", :markdown, "a\n```html:/base```\b", commit_details)
+    @wiki.write_page("base", :markdown, "a\n!base", commit_details)
+    @wiki.write_page("a", :markdown, "a\n```html:/base```", commit_details)
 
     page   = @wiki.page("a")
     output = page.formatted_data
@@ -723,8 +723,8 @@ np.array([[2,2],[1,3]],np.float)
   end
 
   test "embed code page relative link" do
-    @wiki.write_page("base", :markdown, "a\n!rel\b", commit_details)
-    @wiki.write_page("a", :markdown, "a\n```html:base```\b", commit_details)
+    @wiki.write_page("base", :markdown, "a\n!rel", commit_details)
+    @wiki.write_page("a", :markdown, "a\n```html:base```", commit_details)
 
     page   = @wiki.page("a")
     output = page.formatted_data
@@ -732,11 +732,11 @@ np.array([[2,2],[1,3]],np.float)
   end
 
   test "code block in unsupported language" do
-    @wiki.write_page("a", :markdown, "a\n```nonexistent\ncode\n```\nb", commit_details)
+    @wiki.write_page("a", :markdown, "a\n\n```nonexistent\ncode\n```", commit_details)
 
     page   = @wiki.page("a")
     output = page.formatted_data
-    assert_html_equal %Q{<p>a\n</p><pre class=\"highlight\"><span class=\"err\">code</span></pre>\nb}, output
+    assert_html_equal %Q{<p>a\n</p><pre class=\"highlight\"><span class=\"err\">code</span></pre>}, output
   end
 
   #########################################################################
@@ -911,7 +911,9 @@ np.array([[2,2],[1,3]],np.float)
   test "identical headers in TOC have unique prefix" do
     content = <<-MARKDOWN
 __TOC__
+
 # Summary
+
 # Summary
     MARKDOWN
 
@@ -922,7 +924,9 @@ __TOC__
   test "anchor names are normalized" do
     content = <<-MARKDOWN
 __TOC__
+
 # Summary '"' stuff
+
 # Summary !@$#%^&*() stuff
     MARKDOWN
 
@@ -933,7 +937,9 @@ __TOC__
   test 'anchor names contain the ancestor' do
     content = <<-MARKDOWN
 __TOC__
+
 # Summary
+
 ## Horse
     MARKDOWN
 

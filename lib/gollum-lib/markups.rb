@@ -1,6 +1,11 @@
 # ~*~ encoding: utf-8 ~*~
 module Gollum
   class Markup
+    
+    GitHub::Markup::Markdown::MARKDOWN_GEMS['kramdown'] = proc { |content|
+        Kramdown::Document.new(content, :auto_ids => false, :input => "markdown").to_html
+    }
+
     register(:markdown,  "Markdown", :regexp => /md|mkdn?|mdown|markdown/)
     register(:textile,   "Textile")
     register(:rdoc,      "RDoc")

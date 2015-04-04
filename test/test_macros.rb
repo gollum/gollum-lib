@@ -26,7 +26,7 @@ context "Macros" do
 
   test "Macro's are escapable" do
     @wiki.write_page("MacroEscapeText", :markdown, "'<<AllPages()>>", commit_details)
-    assert_equal "<p>&lt;&lt;AllPages()&gt;&gt;</p>\n", @wiki.pages[0].formatted_data
+    assert_match "<p>&lt;&lt;AllPages()&gt;&gt;</p>", @wiki.pages[0].formatted_data
   end
 
   test "Missing macro provides missing macro output" do
