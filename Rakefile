@@ -47,11 +47,15 @@ def rubyforge_project
 end
 
 def gemspec_file
-  "#{name}.gemspec"
+  "gemspec.rb"
 end
 
-def gem_file
-  "#{name}-#{version}.gem"
+def gemspecs
+  ["#{name}.gemspec", "#{name}_java.gemspec"]
+end
+
+def gem_files
+  ["#{name}-#{version}.gem", "#{name}-#{version}-java.gem"]
 end
 
 def replace_header(head, header_name)
@@ -124,6 +128,7 @@ task :release => :build do
   sh "git push origin master"
   sh "git push origin v#{version}"
   sh "gem push pkg/#{name}-#{version}.gem"
+  sh "gem push pkg/#{name}-#{version}-java.gem"
 end
 
 desc 'Publish to rubygems. Same as release'
@@ -132,8 +137,12 @@ task :publish => :release
 desc 'Build gem'
 task :build => :gemspec do
   sh "mkdir -p pkg"
-  sh "gem build #{gemspec_file}"
-  sh "mv #{gem_file} pkg"
+  gemspecs.each do |gemspec|
+    sh "gem build #{gemspec}"
+  end
+  gem_files.each do |gem_file|
+    sh "mv #{gem_file} pkg"
+  end
 end
 
 desc 'Update gemspec'
@@ -144,7 +153,6 @@ task :gemspec => :validate do
 
   # replace name version and date
   replace_header(head, :name)
-  replace_header(head, :version)
   replace_header(head, :date)
   #comment this out if your rubyforge_project has a different name
   replace_header(head, :rubyforge_project)
