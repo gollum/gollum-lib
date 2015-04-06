@@ -10,6 +10,7 @@ require 'shoulda'
 require 'mocha/setup'
 require 'minitest/reporters'
 require 'twitter_cldr'
+require 'tempfile'
 
 # markup
 begin
