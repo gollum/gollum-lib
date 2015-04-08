@@ -1,7 +1,7 @@
 <ol class="tree">
   <li>
     <label>.</label>
-    <input type="checkbox" />
+    <input type="checkbox" checked />
     <ol>
       <li class="file">
         <a href="folder0"><span class="icon"></span>folder0</a>

@@ -1,15 +1,15 @@
 <ol class="tree">
   <li>
     <label>folder0</label>
-    <input type="checkbox" />
+    <input type="checkbox" checked />
     <ol>
       <li>
         <label>folder1</label>
-        <input type="checkbox" />
+        <input type="checkbox" checked />
         <ol>
           <li>
             <label>folder2</label>
-            <input type="checkbox" />
+            <input type="checkbox" checked />
             <ol>
               <li class="file">
                 <a href="folder0/folder1/folder2/0"><span class="icon"></span>0</a>
@@ -18,7 +18,7 @@
           </li>
           <li>
             <label>folder3</label>
-            <input type="checkbox" />
+            <input type="checkbox" checked />
             <ol>
               <li class="file">
                 <a href="folder0/folder1/folder3/1"><span class="icon"></span>1</a>
@@ -31,7 +31,7 @@
   </li>
   <li>
     <label>folder4</label>
-    <input type="checkbox" />
+    <input type="checkbox" checked />
     <ol>
       <li class="file">
         <a href="folder4/2"><span class="icon"></span>2</a>
