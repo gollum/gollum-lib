@@ -70,25 +70,15 @@ def write file, content
   end
 end
 
-def to_html html
-  # Remove blank nodes for proper formatting
-  doc = Nokogiri.XML(html) do |cfg|
-    cfg.default_xml.noblanks
-  end
-
-  # Save as XHTML
-  doc.to_xml({ :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML, :indent => 2, :encoding => 'UTF-8' })
-end
-
 def check name, pages_array
   pages    = FakePages.new pages_array
   expected = read name
-  actual   = to_html view pages
+  actual   = view pages
 
   # Uncomment when updating tests
   # write name, actual
 
-  assert_equal expected, actual
+  assert_html_equal expected, actual
 end
 
 # Test Notes
