@@ -539,7 +539,6 @@ end
 context "page_file_dir option" do
   setup do
     @path          = cloned_testpath('examples/page_file_dir')
-    @repo          = Gollum::Git::Repo.init(@path)
     @page_file_dir = 'docs'
     @wiki          = Gollum::Wiki.new(@path, :page_file_dir => @page_file_dir)
   end
