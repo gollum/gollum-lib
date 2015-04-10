@@ -13,7 +13,7 @@ def name
 end
 
 def version
-  line = File.read("lib/#{name}.rb")[/^\s*VERSION\s*=\s*.*/]
+  line = File.read("lib/gollum-lib/version.rb")[/^\s*VERSION\s*=\s*.*/]
   line.match(/.*VERSION\s*=\s*['"](.*)['"]/)[1]
 end
 
@@ -27,13 +27,13 @@ def next_version
 end
 
 def bump_version
-  old_file = File.read("lib/#{name}.rb")
+  old_file = File.read("lib/gollum-lib/version.rb")
   old_version_line = old_file[/^\s*VERSION\s*=\s*.*/]
   new_version = next_version
   # replace first match of old version with new version
   old_file.sub!(old_version_line, "    VERSION = '#{new_version}'")
 
-  File.write("lib/#{name}.rb", old_file)
+  File.write("lib/gollum-lib/version.rb", old_file)
 
   new_version
 end
