@@ -242,6 +242,45 @@ module Gollum
       markup_class.toc
     end
 
+    # Public: Returns the start and end line numbers of the nth section of the page as an array.
+    #
+    # section - Fixnum index indicating which section to return (base 1)
+    #
+    # Returns an Array of the start and end line numbers for the section.
+    def section_map(section)
+      rendered = markup_class.render(false, nil, 10, [:Code, :SourceMap, :Render])
+      sections = []
+      Nokogiri::HTML::DocumentFragment.parse(rendered).xpath('h1').each_with_index do |header, i|
+        next unless line = header.content.match(/^\s*GOLLUMSRCMP(\d+)GOLLUMSRCMP/)
+        sections << line[1].to_i
+        break if i == section
+      end
+      return nil unless start = sections[section-1]
+      finish = sections[section] ? sections[section] : -1
+      [start, finish]
+    end
+
+    # Public: Splits the raw_data into sections.
+    #
+    # section - Fixnum index indicating which section to return (base 1)
+    #
+    # Returns an Array of Strings: [before, section, after]
+    def section_data(section)
+      return nil unless @blob && Gollum::Markup.formats[markup_class.format][:h1]
+      return nil if !section.nil? && section < 1
+      return nil unless map = section_map(section)
+      lines = raw_data.lines
+      before = lines[0...map.first]
+      if map.last == -1 || map.last == lines.length-1
+        section = lines[map.first..map.last]
+        after = []
+      else
+        section = lines[map.first...map.last]
+        after = lines[map.last..-1]
+      end
+      [before.join, section.join, after.join]
+    end
+
     # Public: Embedded metadata.
     #
     # Returns Hash of metadata.
