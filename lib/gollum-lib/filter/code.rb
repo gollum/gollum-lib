@@ -6,28 +6,28 @@
 class Gollum::Filter::Code < Gollum::Filter
   def extract(data)
     case @markup.format
-      when :txt
-        return data
-      when :asciidoc
-        data.gsub!(/^(\[source,([^\r\n]*)\]\n)?----\n(.+?)\n----$/m) do
-          cache_codeblock($2, $3)
-        end
-      when :org
-        org_headers = %r{([ \t]*#\+HEADER[S]?:[^\r\n]*\n)*}
-        org_name = %r{([ \t]*#\+NAME:[^\r\n]*\n)?}
-        org_lang = %r{[ ]*([^\n \r]*)[ ]*[^\r\n]*}
-        org_begin = %r{[ \t]*#\+BEGIN_SRC#{org_lang}\n}
-        org_end = %r{\n[ \t]*#\+END_SRC[ \t]*}
-        data.gsub!(/^#{org_headers}#{org_name}#{org_begin}(.+?)#{org_end}$/mi) do
-          cache_codeblock($3, $4)
-        end
+    when :txt
+      return data
+    when :asciidoc
+      data.gsub!(/^(\[source,([^\r\n]*)\]\n)?----\n(.+?)\n----$/m) do
+        cache_codeblock(Regexp.last_match[2], Regexp.last_match[3])
+      end
+    when :org
+      org_headers = %r{([ \t]*#\+HEADER[S]?:[^\r\n]*\n)*}
+      org_name = %r{([ \t]*#\+NAME:[^\r\n]*\n)?}
+      org_lang = %r{[ ]*([^\n \r]*)[ ]*[^\r\n]*}
+      org_begin = %r{[ \t]*#\+BEGIN_SRC#{org_lang}\n}
+      org_end = %r{\n[ \t]*#\+END_SRC[ \t]*}
+      data.gsub!(/^#{org_headers}#{org_name}#{org_begin}(.+?)#{org_end}$/mi) do
+        cache_codeblock(Regexp.last_match[3], Regexp.last_match[4])
+      end
     end
     data.gsub!(/^([ \t]*)(~~~+) ?([^\r\n]+)?\r?\n(.+?)\r?\n\1(~~~+)[ \t\r]*$/m) do
-      m_indent = $1
-      m_start  = $2 # ~~~
-      m_lang   = $3
-      m_code   = $4
-      m_end    = $5 # ~~~
+      m_indent = Regexp.last_match[1]
+      m_start  = Regexp.last_match[2] # ~~~
+      m_lang   = Regexp.last_match[3]
+      m_code   = Regexp.last_match[4]
+      m_end    = Regexp.last_match[5] # ~~~
       # start and finish tilde fence must be the same length
       next '' if m_start.length != m_end.length
       lang = m_lang ? m_lang.strip : nil
@@ -39,7 +39,7 @@ class Gollum::Filter::Code < Gollum::Filter
     end
 
     data.gsub!(/^([ \t]*)``` ?([^\r\n]+)?\r?\n(.+?)\r?\n\1```[ \t]*\r?$/m) do
-      "#{$1}#{cache_codeblock($2.to_s.strip, $3, $1)}" # print the SHA1 ID with the proper indentation
+      "#{Regexp.last_match[1]}#{cache_codeblock(Regexp.last_match[2].to_s.strip, Regexp.last_match[3], Regexp.last_match[1])}" # print the SHA1 ID with the proper indentation
     end
     data
   end
@@ -110,9 +110,7 @@ class Gollum::Filter::Code < Gollum::Filter
         end
       end
       # Removes paragraph tags surrounding <pre> blocks, see issue https://github.com/gollum/gollum-lib/issues/97
-      data.gsub!(/(<p>#{id}<\/p>|#{id})/) do
-        body
-      end
+      data.gsub!(/(<p>#{id}<\/p>|#{id})/) { body }
     end
 
     data
@@ -127,9 +125,7 @@ class Gollum::Filter::Code < Gollum::Filter
   # regex     - A regex to match whitespace
   def remove_leading_space(code, regex)
     if code.lines.all? { |line| line =~ /\A\r?\n\Z/ || line =~ regex }
-      code.gsub!(regex) do
-        ''
-      end
+      code.gsub!(regex) { '' }
     end
   end
 

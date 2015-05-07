@@ -39,9 +39,9 @@ module Gollum
     def index
       @index ||= begin
         idx = @wiki.repo.index
-        if tree = options[:tree]
+        if (tree = options[:tree])
           idx.read_tree(tree)
-        elsif parent = parents.first
+        elsif (parent = parents.first)
           idx.read_tree(parent.tree.id)
         end
         idx
@@ -97,7 +97,7 @@ module Gollum
       fullpath = ::File.join(*[@wiki.page_file_dir, dir, path].compact)
       fullpath = fullpath[1..-1] if fullpath =~ /^\//
 
-      if index.current_tree && tree = index.current_tree / (@wiki.page_file_dir || '/')
+      if index.current_tree && (tree = index.current_tree / (@wiki.page_file_dir || '/'))
         tree = tree / dir unless tree.nil?
       end
 
@@ -202,7 +202,7 @@ module Gollum
         deletions.any? { |d| d.downcase.sub(/\.\w+$/, '') == downfile }
       else
         part = parts.shift
-        if rest = map[part]
+        if (rest = map[part])
           page_path_scheduled_for_deletion?(rest, parts.join('/'))
         else
           false
@@ -226,7 +226,7 @@ module Gollum
         deletions.any? { |d| d == parts.first }
       else
         part = parts.shift
-        if rest = map[part]
+        if (rest = map[part])
           file_path_scheduled_for_deletion?(rest, parts.join('/'))
         else
           false

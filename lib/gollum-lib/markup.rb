@@ -89,7 +89,7 @@ module Gollum
     # name - name using the extension of the format
     #
     # Returns the processed data
-    def render_default data, format=:markdown, name='render_default.md'
+    def render_default(data, format=:markdown, name='render_default.md')
       # set instance vars so we're able to render data without a wiki or page.
       @format = format
       @name   = name

@@ -14,7 +14,7 @@ class Gollum::Filter::Metadata < Gollum::Filter
       @markup.metadata ||= {}
       # Split untrusted input on newlines, then remove bits that look like
       # HTML elements before parsing each line.
-      $1.split("\n").each do |line|
+      Regexp.last_match[1].split("\n").each do |line|
         line.gsub!(/<[^>]*>/, '')
         k, v                      = line.split(':', 2)
         @markup.metadata[k.strip] = (v ? v.strip : '') if k
@@ -23,7 +23,7 @@ class Gollum::Filter::Metadata < Gollum::Filter
     end
   end
 
-  def process(d)
-    d
+  def process(data)
+    data
   end
 end

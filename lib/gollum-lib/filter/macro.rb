@@ -11,10 +11,10 @@ class Gollum::Filter::Macro < Gollum::Filter
     arg_list = %r{(\s*|#{arg}(?:\s*,\s*#{arg})*)}
 
     data.gsub(/('?)\<\<\s*([A-Z][A-Za-z0-9]*)\s*\(#{arg_list}\)\s*\>\>/) do
-      next CGI.escape_html($&[1..-1]) unless $1.empty?
-      id = Digest::SHA1.hexdigest($2 + $3)
-      macro = $2
-      argstr = $3
+      next CGI.escape_html($&[1..-1]) unless Regexp.last_match[1].empty?
+      id = Digest::SHA1.hexdigest(Regexp.last_match[2] + Regexp.last_match[3])
+      macro = Regexp.last_match[2]
+      argstr = Regexp.last_match[3]
       args = []
       opts = {}
       
@@ -23,15 +23,15 @@ class Gollum::Filter::Macro < Gollum::Filter
       	arg = arg.first
       	
       	if arg =~ /^([a-z0-9_]+)="(.*?)"/
-      		opts[$1] = $2
-			elsif arg =~ /^"(.*)"$/
-      		args << $1
-			else
-				args << arg
-			end
-		end
-		
-		args << opts unless opts.empty?
+      		opts[Regexp.last_match[1]] = Regexp.last_match[2]
+			  elsif arg =~ /^"(.*)"$/
+      		args << Regexp.last_match[1]
+			  else
+				  args << arg
+			  end
+		  end
+		  
+		  args << opts unless opts.empty?
       
       @map[id] = { :macro => macro, :args => args }
       id

@@ -40,7 +40,7 @@ require 'gollum-lib'
 
 # Make sure we're in the test dir, the tests expect that to be the current
 # directory.
-TEST_DIR = File.join(File.dirname(__FILE__), *%w[.])
+TEST_DIR = File.join(File.dirname(__FILE__), *%w(.))
 
 def testpath(path)
   File.join(TEST_DIR, path)
