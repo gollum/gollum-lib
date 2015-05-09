@@ -23,7 +23,7 @@ module Gollum
     # Returns e.g. ["Home", :markdown], or [] if the extension is unregistered
     def self.parse_filename(filename)
       return [] unless filename =~ /^(.+)\.([a-zA-Z]\w*)$/i
-      pref, ext = $1, $2
+      pref, ext = Regexp.last_match[1], Regexp.last_match[2]
 
       Gollum::Markup.formats.each_pair do |name, format|
         return [pref, name] if ext =~ format[:regexp]
@@ -236,7 +236,7 @@ module Gollum
     # formatted_data - page already marked up in html.
     #
     # Returns the String data.
-    def toc_data()
+    def toc_data
       return @parent_page.toc_data if @parent_page and @sub_page
       formatted_data if markup_class.toc == nil
       markup_class.toc
@@ -245,7 +245,7 @@ module Gollum
     # Public: Embedded metadata.
     #
     # Returns Hash of metadata.
-    def metadata()
+    def metadata
       formatted_data if markup_class.metadata == nil
       markup_class.metadata
     end
@@ -341,7 +341,7 @@ module Gollum
     # Returns the String canonical name.
     def self.cname(name, char_white_sub = '-', char_other_sub = '-')
       name.respond_to?(:gsub) ?
-          name.gsub(%r{\s}, char_white_sub).gsub(%r{[<>+]}, char_other_sub) :
+          name.gsub(%r(\s), char_white_sub).gsub(%r([<>+]), char_other_sub) :
           ''
     end
 
@@ -431,7 +431,7 @@ module Gollum
     #
     # Returns the String path.
     def tree_path(treemap, tree)
-      if ptree = treemap[tree]
+      if (ptree = treemap[tree])
         tree_path(treemap, ptree) + '/' + tree.name
       else
         ''
@@ -445,7 +445,7 @@ module Gollum
     #
     # Returns a Boolean.
     def page_match(name, path)
-      if match = self.class.valid_filename?(path)
+      if (match = self.class.valid_filename?(path))
         @wiki.ws_subs.each do |sub|
           return true if Page.cname(name).downcase == Page.cname(match, sub).downcase
         end

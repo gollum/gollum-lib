@@ -15,9 +15,9 @@ class Gollum::Filter::RemoteCode < Gollum::Filter
   def extract(data)
     return data if @markup.format == :txt
     data.gsub /^[ \t]*``` ?([^:\n\r]+):((http)?[^`\n\r]+)```/ do
-      language = $1
-      uri      = $2
-      protocol = $3
+      language = Regexp.last_match[1]
+      uri      = Regexp.last_match[2]
+      protocol = Regexp.last_match[3]
 
       # Detect local file
       if protocol.nil?
@@ -35,13 +35,13 @@ class Gollum::Filter::RemoteCode < Gollum::Filter
     end
   end
 
-  def process(d)
-    d
+  def process(data)
+    data
   end
 
   private
 
-  def req uri, cut = 1
+  def req(uri, cut = 1)
     uri = URI(uri)
     return "Too many redirects or retries" if cut >= 10
     http         = Net::HTTP.new uri.host, uri.port

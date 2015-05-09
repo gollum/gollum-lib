@@ -6,13 +6,13 @@ class Gollum::Filter::Tags < Gollum::Filter
   def extract(data)
     return data if @markup.format == :txt || @markup.format == :asciidoc
     data.gsub!(/(.?)\[\[(.+?)\]\]([^\[]?)/m) do
-      if $1 == "'" && $3 != "'"
-        "[[#{$2}]]#{$3}"
-      elsif $2.include?('][')
-        if $2[0..4] == 'file:'
-          pre            = $1
-          post           = $3
-          parts          = $2.split('][')
+      if Regexp.last_match[1] == "'" && Regexp.last_match[3] != "'"
+        "[[#{Regexp.last_match[2]}]]#{Regexp.last_match[3]}"
+      elsif Regexp.last_match[2].include?('][')
+        if Regexp.last_match[2][0..4] == 'file:'
+          pre            = Regexp.last_match[1]
+          post           = Regexp.last_match[3]
+          parts          = Regexp.last_match[2].split('][')
           parts[0][0..4] = ""
           link           = "#{parts[1]}|#{parts[0].sub(/\.org/, '')}"
           id             = register_tag(link)
@@ -21,8 +21,8 @@ class Gollum::Filter::Tags < Gollum::Filter
           $&
         end
       else
-        id = register_tag($2)
-        "#{$1}#{id}#{$3}"
+        id = register_tag(Regexp.last_match[2])
+        "#{Regexp.last_match[1]}#{id}#{Regexp.last_match[3]}"
       end
     end
     data

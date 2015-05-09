@@ -35,34 +35,34 @@ context "Wiki" do
 
   test "shows paginated log with no page" do
     Gollum::Wiki.per_page = 3
-    commits               = @wiki.repo.commits[0..2].map { |x| x.id }
+    commits               = @wiki.repo.commits[0..2].map(&:id)
     assert_equal commits, @wiki.log.map { |c| c.id }
   end
 
   test "shows paginated log with 1st page" do
     Gollum::Wiki.per_page = 3
-    commits               = @wiki.repo.commits[0..2].map { |x| x.id }
-    assert_equal commits, @wiki.log(:page => 1).map { |c| c.id }
+    commits               = @wiki.repo.commits[0..2].map(&:id)
+    assert_equal commits, @wiki.log(:page => 1).map(&:id)
   end
 
   test "shows paginated log with next page" do
     Gollum::Wiki.per_page = 3
-    commits               = @wiki.repo.commits[3..5].map { |x| x.id }
-    assert_equal commits, @wiki.log(:page => 2).map { |c| c.id }
+    commits               = @wiki.repo.commits[3..5].map(&:id)
+    assert_equal commits, @wiki.log(:page => 2).map(&:id)
   end
 
   test "list pages" do
     pages = @wiki.pages
     assert_equal \
       ['Bilbo-Baggins.md', 'Boromir.md', 'Elrond.md', 'Eye-Of-Sauron.md', 'Hobbit.md', 'Home.textile', 'My-Precious.md', 'Samwise Gamgee.mediawiki', 'todo.txt'],
-      pages.map { |p| p.filename }.sort
+      pages.map(&:filename).sort
   end
 
   test "list files" do
     files = @wiki.files
     assert_equal \
       ['Data-Two.csv', 'Data.csv', 'Riddles.rd', 'eye.jpg'],
-      files.map { |p| p.filename }.sort
+      files.map(&:filename).sort
   end
 
   test "counts pages" do
@@ -179,7 +179,7 @@ context "Wiki TOC in _Sidebar.md" do
   end
   
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end
 
@@ -348,7 +348,7 @@ context "Wiki page writing" do
   end
 
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end
 
@@ -371,7 +371,7 @@ context "Wiki search" do
   end
   
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end
 
@@ -863,6 +863,6 @@ context "Wiki subclassing" do
   end
 
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end

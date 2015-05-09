@@ -19,10 +19,10 @@ def specification(version, default_adapter, platform = nil)
     s.email    = 'tom@github.com'
     s.homepage = 'http://github.com/gollum/gollum-lib'
 
-    s.require_paths = %w[lib]
+    s.require_paths = %w(lib)
 
     s.rdoc_options = ['--charset=UTF-8']
-    s.extra_rdoc_files = %w[README.md LICENSE]
+    s.extra_rdoc_files = %w(README.md LICENSE)
 
     s.add_dependency *default_adapter
     s.add_dependency 'rouge', '~> 1.7.4'
@@ -52,7 +52,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'rb-fchange', '~> 0.0.6'
     s.add_development_dependency 'twitter_cldr', '~> 3.1.0'
     # = MANIFEST =
-  s.files = %w[
+  s.files = %w(
     Gemfile
     HISTORY.md
     LICENSE
@@ -92,7 +92,7 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/version.rb
     lib/gollum-lib/wiki.rb
     licenses/licenses.txt
-  ]
+  )
   # = MANIFEST =
 
     s.test_files = s.files.select { |path| path =~ /^test\/test_.*\.rb/ }

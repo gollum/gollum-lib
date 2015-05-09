@@ -35,11 +35,11 @@ context "Unicode Support" do
     assert_equal '', anchors[0].text
   end
 
-  def nfd utf8
+  def nfd(utf8)
     TwitterCldr::Normalization.normalize utf8
   end
 
-  def check_h1 text, page
+  def check_h1(text, page)
     @wiki.write_page(page, :markdown, "# " + text)
 
     # nokogiri will mix encodings

@@ -1,35 +1,34 @@
 # ~*~ encoding: utf-8 ~*~
 module Gollum
-=begin
-  FileView requires that:
-    - All files in root dir are processed first
-    - Then all the folders are sorted and processed
-=end
+  # FileView requires that:
+  #  - All files in root dir are processed first
+  #  - Then all the folders are sorted and processed
+
   class FileView
     # common use cases:
     # set pages to wiki.pages and show_all to false
     # set pages to wiki.pages + wiki.files and show_all to true
-    def initialize pages, options = {}
+    def initialize(pages, options = {})
       @pages    = pages
       @show_all = options[:show_all] || false
       @checked  = options[:collapse_tree] ? '' : "checked"
     end
 
-    def enclose_tree string
+    def enclose_tree(string)
       %Q(<ol class="tree">\n) + string + %Q(</ol>)
     end
 
-    def new_page page
+    def new_page(page)
       name = page.name
       url  = url_for_page page
       %Q(  <li class="file"><a href="#{url}"><span class="icon"></span>#{name}</a></li>)
     end
 
-    def new_folder folder_path
+    def new_folder(folder_path)
       new_sub_folder folder_path
     end
 
-    def new_sub_folder path
+    def new_sub_folder(path)
       <<-HTML
       <li>
         <label>#{path}</label> <input type="checkbox" #{@checked} />
@@ -41,7 +40,7 @@ module Gollum
       "</ol></li>\n"
     end
 
-    def url_for_page page
+    def url_for_page(page)
       url = ''
       if @show_all
         # Remove ext for valid pages.
@@ -143,9 +142,9 @@ module Gollum
           end
         end
 
-        html      += new_page page
+        html += new_page page
         cwd_array = tmp_array
-        changed   = false
+        changed = false
       end
 
       # return the completed html
