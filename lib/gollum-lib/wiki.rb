@@ -509,12 +509,12 @@ module Gollum
         sha2   = nil
       end
 
-      patch                    = full_reverse_diff_for(page, sha1, sha2)
-      committer                = Committer.new(self, commit)
-      parent                   = committer.parents[0]
+      patch     = full_reverse_diff_for(page, sha1, sha2)
+      committer = Committer.new(self, commit)
+      parent    = committer.parents[0]
       committer.options[:tree] = @repo.git.apply_patch(parent.sha, patch)
       return false unless committer.options[:tree]
-      committer.after_commit do |index, sha|
+      committer.after_commit do |index, _sha|
         @access.refresh
 
         files = []
@@ -527,7 +527,7 @@ module Gollum
               path = Regexp.last_match[1]
               ext  = ::File.extname(path)
               name = ::File.basename(path, ext)
-              if format = ::Gollum::Page.format_for(ext)
+              if (format = ::Gollum::Page.format_for(ext))
                 files << [path, name, format]
               end
             end
@@ -643,7 +643,7 @@ module Gollum
     #
     # Returns an Array of Gollum::Git::Commit.
     def latest_changes(options={})
-      max_count = options.fetch(:max_count, 10)      
+      options[:max_count] = 10 unless options[:max_count]
       @repo.log(@ref, nil, options)
     end
     

@@ -50,7 +50,7 @@ module Gollum
     }.freeze
 
     ADD_ATTRIBUTES  = lambda do |env, node|
-      if add = env[:config][:add_attributes][node.name]
+      if (add = env[:config][:add_attributes][node.name])
         add.each do |key, value|
           node[key] = value
         end
@@ -71,7 +71,7 @@ module Gollum
           return if env[:is_whitelisted] || !node.element?
           prefix      = env[:config][:id_prefix]
           found_attrs = %w(id name).select do |key|
-            if value = node[key]
+            if (value = node[key])
               node[key] = value.gsub(/\A(#{prefix})?/, prefix)
             end
           end
@@ -82,7 +82,7 @@ module Gollum
         end,
         lambda do |env|
           node = env[:node]
-          return unless value = node['href']
+          return unless (value = node['href'])
           prefix       = env[:config][:id_prefix]
           node['href'] = value.gsub(/\A\#(#{prefix})?/, '#'+prefix)
           ADD_ATTRIBUTES.call(env, node)

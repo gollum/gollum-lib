@@ -378,7 +378,7 @@ module Gollum
     # Returns a Gollum::Page or nil if the page could not be found.
     def find(name, version, dir = nil, exact = false)
       map = @wiki.tree_map_for(version.to_s)
-      if page = find_page_in_tree(map, name, dir, exact)
+      if (page = find_page_in_tree(map, name, dir, exact))
         page.version    = version.is_a?(Gollum::Git::Commit) ?
             version : @wiki.commit_for(version)
         page.historical = page.version.to_s == version.to_s
@@ -471,14 +471,14 @@ module Gollum
       dirs.pop
       map = @wiki.tree_map_for(@wiki.ref, true)
       while !dirs.empty?
-        if page = find_page_in_tree(map, name, dirs.join('/'))
+        if (page = find_page_in_tree(map, name, dirs.join('/')))
           page.parent_page = self
           return page
         end
         dirs.pop
       end
 
-      if page = find_page_in_tree(map, name, '')
+      if (page = find_page_in_tree(map, name, ''))
         page.parent_page = self
       end
       page
