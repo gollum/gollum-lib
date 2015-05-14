@@ -18,7 +18,7 @@ class Gollum::Filter::Tags < Gollum::Filter
           id             = register_tag(link)
           "#{pre}#{id}#{post}"
         else
-          $&
+          Regexp.last_match[0]
         end
       else
         id = register_tag(Regexp.last_match[2])
@@ -42,7 +42,7 @@ class Gollum::Filter::Tags < Gollum::Filter
       if node.text? then
         content = node.content
         content.gsub!(/TAG[a-f0-9]+TAG/) do |id|
-          if tag = @map[id] then
+          if (tag = @map[id]) then
             if is_preformatted?(node) then
               "[[#{tag}]]"
             else
@@ -77,13 +77,13 @@ class Gollum::Filter::Tags < Gollum::Filter
       %{[[#{tag}]]}
     elsif tag =~ /^_$/
       %{<div class="clearfloats"></div>}
-    elsif html = process_include_tag(tag)
+    elsif (html = process_include_tag(tag))
       html
-    elsif html = process_image_tag(tag)
+    elsif (html = process_image_tag(tag))
       html
-    elsif html = process_external_link_tag(tag)
+    elsif (html = process_external_link_tag(tag))
       html
-    elsif html = process_file_link_tag(tag)
+    elsif (html = process_file_link_tag(tag))
       html
     else
       process_page_link_tag(tag)
@@ -125,11 +125,11 @@ class Gollum::Filter::Tags < Gollum::Filter
     return if parts.size.zero?
 
     name = parts[0].strip
-    path = if file = @markup.find_file(name)
-             ::File.join @markup.wiki.base_path, file.path
-           elsif name =~ /^https?:\/\/.+(jpg|png|gif|svg|bmp)$/i
-             name
-           end
+    if (file = @markup.find_file(name))
+      path = ::File.join @markup.wiki.base_path, file.path
+    elsif name =~ /^https?:\/\/.+(jpg|png|gif|svg|bmp)$/i
+      path = name
+    end
 
     if path
       opts = parse_image_tag_options(tag)
@@ -155,19 +155,19 @@ class Gollum::Filter::Tags < Gollum::Filter
         end
       end
 
-      if width = opts['width']
+      if (width = opts['width'])
         if width =~ /^\d+(\.\d+)?(em|px)$/
           attrs << %{width="#{width}"}
         end
       end
 
-      if height = opts['height']
+      if (height = opts['height'])
         if height =~ /^\d+(\.\d+)?(em|px)$/
           attrs << %{height="#{height}"}
         end
       end
 
-      if alt = opts['alt']
+      if (alt = opts['alt'])
         attrs << %{alt="#{alt}"}
       end
 
@@ -245,11 +245,11 @@ class Gollum::Filter::Tags < Gollum::Filter
 
     name = parts[0].strip
     path = parts[1] && parts[1].strip
-    path = if path && file = @markup.find_file(path)
-             ::File.join @markup.wiki.base_path, file.path
-           else
-             nil
-           end
+    if path && file = @markup.find_file(path)
+      path = ::File.join @markup.wiki.base_path, file.path
+    else
+      path = nil
+    end
 
     if name && path && file
       %{<a href="#{::File.join @markup.wiki.base_path, file.path}">#{name}</a>}
@@ -313,7 +313,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     if page
       return page
     end
-    if pos = cname.index('#')
+    if (pos = cname.index('#'))
       [@markup.wiki.page(cname[0...pos]), cname[pos..-1]]
     end
   end

@@ -18,18 +18,18 @@ class Gollum::Filter::Macro < Gollum::Filter
       args = []
       opts = {}
       
-      argstr.scan /,?\s*(#{arg})\s*/ do |arg|
+      argstr.scan(/,?\s*(#{arg})\s*/) do |arguments|
       	# Stabstabstab
-      	arg = arg.first
+      	argument = arguments.first
       	
-      	if arg =~ /^([a-z0-9_]+)="(.*?)"/
+        if argument =~ /^([a-z0-9_]+)="(.*?)"/
       		opts[Regexp.last_match[1]] = Regexp.last_match[2]
-			  elsif arg =~ /^"(.*)"$/
+			  elsif argument =~ /^"(.*)"$/
       		args << Regexp.last_match[1]
 			  else
-				  args << arg
-			  end
-		  end
+				  args << argument
+        end
+      end
 		  
 		  args << opts unless opts.empty?
       

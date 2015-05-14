@@ -56,7 +56,7 @@ class Gollum::Filter::Code < Gollum::Filter
 
     blocks = []
 
-    @map.each do |id, spec|
+    @map.each do |_id, spec|
       next if spec[:output] # cached
 
       code = spec[:code]

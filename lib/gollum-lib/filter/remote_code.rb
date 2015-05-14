@@ -14,14 +14,14 @@ require 'open-uri'
 class Gollum::Filter::RemoteCode < Gollum::Filter
   def extract(data)
     return data if @markup.format == :txt
-    data.gsub /^[ \t]*``` ?([^:\n\r]+):((http)?[^`\n\r]+)```/ do
+    data.gsub(/^[ \t]*``` ?([^:\n\r]+):((http)?[^`\n\r]+)```/) do
       language = Regexp.last_match[1]
       uri      = Regexp.last_match[2]
       protocol = Regexp.last_match[3]
 
       # Detect local file
       if protocol.nil?
-        if file = @markup.find_file(uri, @markup.wiki.ref)
+        if (file = @markup.find_file(uri, @markup.wiki.ref))
           contents = file.raw_data
         else
           # How do we communicate a render error?

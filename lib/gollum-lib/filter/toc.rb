@@ -78,22 +78,22 @@ class Gollum::Filter::TOC < Gollum::Filter
   # Adds an entry to the TOC for the given header.  The generated entry
   # is a link to the given anchor name
   def add_entry_to_toc(header, name)
-    @toc        ||= Nokogiri::XML::DocumentFragment.parse('<div class="toc"><div class="toc-title">Table of Contents</div></div>')
-    tail        ||= @toc.child
-    tail_level  ||= 0
+    @toc ||= Nokogiri::XML::DocumentFragment.parse('<div class="toc"><div class="toc-title">Table of Contents</div></div>')
+    tail ||= @toc.child
+    tail_level ||= 0
 
     level = header.name.gsub(/[hH]/, '').to_i
 
     while tail_level < level
-      node       = Nokogiri::XML::Node.new('ul', @doc)
-      tail       = tail.add_child(node)
+      node = Nokogiri::XML::Node.new('ul', @doc)
+      tail = tail.add_child(node)
       tail_level += 1
     end
     
     while tail_level > level
-      tail       = tail.parent
+      tail = tail.parent
       tail_level -= 1
-     end
+    end
     node = Nokogiri::XML::Node.new('li', @doc)
     # % -> %25 so anchors work on Firefox. See issue #475
     node.add_child(%Q{<a href="##{name}">#{header.content}</a>})
