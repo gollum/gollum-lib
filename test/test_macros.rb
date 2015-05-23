@@ -31,59 +31,59 @@ context "Macros" do
 
   test "Missing macro provides missing macro output" do
     @wiki.write_page("NonExistentPage", :markdown, "<<NonExistentMacro()>>", commit_details)
-    assert_match /Unknown macro: NonExistentMacro/, @wiki.pages[0].formatted_data
+    assert_match(/Unknown macro: NonExistentMacro/, @wiki.pages[0].formatted_data)
   end
 
   test "AllPages macro does something interesting" do
     @wiki.write_page("AllPagesMacroPage", :markdown, "<<AllPages()>>", commit_details)
-    assert_match /<li>AllPagesMacroPage/, @wiki.pages[0].formatted_data
+    assert_match(/<li>AllPagesMacroPage/, @wiki.pages[0].formatted_data)
   end
   
   test "ListArgs with no args" do
     @wiki.write_page("ListArgsMacroPage", :markdown, "<<ListArgs()>>", commit_details)
-    assert_no_match /@/, @wiki.pages[0].formatted_data
+    assert_no_match(/@/, @wiki.pages[0].formatted_data)
   end
 
   test "ListArgs with a single empty quoted arg" do
     @wiki.write_page("ListArgsMacroPage", :markdown, '<<ListArgs("")>>', commit_details)
-    assert_match /@@/, @wiki.pages[0].formatted_data
+    assert_match(/@@/, @wiki.pages[0].formatted_data)
   end
 
   test "ListArgs with a single non-quoted arg" do
     @wiki.write_page("ListArgsMacroPage", :markdown, "<<ListArgs(foo)>>", commit_details)
-    assert_match /@foo@/, @wiki.pages[0].formatted_data
+    assert_match(/@foo@/, @wiki.pages[0].formatted_data)
   end
 
   test "ListArgs with several single non-quoted args" do
     @wiki.write_page("ListArgsMacroPage", :markdown, "<<ListArgs(foo, bar,baz)>>", commit_details)
-    assert_match /@foo@/, @wiki.pages[0].formatted_data
-    assert_match /@bar@/, @wiki.pages[0].formatted_data
-    assert_match /@baz@/, @wiki.pages[0].formatted_data
+    assert_match(/@foo@/, @wiki.pages[0].formatted_data)
+    assert_match(/@bar@/, @wiki.pages[0].formatted_data)
+    assert_match(/@baz@/, @wiki.pages[0].formatted_data)
   end
 
   test "ListArgs with a single quoted arg" do
     @wiki.write_page("ListArgsMacroPage", :markdown, '<<ListArgs("foo, bar, and baz")>>', commit_details)
-    assert_match /@foo, bar, and baz@/, @wiki.pages[0].formatted_data
+    assert_match(/@foo, bar, and baz@/, @wiki.pages[0].formatted_data)
   end
 
   test "ListArgs with several quoted args" do
     @wiki.write_page("ListArgsMacroPage", :markdown, '<<ListArgs("foo, bar, and baz", "wombat", "xyzzy")>>', commit_details)
-    assert_match /@foo, bar, and baz@/, @wiki.pages[0].formatted_data
-    assert_match /@wombat@/, @wiki.pages[0].formatted_data
-    assert_match /@xyzzy@/, @wiki.pages[0].formatted_data
+    assert_match(/@foo, bar, and baz@/, @wiki.pages[0].formatted_data)
+    assert_match(/@wombat@/, @wiki.pages[0].formatted_data)
+    assert_match(/@xyzzy@/, @wiki.pages[0].formatted_data)
   end
 
   test "ListArgs with quoted parens" do
     @wiki.write_page("ListArgsMacroPage", :markdown, '<<ListArgs(foo, "(bar)")>>', commit_details)
-    assert_match /@foo@/, @wiki.pages[0].formatted_data
-    assert_match /@\(bar\)@/, @wiki.pages[0].formatted_data
+    assert_match(/@foo@/, @wiki.pages[0].formatted_data)
+    assert_match(/@\(bar\)@/, @wiki.pages[0].formatted_data)
   end
 
   test "ListArgs with a mix or arg styles" do
     @wiki.write_page("ListArgsMacroPage", :markdown, '<<ListArgs("foo, bar, and baz", wombat, funny things)>>', commit_details)
-    assert_match /@foo, bar, and baz@/, @wiki.pages[0].formatted_data
-    assert_match /@wombat@/, @wiki.pages[0].formatted_data
-    assert_match /@funny things@/, @wiki.pages[0].formatted_data
+    assert_match(/@foo, bar, and baz@/, @wiki.pages[0].formatted_data)
+    assert_match(/@wombat@/, @wiki.pages[0].formatted_data)
+    assert_match(/@funny things@/, @wiki.pages[0].formatted_data)
   end
   
   test "Args parser doesn't overstep its boundaries" do

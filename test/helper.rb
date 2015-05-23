@@ -93,7 +93,7 @@ def context(*args, &block)
     self
   end).send(:define_method, :name) { name.gsub(/\W/, '_') }
   $contexts << klass
-  klass.class_eval &block
+  klass.class_eval(&block)
 end
 
 $contexts = []
