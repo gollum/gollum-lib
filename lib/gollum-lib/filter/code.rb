@@ -76,8 +76,11 @@ class Gollum::Filter::Code < Gollum::Filter
         if !lang || lang.downcase == 'bash'
           hl_code = "<pre>#{code}</pre>"
         else
+          # Set the default lexer to 'text' to prevent #153
+          lexer = Pygments::Lexer[(lang)] || Pygments::Lexer['text']
+
           # must set startinline to true for php to be highlighted without <?
-          hl_code = Pygments.highlight(code, :lexer => lang, :options => { :encoding => encoding.to_s, :startinline => true })
+          hl_code = lexer.highlight(code, :options => { :encoding => encoding.to_s, :startinline => true })
         end
       else # Rouge
         begin
