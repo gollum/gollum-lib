@@ -9,7 +9,7 @@ require 'date'
 #############################################################################
 
 def name
-  @name ||= Dir['*.gemspec'].first.split('.').first
+  "gollum-lib"
 end
 
 def version
