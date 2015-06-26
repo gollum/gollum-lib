@@ -87,6 +87,7 @@ module Gollum
       return '' if dir =~ /^.:\/$/
       if dir
         dir = ::File.expand_path(dir, '/')
+        dir = dir[2..-1] if dir =~ /^[a-zA-Z]:\// # expand_path may add d:/ on windows
         dir = '' if dir == '/'
       end
       dir
