@@ -43,7 +43,7 @@ module Gollum
       # render any matching pages
       def register(ext, name, options = {}, &block)
         regexp        = options[:regexp] || Regexp.new(ext.to_s)
-        @formats[ext] = { :name => name, :regexp => regexp }
+        @formats[ext] = { :name => name, :regexp => regexp, :h1 => options[:h1] }
       end
     end
 
@@ -136,7 +136,7 @@ module Gollum
     # encoding  - Encoding Constant or String.
     #
     # Returns the formatted String content.
-    def render(no_follow = false, encoding = nil, include_levels = 10)
+    def render(no_follow = false, encoding = nil, include_levels = 10, filter_chain = @wiki.filter_chain)
       @sanitize = no_follow ?
           @wiki.history_sanitizer :
           @wiki.sanitizer
@@ -145,7 +145,7 @@ module Gollum
       @include_levels = include_levels
 
       data         = @data.dup
-      filter_chain = @wiki.filter_chain.map do |r|
+      filter_chain = filter_chain.map do |r|
         Gollum::Filter.const_get(r).new(self)
       end
 

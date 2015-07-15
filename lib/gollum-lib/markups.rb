@@ -6,7 +6,7 @@ module Gollum
         Kramdown::Document.new(content, :auto_ids => false, :input => "markdown").to_html
     }
 
-    register(:markdown,  "Markdown", :regexp => /md|mkdn?|mdown|markdown/)
+    register(:markdown,  "Markdown", :regexp => /md|mkdn?|mdown|markdown/, :h1 => /^(#\s+)(\w+.*)/)
     register(:textile,   "Textile")
     register(:rdoc,      "RDoc")
     register(:org,       "Org-mode")
