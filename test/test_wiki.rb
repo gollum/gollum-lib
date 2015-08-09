@@ -55,7 +55,7 @@ context "Wiki" do
     pages = @wiki.pages
     assert_equal \
       ['Bilbo-Baggins.md', 'Boromir.md', 'Elrond.md', 'Eye-Of-Sauron.md', 'Hobbit.md', 'Home.textile', 'My-Precious.md', 'RingBearers.md', 'Samwise Gamgee.mediawiki', 'todo.txt'],
-      pages.map { |p| p.filename }.sort
+      pages.map(&:filename).sort
   end
 
   test "list files" do
@@ -364,7 +364,6 @@ context "Wiki search" do
   end
   
   test "search results should be able to return a filename with an embedded colon" do
-    page = @wiki.page("filename:with:colons")
     results = @wiki.search("colons")
     assert_not_nil results
     assert_equal "filename:with:colons", results.first[:name]
@@ -609,8 +608,6 @@ context "Wiki page writing with different branch" do
   end
 
   test "write_page" do
-    cd = commit_details
-
     @branch.write_page("Bilbo", :markdown, "# Bilbo", commit_details)
     assert @branch.page("Bilbo")
     assert @wiki.page("Gollum")
@@ -750,7 +747,7 @@ context "Renames directory traversal" do
     source = @wiki.paged("H", "G")
 
     # G/H.md => G/K/F.md
-    assert k = @wiki.rename_page(source, "K/F", rename_commit_details)
+    assert @wiki.rename_page(source, "K/F", rename_commit_details)
 
     new_page = @wiki.paged("F", "K")
     assert_not_nil new_page
@@ -762,7 +759,7 @@ context "Renames directory traversal" do
     source = @wiki.paged("H", "G")
 
     # G/H.md => G/K L/F.md
-    assert k = @wiki.rename_page(source, "K L/F", rename_commit_details)
+    assert @wiki.rename_page(source, "K L/F", rename_commit_details)
 
     new_page = @wiki.paged("F", "K L")
     assert_not_nil new_page

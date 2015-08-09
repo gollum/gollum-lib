@@ -39,7 +39,7 @@ context "File with checkout" do
   test "symbolic link" do
     file = @wiki.file("Data-Two.csv")
 
-    assert_match /^FirstName,LastName\n/, file.raw_data
+    assert_match(/^FirstName,LastName\n/, file.raw_data)
   end
 
   test "on disk file detection" do
@@ -52,20 +52,20 @@ context "File with checkout" do
     path = file.on_disk_path
 
     assert ::File.exist?(path)
-    assert_match /^# Bilbo Baggins\n\nBilbo Baggins/, IO.read(path)
+    assert_match(/^# Bilbo Baggins\n\nBilbo Baggins/, IO.read(path))
   end
 
   test "symbolic link, with on-disk" do
     file = @wiki.file("Data-Two.csv", 'master', true)
 
     assert file.on_disk?
-    assert_match /Data\.csv$/, file.on_disk_path
-    assert_match /^FirstName,LastName\n/, IO.read(file.on_disk_path)
+    assert_match(/Data\.csv$/, file.on_disk_path)
+    assert_match(/^FirstName,LastName\n/, IO.read(file.on_disk_path))
   end
 
   test "on disk file, with symlink, raw_data" do
     file = @wiki.file("Data-Two.csv")
 
-    assert_match /^FirstName,LastName\n/, file.raw_data
+    assert_match(/^FirstName,LastName\n/, file.raw_data)
   end
 end
