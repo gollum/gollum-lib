@@ -73,3 +73,28 @@ context 'Hook' do
   end
 
 end
+
+context 'Pushing and pulling' do
+  setup do
+    @orig_path = cloned_testpath("examples/lotr.git", true)
+    @origin = Gollum::Wiki.new(@orig_path, :repo_is_bare => true)
+    @clone_path = cloned_testpath("examples/#{File.basename(@orig_path)}")
+    @clone = Gollum::Wiki.new(@clone_path)
+  end
+
+  test 'push and pull' do
+    assert_equal nil, @origin.page("Gollum")
+    @clone.write_page("Gollum", :markdown, "# Gollum", {:message => "Wrote test page"})
+    @clone.repo.git.push("origin", "master")
+    assert_equal "Wrote test page", @origin.repo.commits.first.message
+    @origin.write_page("Gollum2", :markdown, "New content2", {:message => "Wrote second test page"})
+    @clone.repo.git.pull("origin", "master")
+    # Rugged does not support high-level pull yet, so pull is implemented as a merge. Hence need to check for merge commit on rugged adapter.
+    assert_equal ["Wrote second test page", "Merged branch refs/heads/master of origin."].include?(@clone.repo.commits.first.message), true
+  end
+  
+  teardown do
+    FileUtils.rm_rf(@orig_path)
+    FileUtils.rm_rf(@clone_path)
+  end
+end

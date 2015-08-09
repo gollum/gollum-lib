@@ -22,7 +22,7 @@ Gollum-lib follows the rules of [Semantic Versioning](http://semver.org/) and us
 - Python 2.5+ (2.7.3 recommended)
 - Ruby 1.9.3+ (1.9.3 recommended)
 - Unix like operating system (OS X, Ubuntu, Debian, and more)
-- Will not work on Windows (because of [grit](https://github.com/github/grit))
+- Will not work on Windows with the default [grit](https://github.com/github/grit) adapter, but might work via JRuby (please let us know!)
 
 ## INSTALLATION
 

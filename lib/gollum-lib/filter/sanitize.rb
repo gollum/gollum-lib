@@ -1,8 +1,8 @@
 # ~*~ encoding: utf-8 ~*~
 
 class Gollum::Filter::Sanitize < Gollum::Filter
-  def extract(d)
-    d
+  def extract(data)
+    data
   end
 
   def process(data)

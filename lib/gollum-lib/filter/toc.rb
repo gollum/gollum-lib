@@ -9,7 +9,7 @@ class Gollum::Filter::TOC < Gollum::Filter
     @doc               = Nokogiri::HTML::DocumentFragment.parse(data)
     @toc               = nil
     @anchor_names      = {}
-    @current_ancestors = ""
+    @current_ancestors = []
 
     if @markup.sub_page && @markup.parent_page
       @toc = @markup.parent_page.toc_data
@@ -57,12 +57,9 @@ class Gollum::Filter::TOC < Gollum::Filter
     name.gsub!(/-$/, "")
     name.downcase!
 
-    anchor_name = name
-
-    # Set and/or add the ancestors to the name
-    @current_ancestors = name if level == 1
-    anchor_name = (level == 1) ? name : "#{@current_ancestors}_#{name}"
-    @current_ancestors+= "_#{name}" if level > 1
+    @current_ancestors[level - 1] = name
+    @current_ancestors = @current_ancestors.take(level)
+    anchor_name = @current_ancestors.compact.join("_")
 
     # Ensure duplicate anchors have a unique prefix or the toc will break
     index = increment_anchor_index(anchor_name)
@@ -81,22 +78,22 @@ class Gollum::Filter::TOC < Gollum::Filter
   # Adds an entry to the TOC for the given header.  The generated entry
   # is a link to the given anchor name
   def add_entry_to_toc(header, name)
-    @toc        ||= Nokogiri::XML::DocumentFragment.parse('<div class="toc"><div class="toc-title">Table of Contents</div></div>')
-    tail        ||= @toc.child
-    tail_level  ||= 0
+    @toc ||= Nokogiri::XML::DocumentFragment.parse('<div class="toc"><div class="toc-title">Table of Contents</div></div>')
+    tail ||= @toc.child
+    tail_level ||= 0
 
     level = header.name.gsub(/[hH]/, '').to_i
 
     while tail_level < level
-      node       = Nokogiri::XML::Node.new('ul', @doc)
-      tail       = tail.add_child(node)
+      node = Nokogiri::XML::Node.new('ul', @doc)
+      tail = tail.add_child(node)
       tail_level += 1
     end
     
     while tail_level > level
-      tail       = tail.parent
+      tail = tail.parent
       tail_level -= 1
-     end
+    end
     node = Nokogiri::XML::Node.new('li', @doc)
     # % -> %25 so anchors work on Firefox. See issue #475
     node.add_child(%Q{<a href="##{name}">#{header.content}</a>})

@@ -345,7 +345,7 @@ module Gollum
 
       committer.add_to_index(sanitized_dir, filename, format, data)
 
-      committer.after_commit do |index, sha|
+      committer.after_commit do |index, _sha|
         @access.refresh
         index.update_working_dir(sanitized_dir, filename, format)
       end
@@ -395,7 +395,7 @@ module Gollum
       committer.delete(page.path)
       committer.add_to_index(target_dir, target_name, page.format, page.raw_data)
 
-      committer.after_commit do |index, sha|
+      committer.after_commit do |index, _sha|
         @access.refresh
         index.update_working_dir(source_dir, source_name, page.format)
         index.update_working_dir(target_dir, target_name, page.format)
@@ -444,7 +444,7 @@ module Gollum
         committer.add_to_index(dir, filename, format, data)
       end
 
-      committer.after_commit do |index, sha|
+      committer.after_commit do |index, _sha|
         @access.refresh
         index.update_working_dir(dir, page.filename_stripped, page.format)
         index.update_working_dir(dir, filename, format)
@@ -476,7 +476,7 @@ module Gollum
 
       committer.delete(page.path)
 
-      committer.after_commit do |index, sha|
+      committer.after_commit do |index, _sha|
         dir = ::File.dirname(page.path)
         dir = '' if dir == '.'
 
@@ -509,12 +509,12 @@ module Gollum
         sha2   = nil
       end
 
-      patch                    = full_reverse_diff_for(page, sha1, sha2)
-      committer                = Committer.new(self, commit)
-      parent                   = committer.parents[0]
+      patch     = full_reverse_diff_for(page, sha1, sha2)
+      committer = Committer.new(self, commit)
+      parent    = committer.parents[0]
       committer.options[:tree] = @repo.git.apply_patch(parent.sha, patch)
       return false unless committer.options[:tree]
-      committer.after_commit do |index, sha|
+      committer.after_commit do |index, _sha|
         @access.refresh
 
         files = []
@@ -523,11 +523,11 @@ module Gollum
         else
           # Grit::Diff can't parse reverse diffs.... yet
           patch.each_line do |line|
-            if line =~ %r{^diff --git b/.+? a/(.+)$}
-              path = $1
+            if line =~ %r(^diff --git b/.+? a/(.+)$)
+              path = Regexp.last_match[1]
               ext  = ::File.extname(path)
               name = ::File.basename(path, ext)
-              if format = ::Gollum::Page.format_for(ext)
+              if (format = ::Gollum::Page.format_for(ext))
                 files << [path, name, format]
               end
             end
@@ -643,7 +643,7 @@ module Gollum
     #
     # Returns an Array of Gollum::Git::Commit.
     def latest_changes(options={})
-      max_count = options.fetch(:max_count, 10)      
+      options[:max_count] = 10 unless options[:max_count]
       @repo.log(@ref, nil, options)
     end
     
@@ -660,7 +660,7 @@ module Gollum
     #
     # Returns a Sanitize instance.
     def sanitizer
-      if options = sanitization
+      if (options = sanitization)
         @sanitizer ||= options.to_sanitize
       end
     end
@@ -670,7 +670,7 @@ module Gollum
     #
     # Returns a Sanitize instance.
     def history_sanitizer
-      if options = history_sanitization
+      if (options = history_sanitization)
         @history_sanitizer ||= options.to_sanitize
       end
     end
@@ -816,7 +816,7 @@ module Gollum
     #
     # Returns a flat Array of Gollum::Page instances.
     def tree_list(ref)
-      if sha = @access.ref_to_sha(ref)
+      if (sha = @access.ref_to_sha(ref))
         commit = @access.commit(sha)
         tree_map_for(sha).inject([]) do |list, entry|
           next list unless @page_class.valid_page_name?(entry.name)
@@ -833,7 +833,7 @@ module Gollum
     #
     # Returns a flat Array of Gollum::File instances.
     def file_list(ref)
-      if sha = @access.ref_to_sha(ref)
+      if (sha = @access.ref_to_sha(ref))
         commit = @access.commit(sha)
         tree_map_for(sha).inject([]) do |list, entry|
           next list if entry.name.start_with?('_')
@@ -885,8 +885,9 @@ module Gollum
     #
     # Returns the String email address.
     def default_committer_email
-      @default_committer_email ||= \
-        @repo.config['user.email'] || self.class.default_committer_email
+      email = @repo.config['user.email']
+      email = email.delete('<>') if email
+      @default_committer_email ||= email || self.class.default_committer_email
     end
 
     # Gets the commit object for the given ref or sha.

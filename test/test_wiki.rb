@@ -35,20 +35,20 @@ context "Wiki" do
 
   test "shows paginated log with no page" do
     Gollum::Wiki.per_page = 3
-    commits               = @wiki.repo.commits[0..2].map { |x| x.id }
+    commits               = @wiki.repo.commits[0..2].map(&:id)
     assert_equal commits, @wiki.log.map { |c| c.id }
   end
 
   test "shows paginated log with 1st page" do
     Gollum::Wiki.per_page = 3
-    commits               = @wiki.repo.commits[0..2].map { |x| x.id }
-    assert_equal commits, @wiki.log(:page => 1).map { |c| c.id }
+    commits               = @wiki.repo.commits[0..2].map(&:id)
+    assert_equal commits, @wiki.log(:page => 1).map(&:id)
   end
 
   test "shows paginated log with next page" do
     Gollum::Wiki.per_page = 3
-    commits               = @wiki.repo.commits[3..5].map { |x| x.id }
-    assert_equal commits, @wiki.log(:page => 2).map { |c| c.id }
+    commits               = @wiki.repo.commits[3..5].map(&:id)
+    assert_equal commits, @wiki.log(:page => 2).map(&:id)
   end
 
   test "list pages" do
@@ -62,7 +62,7 @@ context "Wiki" do
     files = @wiki.files
     assert_equal \
       ['Data-Two.csv', 'Data.csv', 'Riddles.rd', 'eye.jpg'],
-      files.map { |p| p.filename }.sort
+      files.map(&:filename).sort
   end
 
   test "counts pages" do
@@ -179,7 +179,7 @@ context "Wiki TOC in _Sidebar.md" do
   end
   
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end
 
@@ -348,7 +348,7 @@ context "Wiki page writing" do
   end
 
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end
 
@@ -358,20 +358,34 @@ context "Wiki search" do
     FileUtils.rm_rf(@path)
     Gollum::Git::Repo.init_bare(@path)
     @wiki = Class.new(Gollum::Wiki).new(@path)
+    @wiki.write_page("bar", :markdown, "bar", commit_details)
+    @wiki.write_page("filename:with:colons", :markdown, "# Filename with colons", commit_details)
+    @wiki.write_page("foo", :markdown, "# File with query in contents and filename\nfoo", commit_details)
   end
   
   test "search results should be able to return a filename with an embedded colon" do
-    details = commit_details
-    @wiki.write_page("filename:with:colons", :markdown, "# Filename with colons", details)
     page = @wiki.page("filename:with:colons")
     results = @wiki.search("colons")
     assert_not_nil results
     assert_equal "filename:with:colons", results.first[:name]
     assert_equal 2, results.first[:count]
   end
+
+  test "search results should make the content/filename search additive" do
+    # There is a file that contains the word 'foo' and is called 'foo', so it should
+    # have a count of 2, not 1...
+    results = @wiki.search("foo")
+    assert_equal 2, results.first[:count]
+  end
+
+  test "search results should not include files that do not match the query" do
+    results = @wiki.search("foo")
+    assert_equal 1, results.size
+    assert_equal "foo", results.first[:name]
+  end
   
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end
 
@@ -539,7 +553,6 @@ end
 context "page_file_dir option" do
   setup do
     @path          = cloned_testpath('examples/page_file_dir')
-    @repo          = Gollum::Git::Repo.init(@path)
     @page_file_dir = 'docs'
     @wiki          = Gollum::Wiki.new(@path, :page_file_dir => @page_file_dir)
   end
@@ -567,13 +580,6 @@ context "page_file_dir option" do
     results = @wiki.search("foo")
     assert_equal 1, results.size
     assert_equal "docs/foo", results[0][:name]
-  end
-
-  test "search results should make the content/filename search additive" do
-    # This file contains the word 'foo' and is called 'foo', so it should
-    # have a count of 2, not 1...
-    results = @wiki.search("foo")
-    assert_equal 2, results[0][:count]
   end
 
   teardown do
@@ -864,6 +870,6 @@ context "Wiki subclassing" do
   end
 
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w[examples test.git]))
+    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end

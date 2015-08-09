@@ -10,6 +10,13 @@ require 'shoulda'
 require 'mocha/setup'
 require 'minitest/reporters'
 require 'twitter_cldr'
+require 'tempfile'
+
+# markup
+begin
+  require 'asciidoctor'
+rescue Exception
+end
 
 # internal
 require File.expand_path('../assertions', __FILE__)
@@ -24,24 +31,30 @@ dir = File.dirname(File.expand_path(__FILE__))
 $LOAD_PATH.unshift(File.join(dir, '..', 'lib'))
 $LOAD_PATH.unshift(dir)
 
+module Gollum
+end
+Gollum::GIT_ADAPTER = ENV['GIT_ADAPTER'] if ENV['GIT_ADAPTER']
+
 ENV['RACK_ENV'] = 'test'
 require 'gollum-lib'
 
 # Make sure we're in the test dir, the tests expect that to be the current
 # directory.
-TEST_DIR = File.join(File.dirname(__FILE__), *%w[.])
+TEST_DIR = File.join(File.dirname(__FILE__), *%w(.))
 
 def testpath(path)
   File.join(TEST_DIR, path)
 end
 
-def cloned_testpath(path)
+def cloned_testpath(path, bare = false)
   repo   = File.expand_path(testpath(path))
   path   = File.dirname(repo)
-  cloned = File.join(path, self.class.name)
+  name   = File.basename(Tempfile.new(self.class.name, path).path)
+  cloned = File.join(path, name)
+  bare   = bare ? "--bare" : ""
   FileUtils.rm_rf(cloned)
   Dir.chdir(path) do
-    %x{git clone #{File.basename(repo)} #{self.class.name} 2>/dev/null}
+    %x{git clone #{bare} #{File.basename(repo)} #{name} 2>/dev/null}
   end
   cloned
 end

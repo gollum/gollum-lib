@@ -3,7 +3,7 @@ require File.expand_path(File.join(File.dirname(__FILE__), 'helper'))
 require File.expand_path '../../lib/gollum-lib/file_view', __FILE__
 
 class FakePage
-  def initialize filepath
+  def initialize(filepath)
     @filepath = filepath
   end
 
@@ -37,7 +37,7 @@ class FakePage
 end
 
 class FakePages
-  def initialize filepath_array
+  def initialize(filepath_array)
     @array = filepath_array.map { |filepath| FakePage.new filepath }
   end
 
@@ -50,7 +50,7 @@ class FakePages
   end
 end
 
-def view pages
+def view(pages)
   Gollum::FileView.new(pages).render_files
 end
 
@@ -58,37 +58,27 @@ def test_path
   @test_path ||= File.expand_path('../file_view/', __FILE__) + '/'
 end
 
-def read file
+def read(file)
   File.read test_path + file + '.txt'
 end
 
 # For creating expected files.
 # write name, actual
-def write file, content
+def write(file, content)
   File.open(test_path + file + '.txt', 'w') do |f|
     f.write content
   end
 end
 
-def to_html html
-  # Remove blank nodes for proper formatting
-  doc = Nokogiri.XML(html) do |cfg|
-    cfg.default_xml.noblanks
-  end
-
-  # Save as XHTML
-  doc.to_xml({ :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML, :indent => 2, :encoding => 'UTF-8' })
-end
-
-def check name, pages_array
+def check(name, pages_array)
   pages    = FakePages.new pages_array
   expected = read name
-  actual   = to_html view pages
+  actual   = view pages
 
   # Uncomment when updating tests
   # write name, actual
 
-  assert_equal expected, actual
+  assert_html_equal expected, actual
 end
 
 # Test Notes

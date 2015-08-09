@@ -23,7 +23,8 @@ context "Gollum::Filter::Tags" do
     markup = Gollum::Markup.new(page)
     filter = Gollum::Filter::Tags.new(markup)
     data_with_placeholders = filter.extract(page.raw_data)
-    assert_max_seconds(2, "tag processing for #{TAGCOUNT} tags") do
+    max_seconds = RUBY_PLATFORM == "java" ? 6 : 2 # jruby needs a lot of leniency because it's slow on Travis
+    assert_max_seconds(max_seconds, "tag processing for #{TAGCOUNT} tags") do
       data_processed = filter.process(data_with_placeholders)
       assert_equal page_with_many_tags, data_processed
     end

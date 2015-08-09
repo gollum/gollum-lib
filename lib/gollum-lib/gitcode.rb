@@ -6,7 +6,7 @@ require 'open-uri'
 
 module Gollum
   class Gitcode
-    def initialize path
+    def initialize(path)
       raise(ArgumentError, 'path is nil or empty') if path.nil? or path.empty?
 
       @uri = URI::HTTP.build({
@@ -20,12 +20,12 @@ module Gollum
       @contents ||= self.req @uri
     end
 
-    def unchomp p
+    def unchomp(p)
       return p if p.nil?
       p[0] == '/' ? p : ('/' + p)
     end
 
-    def req uri, cut = 1
+    def req(uri, cut = 1)
       return "Too many redirects or retries" if cut >= 10
       http         = Net::HTTP.new uri.host, uri.port
       http.use_ssl = true

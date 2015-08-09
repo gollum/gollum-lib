@@ -5,46 +5,42 @@
 # Render a block of code using the Rouge syntax-highlighter.
 class Gollum::Filter::Code < Gollum::Filter
   def extract(data)
-    return data if @markup.format == :txt
+    case @markup.format
+    when :txt
+      return data
+    when :asciidoc
+      data.gsub!(/^(\[source,([^\r\n]*)\]\n)?----\n(.+?)\n----$/m) do
+        cache_codeblock(Regexp.last_match[2], Regexp.last_match[3])
+      end
+    when :org
+      org_headers = %r{([ \t]*#\+HEADER[S]?:[^\r\n]*\n)*}
+      org_name = %r{([ \t]*#\+NAME:[^\r\n]*\n)?}
+      org_lang = %r{[ ]*([^\n \r]*)[ ]*[^\r\n]*}
+      org_begin = %r{[ \t]*#\+BEGIN_SRC#{org_lang}\n}
+      org_end = %r{\n[ \t]*#\+END_SRC[ \t]*}
+      data.gsub!(/^#{org_headers}#{org_name}#{org_begin}(.+?)#{org_end}$/mi) do
+        cache_codeblock(Regexp.last_match[3], Regexp.last_match[4])
+      end
+    end
     data.gsub!(/^([ \t]*)(~~~+) ?([^\r\n]+)?\r?\n(.+?)\r?\n\1(~~~+)[ \t\r]*$/m) do
-      m_indent = $1
-      m_start  = $2 # ~~~
-      m_lang   = $3
-      m_code   = $4
-      m_end    = $5 # ~~~
-
+      m_indent = Regexp.last_match[1]
+      m_start  = Regexp.last_match[2] # ~~~
+      m_lang   = Regexp.last_match[3]
+      m_code   = Regexp.last_match[4]
+      m_end    = Regexp.last_match[5] # ~~~
       # start and finish tilde fence must be the same length
       next '' if m_start.length != m_end.length
-
-      lang   = m_lang ? m_lang.strip : nil
-      id     = Digest::SHA1.hexdigest("#{lang}.#{m_code}")
-      cached = @markup.check_cache(:code, id)
-
-      # extract lang from { .ruby } or { #stuff .ruby .indent }
-      # see http://johnmacfarlane.net/pandoc/README.html#delimited-code-blocks
-
+      lang = m_lang ? m_lang.strip : nil
       if lang
         lang = lang.match(/\.([^}\s]+)/)
         lang = lang[1] unless lang.nil?
       end
-
-      @map[id] = cached ?
-          { :output => cached } :
-          { :lang => lang, :code => m_code, :indent => m_indent }
-
-      "#{m_indent}#{id}" # print the SHA1 ID with the proper indentation
+      "#{m_indent}#{cache_codeblock(lang, m_code, m_indent)}"
     end
 
     data.gsub!(/^([ \t]*)``` ?([^\r\n]+)?\r?\n(.+?)\r?\n\1```[ \t]*\r?$/m) do
-      lang     = $2 ? $2.strip : nil
-      id       = Digest::SHA1.hexdigest("#{lang}.#{$3}")
-      cached   = @markup.check_cache(:code, id)
-      @map[id] = cached ?
-          { :output => cached } :
-          { :lang => lang, :code => $3, :indent => $1 }
-      "#{$1}#{id}" # print the SHA1 ID with the proper indentation
+      "#{Regexp.last_match[1]}#{cache_codeblock(Regexp.last_match[2].to_s.strip, Regexp.last_match[3], Regexp.last_match[1])}" # print the SHA1 ID with the proper indentation
     end
-
     data
   end
 
@@ -60,7 +56,7 @@ class Gollum::Filter::Code < Gollum::Filter
 
     blocks = []
 
-    @map.each do |id, spec|
+    @map.each do |_id, spec|
       next if spec[:output] # cached
 
       code = spec[:code]
@@ -80,8 +76,11 @@ class Gollum::Filter::Code < Gollum::Filter
         if !lang || lang.downcase == 'bash'
           hl_code = "<pre>#{code}</pre>"
         else
+          # Set the default lexer to 'text' to prevent #153
+          lexer = Pygments::Lexer[(lang)] || Pygments::Lexer['text']
+
           # must set startinline to true for php to be highlighted without <?
-          hl_code = Pygments.highlight(code, :lexer => lang, :options => { :encoding => encoding.to_s, :startinline => true })
+          hl_code = lexer.highlight(code, :options => { :encoding => encoding.to_s, :startinline => true })
         end
       else # Rouge
         begin
@@ -114,9 +113,7 @@ class Gollum::Filter::Code < Gollum::Filter
         end
       end
       # Removes paragraph tags surrounding <pre> blocks, see issue https://github.com/gollum/gollum-lib/issues/97
-      data.gsub!(/(<p>#{id}<\/p>|#{id})/) do
-        body
-      end
+      data.gsub!(/(<p>#{id}<\/p>|#{id})/) { body }
     end
 
     data
@@ -131,9 +128,17 @@ class Gollum::Filter::Code < Gollum::Filter
   # regex     - A regex to match whitespace
   def remove_leading_space(code, regex)
     if code.lines.all? { |line| line =~ /\A\r?\n\Z/ || line =~ regex }
-      code.gsub!(regex) do
-        ''
-      end
+      code.gsub!(regex) { '' }
     end
+  end
+
+  def cache_codeblock(language, code, indent = "")
+    language = language.to_s.empty? ? nil : language
+    id = Digest::SHA1.hexdigest("#{language}.#{code}")
+    cached = @markup.check_cache(:code, id)
+    @map[id] = cached ?
+      { :output => cached } :
+      { :lang => language, :code => code, :indent => indent }
+    id
   end
 end

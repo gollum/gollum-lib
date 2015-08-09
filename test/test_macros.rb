@@ -23,6 +23,12 @@ context "Macros" do
     @teardown.call
   end
 
+
+  test "Macro's are escapable" do
+    @wiki.write_page("MacroEscapeText", :markdown, "'<<AllPages()>>", commit_details)
+    assert_match "<p>&lt;&lt;AllPages()&gt;&gt;</p>", @wiki.pages[0].formatted_data
+  end
+
   test "Missing macro provides missing macro output" do
     @wiki.write_page("NonExistentPage", :markdown, "<<NonExistentMacro()>>", commit_details)
     assert_match /Unknown macro: NonExistentMacro/, @wiki.pages[0].formatted_data

@@ -16,8 +16,8 @@ class Gollum::Filter::WSD < Gollum::Filter
   def extract(data)
     return data if @markup.format == :txt
     data.gsub(/^\{\{\{\{\{\{ ?(.+?)\r?\n(.+?)\r?\n\}\}\}\}\}\}\r?$/m) do
-      id       = Digest::SHA1.hexdigest($2)
-      @map[id] = { :style => $1, :code => $2 }
+      id       = Digest::SHA1.hexdigest(Regexp.last_match[2])
+      @map[id] = { :style => Regexp.last_match[1], :code => Regexp.last_match[2] }
       id
     end
   end
@@ -44,7 +44,7 @@ class Gollum::Filter::WSD < Gollum::Filter
   def render_wsd(code, style)
     response = Net::HTTP.post_form(URI.parse(WSD_URL), 'style' => style, 'message' => code)
     if response.body =~ /img: "(.+)"/
-      url = "//www.websequencediagrams.com/#{$1}"
+      url = "//www.websequencediagrams.com/#{Regexp.last_match[1]}"
       "<img src=\"#{url}\" />"
     else
       puts response.body

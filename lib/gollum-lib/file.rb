@@ -63,14 +63,14 @@ module Gollum
     #
     # Returns true if this is a pointer to an on-disk file
     def on_disk?
-      return @on_disk
+      @on_disk
     end
 
     # Public: The path to this file on disk
     #
     # Returns nil if on_disk? is false.
     def on_disk_path
-      return @on_disk_path
+      @on_disk_path
     end
 
     # Public: The Gollum::Git::Commit version of the file.
@@ -90,7 +90,7 @@ module Gollum
     # path - The String directory path of the file.
     #
     # Returns the populated Gollum::File.
-    def populate(blob, path=nil)
+    def populate(blob, path = nil)
       @blob         = blob
       @path         = "#{path}/#{blob.name}"[1..-1]
       @on_disk      = false
@@ -123,7 +123,7 @@ module Gollum
       else
         @on_disk_path = pathname.to_path
       end
-      return true
+      true
     end
 
     # Find a file in the given Gollum repo.
@@ -136,19 +136,19 @@ module Gollum
     # Returns a Gollum::File or nil if the file could not be found. Note
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
-    def find(name, version, try_on_disk=false)
+    def find(name, version, try_on_disk = false)
       checked = name.downcase
       map     = @wiki.tree_map_for(version)
       commit  = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
 
-      if entry = map.detect { |entry| entry.path.downcase == checked }
+      if (result = map.detect { |entry| entry.path.downcase == checked })
         @path    = name
         @version = commit
 
         if try_on_disk && get_disk_reference(name, commit)
           @on_disk = true
         else
-          @blob = entry.blob(@wiki.repo)
+          @blob = result.blob(@wiki.repo)
         end
 
         self

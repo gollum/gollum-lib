@@ -227,6 +227,20 @@ context "Markup" do
     assert_html_equal "<p><code>sed -i '' 's/[[:space:]]*$//'</code></p>", page.formatted_data
   end
 
+  test "wiki link within org code block" do
+    code = <<-org
+#+HEADERS: blah blah
+#+HEADER: blah
+#+NAME: org test block
+  #+BEGIN_SRC bash some switches
+sed -i '' 's/[[:space:]]*$//'
+#+END_SRC
+org
+    @wiki.write_page("Pipe", :org, code, commit_details)
+    page = @wiki.page("Pipe")
+    assert_html_equal "<pre class=\"highlight\"><code>sed -i <span class=\"s1\">''</span> <span class=\"s1\">'s/[[:space:]]*$//'</span></code></pre>", page.formatted_data
+  end
+
   test "regexp gsub! backref (#383)" do
     # bug only triggers on "```" syntax
     # not `code`
@@ -700,8 +714,8 @@ np.array([[2,2],[1,3]],np.float)
   end
 
   test "embed code page absolute link" do
-    @wiki.write_page("base", :markdown, "a\n!base\b", commit_details)
-    @wiki.write_page("a", :markdown, "a\n```html:/base```\b", commit_details)
+    @wiki.write_page("base", :markdown, "a\n!base", commit_details)
+    @wiki.write_page("a", :markdown, "a\n```html:/base```", commit_details)
 
     page   = @wiki.page("a")
     output = page.formatted_data
@@ -709,8 +723,8 @@ np.array([[2,2],[1,3]],np.float)
   end
 
   test "embed code page relative link" do
-    @wiki.write_page("base", :markdown, "a\n!rel\b", commit_details)
-    @wiki.write_page("a", :markdown, "a\n```html:base```\b", commit_details)
+    @wiki.write_page("base", :markdown, "a\n!rel", commit_details)
+    @wiki.write_page("a", :markdown, "a\n```html:base```", commit_details)
 
     page   = @wiki.page("a")
     output = page.formatted_data
@@ -718,11 +732,11 @@ np.array([[2,2],[1,3]],np.float)
   end
 
   test "code block in unsupported language" do
-    @wiki.write_page("a", :markdown, "a\n```nonexistent\ncode\n```\nb", commit_details)
+    @wiki.write_page("a", :markdown, "a\n\n```nonexistent\ncode\n```", commit_details)
 
     page   = @wiki.page("a")
     output = page.formatted_data
-    assert_html_equal %Q{<p>a\n</p><pre class=\"highlight\"><span class=\"err\">code</span></pre>\nb}, output
+    assert_html_equal %Q{<p>a\n</p><pre class=\"highlight\"><span class=\"err\">code</span></pre>}, output
   end
 
   #########################################################################
@@ -866,13 +880,13 @@ np.array([[2,2],[1,3]],np.float)
 
   test "id with prefix ok" do
     content = "h2(example#wiki-foo). xxxx"
-    output  = "<h2 class=\"example\" id=\"wiki-foo\"><a class=\"anchor\" id=\"_xxxx\" href=\"#_xxxx\"><i class=\"fa fa-link\"></i></a>xxxx</h2>"
+    output  = "<h2 class=\"example\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"><i class=\"fa fa-link\"></i></a>xxxx</h2>"
     compare(content, output, :textile)
   end
 
   test "id prefix added" do
     content = "h2(#foo). xxxx[1]\n\nfn1.footnote"
-    output  = "<h2 id=\"wiki-foo\"><a class=\"anchor\" id=\"_xxxx1\" href=\"#_xxxx1\"><i class=\"fa fa-link\"></i></a>xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup>\n</h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
+    output  = "<h2 id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx1\" href=\"#xxxx1\"><i class=\"fa fa-link\"></i></a>xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup>\n</h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
     compare(content, output, :textile)
   end
 
@@ -897,7 +911,9 @@ np.array([[2,2],[1,3]],np.float)
   test "identical headers in TOC have unique prefix" do
     content = <<-MARKDOWN
 __TOC__
+
 # Summary
+
 # Summary
     MARKDOWN
 
@@ -908,7 +924,9 @@ __TOC__
   test "anchor names are normalized" do
     content = <<-MARKDOWN
 __TOC__
+
 # Summary '"' stuff
+
 # Summary !@$#%^&*() stuff
     MARKDOWN
 
@@ -919,7 +937,9 @@ __TOC__
   test 'anchor names contain the ancestor' do
     content = <<-MARKDOWN
 __TOC__
+
 # Summary
+
 ## Horse
     MARKDOWN
 
@@ -928,10 +948,27 @@ __TOC__
   end
 
 
-  if ENV['ASCIIDOC']
+  if defined?(Asciidoctor)
     #########################################################################
     # Asciidoc
     #########################################################################
+    test "asciidoc syntax highlighting" do
+      input = <<-ASCIIDOC
+[source,python]
+----
+''' A multi-line
+    comment.'''
+def sub_word(mo):
+    ''' Single line comment.'''
+    word = mo.group('word')   # Inline comment
+    if word in keywords[language]:
+        return quote + word + quote
+    else:
+        return word
+----
+      ASCIIDOC
+      compare(input, nil, 'asciidoc', [/\<code\>\<span class=\"s\">''' A multi-line\n    comment.'''\<\/span\>/])
+    end
 
     test "asciidoc header" do
       compare("= Book Title\n\n== Heading", '<div class="sect1"><h2 id="wiki-_heading">Heading<a class="anchor" id="Heading" href="#Heading"></a></h2><div class="sectionbody"></div></div>', 'asciidoc')

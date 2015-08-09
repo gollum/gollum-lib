@@ -10,7 +10,7 @@ module Gollum
     # page_file_dir - String the directory in which all page files reside
     #
     # Returns this instance.
-    def initialize(path, page_file_dir = nil, bare = false)
+    def initialize(path, page_file_dir = nil, bare = nil)
       @page_file_dir = page_file_dir
       @path          = path
       @repo = Gollum::Git::Repo.new(path, { :is_bare => bare })
@@ -49,7 +49,7 @@ module Gollum
     #
     # Returns an Array of BlobEntry instances.
     def tree(ref)
-      if sha = ref_to_sha(ref)
+      if (sha = ref_to_sha(ref))
         get_cache(:tree, sha) { tree!(sha) }
       else
         []
@@ -74,10 +74,10 @@ module Gollum
       if sha?(ref)
         get_cache(:commit, ref) { commit!(ref) }
       else
-        if sha = get_cache(:ref, ref)
+        if (sha = get_cache(:ref, ref))
           commit(sha)
         else
-          if cm = commit!(ref)
+          if (cm = commit!(ref))
             set_cache(:ref, ref, cm.id)
             set_cache(:commit, cm.id, cm)
           end
@@ -164,7 +164,7 @@ module Gollum
           items << BlobEntry.new(entry[:sha], entry[:path], entry[:size], entry[:mode].to_i(8))
         end
       end
-      if dir = @page_file_dir
+      if (dir = @page_file_dir)
         regex = /^#{dir}\//
         items.select { |i| i.path =~ regex }
       else
@@ -226,7 +226,7 @@ module Gollum
     #
     # Returns an Array of BlobEntry instances.
     def parse_tree_line(line)
-      mode, type, sha, size, *name = line.split(/\s+/)
+      mode, _type, sha, size, *name = line.split(/\s+/)
       BlobEntry.new(sha, name.join(' '), size.to_i, mode.to_i(8))
     end
 
@@ -240,7 +240,7 @@ module Gollum
         path = path[1...-1]
         path.gsub!(/\\\d{3}/) { |m| m[1..-1].to_i(8).chr }
       end
-      path.gsub!(/\\[rn"\\]/) { |m| eval(%("#{m.to_s}")) }
+      path.gsub!(/\\[rn"\\]/) { |m| eval(%("#{m}")) }
       path
     end
   end
