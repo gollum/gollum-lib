@@ -149,7 +149,7 @@ desc 'Update gemspec'
 task :gemspec => :validate do
   # read spec file and split out manifest section
   spec = File.read(gemspec_file)
-  head, manifest, tail = spec.split("  # = MANIFEST =\n")
+  head, _manifest, tail = spec.split("  # = MANIFEST =\n")
 
   # replace name version and date
   replace_header(head, :name)

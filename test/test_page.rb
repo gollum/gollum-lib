@@ -271,7 +271,7 @@ end
 
 context "with custom markup engines" do
   setup do
-    Gollum::Markup.register(:redacted, "Redacted", :regexp => /rd/) { |content| content.gsub /\S/, '-' }
+    Gollum::Markup.register(:redacted, "Redacted", :regexp => /rd/) { |content| content.gsub(/\S/, '-') }
     @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"))
   end
 

@@ -134,9 +134,9 @@ context "Markup" do
 
     page   = @wiki.page("Bilbo Baggins")
     output = page.formatted_data
-    assert_match /class="internal present"/, output
-    assert_match /href="\/Bilbo-Baggins"/, output
-    assert_match /\>Bilbo Baggins\</, output
+    assert_match(/class="internal present"/, output)
+    assert_match(/href="\/Bilbo-Baggins"/, output)
+    assert_match(/\>Bilbo Baggins\</, output)
   end
 
   test "adds nofollow to links on historical pages" do
@@ -154,9 +154,9 @@ context "Markup" do
 
     page   = @wiki.page("Tolkien")
     output = page.formatted_data
-    assert_match /class="internal absent"/, output
-    assert_match /href="\/J\.\-R\.\-R\.\-Tolkien"/, output
-    assert_match /\>J\. R\. R\. Tolkien\</, output
+    assert_match(/class="internal absent"/, output)
+    assert_match(/href="\/J\.\-R\.\-R\.\-Tolkien"/, output)
+    assert_match(/\>J\. R\. R\. Tolkien\</, output)
   end
 
   test "page link with custom base path" do
@@ -167,9 +167,9 @@ context "Markup" do
 
       page   = @wiki.page(name)
       output = page.formatted_data
-      assert_match /class="internal present"/, output
-      assert_match /href="\/wiki\/Bilbo-Baggins-\d"/, output
-      assert_match /\>Bilbo Baggins \d\</, output
+      assert_match(/class="internal present"/, output)
+      assert_match(/href="\/wiki\/Bilbo-Baggins-\d"/, output)
+      assert_match(/\>Bilbo Baggins \d\</, output)
     end
   end
 
@@ -177,16 +177,16 @@ context "Markup" do
     @wiki.write_page("Precious #1", :markdown, "a [[Precious #1]] b", commit_details)
     page   = @wiki.page('Precious #1')
     output = page.formatted_data
-    assert_match /class="internal present"/, output
-    assert_match /href="\/Precious-%231"/, output
+    assert_match(/class="internal present"/, output)
+    assert_match(/href="\/Precious-%231"/, output)
   end
 
   test "page link with extra #" do
     @wiki.write_page("Potato", :markdown, "a [[Potato#1]] b", commit_details)
     page   = @wiki.page('Potato')
     output = page.formatted_data
-    assert_match /class="internal present"/, output
-    assert_match /href="\/Potato#1"/, output
+    assert_match(/class="internal present"/, output)
+    assert_match(/href="\/Potato#1"/, output)
   end
 
   test "external page link" do
@@ -689,7 +689,7 @@ np.array([[2,2],[1,3]],np.float)
     END
 
     # rendered with Gollum::Markup
-    page, rendered = render_page(content)
+    _page, rendered = render_page(content)
     assert_markup_highlights_code Gollum::Markup, rendered
   end
 
@@ -703,14 +703,14 @@ np.array([[2,2],[1,3]],np.float)
     END
 
     # rendered with Gollum::Markup
-    page, rendered = render_page(content)
+    _page, rendered = render_page(content)
     assert_markup_highlights_code Gollum::Markup, rendered
   end
 
   def assert_markup_highlights_code(markup_class, rendered)
-    assert_match /pre class="highlight"/, rendered, "#{markup_class} doesn't highlight code\n #{rendered}"
-    assert_match /span class="n"/, rendered, "#{markup_class} doesn't highlight code\n #{rendered}"
-    assert_match /\(\[\[/, rendered, "#{markup_class} parses out wiki links\n#{rendered}"
+    assert_match(/pre class="highlight"/, rendered, "#{markup_class} doesn't highlight code\n #{rendered}")
+    assert_match(/span class="n"/, rendered, "#{markup_class} doesn't highlight code\n #{rendered}")
+    assert_match(/\(\[\[/, rendered, "#{markup_class} parses out wiki links\n#{rendered}")
   end
 
   test "embed code page absolute link" do
