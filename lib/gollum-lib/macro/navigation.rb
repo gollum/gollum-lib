@@ -27,7 +27,7 @@ module Gollum
       # tree        - Empty hash, to be filled with pages
       # page        - Page to add as gollum::Page
       def tree_insert(tree, page)
-        node_list = page.path.split("/")
+        node_list = page.url_path.split("/")
         _tree_insert(tree, page, node_list)
       end
 
@@ -40,17 +40,19 @@ module Gollum
         tree.each do |key, value|
           if not value.is_a?(Hash)
             # page
-            if value.name != "Home"
+            if value.name != @wiki.index_page
               str += "<li><a href=\"/#{@wiki.base_path}#{value.url_path}\">#{value.name}</a></li>"
             end
           else
             # folder
             subfolder = folder + "/" + key
-            str += "<li><a href=\"#{@wiki.base_path}#{subfolder}/\">#{key}</a>"
-            str += "<ul>"
-            str += tree_print(value, subfolder)
-            str += "</ul>"
-            str += "</li>"
+            str += "<li>"
+            if value.has_key?(@wiki.index_page)
+              str += "<a href=\"#{@wiki.base_path}#{subfolder}/\">#{key}</a>"
+            else
+              str += "#{key}"
+            end
+            str += "<ul>" + tree_print(value, subfolder) + "</ul></li>"
           end
         end
         return str
