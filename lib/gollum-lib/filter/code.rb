@@ -72,16 +72,12 @@ class Gollum::Filter::Code < Gollum::Filter
       encoding = @markup.encoding || 'utf-8'
 
       if defined? Pygments
-        # treat unknown and bash as standard pre tags
-        if !lang || lang.downcase == 'bash'
-          hl_code = "<pre>#{code}</pre>"
-        else
-          # Set the default lexer to 'text' to prevent #153
-          lexer = Pygments::Lexer[(lang)] || Pygments::Lexer['text']
+        # Set the default lexer to 'text' to prevent #153 and #154
+        lang = lang || 'text'
+        lexer = Pygments::Lexer[(lang)] || Pygments::Lexer['text']
 
-          # must set startinline to true for php to be highlighted without <?
-          hl_code = lexer.highlight(code, :options => { :encoding => encoding.to_s, :startinline => true })
-        end
+        # must set startinline to true for php to be highlighted without <?
+        hl_code = lexer.highlight(code, :options => { :encoding => encoding.to_s, :startinline => true })
       else # Rouge
         begin
           # if `lang` was not defined then assume plaintext
