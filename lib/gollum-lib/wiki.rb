@@ -383,6 +383,7 @@ module Gollum
       target_dir                = '' if target_dir == '.'
       source_dir                = '' if source_dir == '.'
       target_dir                = target_dir.gsub(/^\//, '')
+	  target_dir.slice! (@page_file_dir || "")
 
       # if the rename is a NOOP, abort
       if source_dir == target_dir and source_name == target_name
@@ -441,7 +442,8 @@ module Gollum
         committer.add(page.path, normalize(data))
       else
         committer.delete(page.path)
-        committer.add_to_index(dir, filename, format, data)
+        dir.slice! (@page_file_dir || "")
+		committer.add_to_index(dir, filename, format, data)
       end
 
       committer.after_commit do |index, _sha|
