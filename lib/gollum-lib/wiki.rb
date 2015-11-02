@@ -337,6 +337,7 @@ module Gollum
       # spaces must be dashes
       sanitized_name = name.gsub(' ', '-')
       sanitized_dir  = dir.gsub(' ', '-')
+      sanitized_dir  = ::File.join([@page_file_dir, sanitized_dir].compact)
 
       multi_commit = !!commit[:committer]
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
