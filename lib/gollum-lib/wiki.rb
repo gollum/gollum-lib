@@ -310,7 +310,7 @@ module Gollum
       name = @page_class.cname(name) + '.' + ext
       blob = OpenStruct.new(:name => name, :data => data, :is_symlink => false)
       page.populate(blob)
-      page.version = @access.commit('master')
+      page.version = @access.commit(@ref)
       page
     end
 
