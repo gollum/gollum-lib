@@ -130,6 +130,10 @@ context "Wiki page previewing" do
     assert_html_equal "<h1><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
     assert_equal "Test.md", page.filename
     assert_equal "Test", page.name
+
+    assert_equal @wiki.repo.commit(@wiki.ref).id, page.version.id
+    assert_nil page.last_version
+    assert page.versions.empty?
   end
 end
 

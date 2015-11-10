@@ -281,6 +281,14 @@ module Gollum
       @wiki.repo.git.versions_for_path(@path, @wiki.ref, log_pagination_options(options))
     end
 
+    # Public: The last version that has touched the Page. Can be nil.
+    #
+    # Returns Gollum::Git::Commit, or nil.
+    def last_version
+      return @last_version if defined? @last_version
+      @last_version = @wiki.repo.git.versions_for_path(@path, @wiki.ref, {:max_count => 1}).first
+    end
+
     # Public: The first 7 characters of the current version.
     #
     # Returns the first 7 characters of the current version.
