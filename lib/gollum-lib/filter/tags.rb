@@ -73,7 +73,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns the String HTML version of the tag.
   def process_tag(tag)
-    if tag =~ /^_TOC_$/
+    if tag =~ /^_TOC_/
       %{[[#{tag}]]}
     elsif tag =~ /^_$/
       %{<div class="clearfloats"></div>}

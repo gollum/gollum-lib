@@ -140,11 +140,71 @@ context "Wiki TOC" do
     @wiki   = Gollum::Wiki.new(@path, options)
   end
 
+  test "empty TOC" do
+    page = @wiki.preview_page("Test", "[[_TOC_]] [[_TOC_|levels = 2]] Bilbo", :markdown)
+    assert_html_equal "Bilbo", page.formatted_data
+    assert_empty page.toc_data
+  end
+
   test "toc_generation" do
     page = @wiki.preview_page("Test", "# Bilbo", :markdown)
     assert_equal "# Bilbo", page.raw_data
     assert_html_equal "<h1><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
     assert_html_equal %{<div class="toc"><div class="toc-title">Table of Contents</div><ul><li><a href="#bilbo">Bilbo</a></li></ul></div>}, page.toc_data
+  end
+
+  test "TOC with levels" do
+    content = <<-MARKDOWN
+# Ecthelion
+
+## Denethor
+
+### Boromir
+
+### Faramir
+    MARKDOWN
+
+    formatted = <<-HTML
+<h1><a class="anchor" id="ecthelion" href="#ecthelion"><i class="fa fa-link"></i></a>Ecthelion</h1>
+<h2><a class="anchor" id="ecthelion_denethor" href="#ecthelion_denethor"><i class="fa fa-link"></i></a>Denethor</h2>
+<h3><a class="anchor" id="ecthelion_denethor_boromir" href="#ecthelion_denethor_boromir"><i class="fa fa-link"></i></a>Boromir</h3>
+<h3><a class="anchor" id="ecthelion_denethor_faramir" href="#ecthelion_denethor_faramir"><i class="fa fa-link"></i></a>Faramir</h3>
+    HTML
+
+    page_level0 = @wiki.preview_page("Test", "[[_TOC_ | levels=0]] \n\n" + content, :markdown)
+    toc_formatted_level0 = <<-HTML
+<p><div class="toc"><div class="toc-title">Table of Contents</div></div></p>
+    HTML
+    assert_html_equal toc_formatted_level0 + formatted, page_level0.formatted_data
+
+    page_level2 = @wiki.preview_page("Test", "[[_TOC_ |levels = 2]] \n\n" + content, :markdown)
+    toc_formatted_level2 = <<-HTML
+<p><div class="toc">
+<div class="toc-title">Table of Contents</div>
+<ul><li><a href="#ecthelion">Ecthelion</a></li></ul>
+<ul><ul><li><a href="#ecthelion_denethor">Denethor</a></li></ul></ul>
+<ul><ul></ul></ul>
+<ul><ul></ul></ul>
+</div></p>
+    HTML
+    assert_html_equal toc_formatted_level2 + formatted, page_level2.formatted_data
+
+    page_level3 = @wiki.preview_page("Test", "[[_TOC_ |levels = 3]] \n\n" + content, :markdown)
+    page_level4 = @wiki.preview_page("Test", "[[_TOC_ |levels = 4]] \n\n" + content, :markdown)
+    page_fulltoc = @wiki.preview_page("Test", "[[_TOC_]] \n\n" + content, :markdown)
+    toc_formatted_full = <<-HTML
+<p><div class="toc">
+<div class="toc-title">Table of Contents</div>
+<ul><li><a href="#ecthelion">Ecthelion</a></li></ul>
+<ul><ul><li><a href="#ecthelion_denethor">Denethor</a></li></ul></ul>
+<ul><ul><ul><li><a href="#ecthelion_denethor_boromir">Boromir</a></li></ul></ul></ul>
+<ul><ul><ul><li><a href="#ecthelion_denethor_faramir">Faramir</a></li></ul></ul></ul>
+</div></p>
+    HTML
+    assert_html_equal toc_formatted_full + formatted, page_level3.formatted_data
+    assert_html_equal toc_formatted_full + formatted, page_level3.formatted_data
+    assert_html_equal toc_formatted_full + formatted, page_fulltoc.formatted_data
+
   end
 
   # Ensure ' creates valid links in TOC
