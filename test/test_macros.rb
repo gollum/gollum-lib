@@ -44,6 +44,11 @@ context "Macros" do
     assert_match /<div class="toc">(.*)Pages in this Wiki(.*)<li><a href="GlobalTOCMacroPage">GlobalTOCMacroPage/, @wiki.pages[0].formatted_data
   end
 
+  test "SubGlobalTOC macro displays sub global table of contents" do
+    @wiki.write_page("SubGlobalTOCMacroPage", :markdown, "<<SubGlobalTOC(Pages in this Wiki,\"SubGlobalTOC\")>>", commit_details)
+    assert_match /<div class="toc">(.*)Pages in this Wiki(.*)<li><a href="SubGlobalTOCMacroPage">SubGlobalTOCMacroPage/, @wiki.pages[0].formatted_data
+  end
+
   test "Series macro displays series links with and without series prefix" do
     @wiki.write_page("test-series1", :markdown, "<<Series(test)>>", commit_details)
     testseries1 = @wiki.page("test-series1")
