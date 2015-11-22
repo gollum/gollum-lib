@@ -142,7 +142,7 @@ context "Wiki TOC" do
 
   test "empty TOC" do
     page = @wiki.preview_page("Test", "[[_TOC_]] [[_TOC_|levels = 2]] Bilbo", :markdown)
-    assert_html_equal "Bilbo", page.formatted_data
+    assert_html_equal "<p>Bilbo</p>", page.formatted_data
     assert_empty page.toc_data
   end
 
