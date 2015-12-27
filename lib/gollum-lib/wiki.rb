@@ -488,7 +488,7 @@ module Gollum
       multi_commit ? committer : committer.commit
     end
 
-    # Public: Applies a reverse diff for a given page.  If only 1 SHA is given,
+    # Public: Applies a reverse diff for a given page. If only 1 SHA is given,
     # the reverse diff will be taken from its parent (^SHA...SHA).  If two SHAs
     # are given, the reverse diff is taken from SHA1...SHA2.
     #
@@ -510,10 +510,8 @@ module Gollum
         sha2   = nil
       end
 
-      patch     = full_reverse_diff_for(page, sha1, sha2)
       committer = Committer.new(self, commit)
-      parent    = committer.parents[0]
-      committer.options[:tree] = @repo.git.apply_patch(parent.sha, patch)
+      committer.options[:tree] = @repo.git.revert(page ? page.path : nil, sha1, sha2, committer.parents[0])
       return false unless committer.options[:tree]
       committer.after_commit do |index, _sha|
         @access.refresh
@@ -844,34 +842,6 @@ module Gollum
       else
         []
       end
-    end
-
-    # Creates a reverse diff for the given SHAs on the given Gollum::Page.
-    #
-    # page   - The Gollum::Page to scope the patch to, or a String Path.
-    # sha1   - String SHA1 of the earlier parent if two SHAs are given,
-    #          or the child.
-    # sha2   - Optional String SHA1 of the child.
-    #
-    # Returns a String of the reverse Diff to apply.
-    def full_reverse_diff_for(page, sha1, sha2 = nil)
-      sha1, sha2 = "#{sha1}^", sha1 if sha2.nil?
-      if page
-        path = (page.respond_to?(:path) ? page.path : page.to_s)
-        return repo.diff(sha2, sha1, path).first.diff
-      end
-      repo.diff(sha2, sha1).map { |d| d.diff }.join("\n")
-    end
-
-    # Creates a reverse diff for the given SHAs.
-    #
-    # sha1   - String SHA1 of the earlier parent if two SHAs are given,
-    #          or the child.
-    # sha2   - Optional String SHA1 of the child.
-    #
-    # Returns a String of the reverse Diff to apply.
-    def full_reverse_diff(sha1, sha2 = nil)
-      full_reverse_diff_for(nil, sha1, sha2)
     end
 
     # Gets the default name for commits.
