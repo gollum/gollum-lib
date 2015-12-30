@@ -21,22 +21,24 @@ class Gollum::Filter::Code < Gollum::Filter
       data.gsub!(/^#{org_headers}#{org_name}#{org_begin}(.+?)#{org_end}$/mi) do
         cache_codeblock(Regexp.last_match[3], Regexp.last_match[4])
       end
+    when :markdown
+      data.gsub!(/^([ \t]*)(~~~+) ?([^\r\n]+)?\r?\n(.+?)\r?\n\1(~~~+)[ \t\r]*$/m) do
+        m_indent = Regexp.last_match[1]
+        m_start  = Regexp.last_match[2] # ~~~
+        m_lang   = Regexp.last_match[3]
+        m_code   = Regexp.last_match[4]
+        m_end    = Regexp.last_match[5] # ~~~
+        # start and finish tilde fence must be the same length
+        next '' if m_start.length != m_end.length
+        lang = m_lang ? m_lang.strip : nil
+        if lang
+          lang = lang.match(/\.([^}\s]+)/)
+          lang = lang[1] unless lang.nil?
+        end
+        "#{m_indent}#{cache_codeblock(lang, m_code, m_indent)}"
+      end  
     end
-    data.gsub!(/^([ \t]*)(~~~+) ?([^\r\n]+)?\r?\n(.+?)\r?\n\1(~~~+)[ \t\r]*$/m) do
-      m_indent = Regexp.last_match[1]
-      m_start  = Regexp.last_match[2] # ~~~
-      m_lang   = Regexp.last_match[3]
-      m_code   = Regexp.last_match[4]
-      m_end    = Regexp.last_match[5] # ~~~
-      # start and finish tilde fence must be the same length
-      next '' if m_start.length != m_end.length
-      lang = m_lang ? m_lang.strip : nil
-      if lang
-        lang = lang.match(/\.([^}\s]+)/)
-        lang = lang[1] unless lang.nil?
-      end
-      "#{m_indent}#{cache_codeblock(lang, m_code, m_indent)}"
-    end
+    
 
     data.gsub!(/^([ \t]*)``` ?([^\r\n]+)?\r?\n(.+?)\r?\n\1```[ \t]*\r?$/m) do
       "#{Regexp.last_match[1]}#{cache_codeblock(Regexp.last_match[2].to_s.strip, Regexp.last_match[3], Regexp.last_match[1])}" # print the SHA1 ID with the proper indentation
