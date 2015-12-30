@@ -488,15 +488,33 @@ module Gollum
       multi_commit ? committer : committer.commit
     end
 
+    # Public: Applies a reverse diff to the enitre repo. If only 1 SHA is given,
+    # the reverse diff will be taken from its parent (^SHA...SHA).  If two SHAs
+    # are given, the reverse diff is taken from SHA1...SHA2.
+    #
+    # sha1   - String SHA1 of the earlier parent if two SHAs are given,
+    #          or the child.
+    # sha2   - Optional String SHA1 of the child.
+    # commit - The optional commit Hash details:
+    #          :message - The String commit message.
+    #          :name    - The String author full name.
+    #          :email   - The String email address.
+    #
+    # Returns a String SHA1 of the new commit, or nil if the reverse diff does
+    # not apply.
+    def revert_commit(sha1, sha2 = nil, commit = {})
+      revert_page_or_commit(nil, sha1, sha2, commit)
+    end
+
     # Public: Applies a reverse diff for a given page. If only 1 SHA is given,
     # the reverse diff will be taken from its parent (^SHA...SHA).  If two SHAs
     # are given, the reverse diff is taken from SHA1...SHA2.
     #
-    # page   - The Gollum::Page to delete.
+    # page   - The Gollum::Page to delete. Can be nil.
     # sha1   - String SHA1 of the earlier parent if two SHAs are given,
     #          or the child.
     # sha2   - Optional String SHA1 of the child.
-    # commit - The commit Hash details:
+    # commit - The optional commit Hash details:
     #          :message - The String commit message.
     #          :name    - The String author full name.
     #          :email   - The String email address.
@@ -505,60 +523,7 @@ module Gollum
     # Returns a String SHA1 of the new commit, or nil if the reverse diff does
     # not apply.
     def revert_page(page, sha1, sha2 = nil, commit = {})
-      if sha2.is_a?(Hash)
-        commit = sha2
-        sha2   = nil
-      end
-
-      committer = Committer.new(self, commit)
-      committer.options[:tree] = @repo.git.revert(page ? page.path : nil, sha1, sha2, committer.parents[0])
-      return false unless committer.options[:tree]
-      committer.after_commit do |index, _sha|
-        @access.refresh
-
-        files = []
-        if page
-          files << [page.path, page.filename_stripped, page.format]
-        else
-          # Grit::Diff can't parse reverse diffs.... yet
-          patch.each_line do |line|
-            if line =~ %r(^diff --git b/.+? a/(.+)$)
-              path = Regexp.last_match[1]
-              ext  = ::File.extname(path)
-              name = ::File.basename(path, ext)
-              if (format = ::Gollum::Page.format_for(ext))
-                files << [path, name, format]
-              end
-            end
-          end
-        end
-
-        files.each do |(path, name, format)|
-          dir = ::File.dirname(path)
-          dir = '' if dir == '.'
-          index.update_working_dir(dir, name, format)
-        end
-      end
-
-      committer.commit
-    end
-
-    # Public: Applies a reverse diff to the repo.  If only 1 SHA is given,
-    # the reverse diff will be taken from its parent (^SHA...SHA).  If two SHAs
-    # are given, the reverse diff is taken from SHA1...SHA2.
-    #
-    # sha1   - String SHA1 of the earlier parent if two SHAs are given,
-    #          or the child.
-    # sha2   - Optional String SHA1 of the child.
-    # commit - The commit Hash details:
-    #          :message - The String commit message.
-    #          :name    - The String author full name.
-    #          :email   - The String email address.
-    #
-    # Returns a String SHA1 of the new commit, or nil if the reverse diff does
-    # not apply.
-    def revert_commit(sha1, sha2 = nil, commit = {})
-      revert_page(nil, sha1, sha2, commit)
+      revert_page_or_commit(page, sha1, sha2, commit)
     end
 
     # Public: Lists all pages for this wiki.
@@ -891,6 +856,63 @@ module Gollum
 
     def inspect
       %(#<#{self.class.name}:#{object_id} #{@repo.path}>)
+    end
+
+    private
+
+    # Applies a reverse diff for a given page, or an entire commit if page is nil. If only 1 SHA is given,
+    # the reverse diff will be taken from its parent (^SHA...SHA).  If two SHAs
+    # are given, the reverse diff is taken from SHA1...SHA2.
+    #
+    # page   - The Gollum::Page to delete. Can be nil.
+    # sha1   - String SHA1 of the earlier parent if two SHAs are given,
+    #          or the child.
+    # sha2   - Optional String SHA1 of the child.
+    # commit - The optional commit Hash details:
+    #          :message - The String commit message.
+    #          :name    - The String author full name.
+    #          :email   - The String email address.
+    #          :parent  - Optional Gollum::Git::Commit parent to this update.
+    #
+    # Returns a String SHA1 of the new commit, or nil if the reverse diff does
+    # not apply.
+    def revert_page_or_commit(page, sha1, sha2 = nil, commit = {})
+      if sha2.is_a?(Hash)
+        commit = sha2
+        sha2   = nil
+      end
+
+      committer = Committer.new(self, commit)
+      committer.options[:tree] = @repo.git.revert(page ? page.path : nil, sha1, sha2, committer.parents[0])
+      return false unless committer.options[:tree]
+      committer.after_commit do |index, _sha|
+        @access.refresh
+
+        files = []
+        if page
+          files << [page.path, page.filename_stripped, page.format]
+        else
+          # Grit::Diff can't parse reverse diffs.... yet
+          patch.each_line do |line|
+            if line =~ %r(^diff --git b/.+? a/(.+)$)
+              path = Regexp.last_match[1]
+              ext  = ::File.extname(path)
+              name = ::File.basename(path, ext)
+              if (format = ::Gollum::Page.format_for(ext))
+                files << [path, name, format]
+              end
+            end
+          end
+        end
+
+        files.each do |(path, name, format)|
+          dir = ::File.dirname(path)
+          dir = '' if dir == '.'
+          index.update_working_dir(dir, name, format)
+        end
+      end
+
+      committer.commit
     end
   end
 end
