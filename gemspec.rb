@@ -29,7 +29,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_dependency 'nokogiri', '~> 1.6.4'
     s.add_dependency 'stringex', '~> 2.5.1'
     s.add_dependency 'sanitize', '~> 2.1.0'
-    s.add_dependency 'github-markup', '~> 1.3.3'
+    s.add_dependency 'github-markup', '~> 1.4.0'
 
     s.add_development_dependency 'org-ruby', '~> 0.9.9'
     s.add_development_dependency 'kramdown', '~> 1.6.0'
