@@ -90,7 +90,7 @@ context 'Pushing and pulling' do
     @origin.write_page("Gollum2", :markdown, "New content2", {:message => "Wrote second test page"})
     @clone.repo.git.pull("origin", "master")
     # Rugged does not support high-level pull yet, so pull is implemented as a merge. Hence need to check for merge commit on rugged adapter.
-    assert_equal ["Wrote second test page", "Merged branch refs/heads/master of origin."].include?(@clone.repo.commits.first.message), true
+    assert_equal ["Wrote second test page", "Merged branch refs/heads/master of origin."].include?(@clone.repo.head.commit.message), true
   end
   
   teardown do
