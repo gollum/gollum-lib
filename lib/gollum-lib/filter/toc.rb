@@ -34,15 +34,11 @@ class Gollum::Filter::TOC < Gollum::Filter
 
     @markup.toc = toc_str
 
-    data.gsub(/\[\[_TOC_(.*?)\]\]/) do
+    data.gsub!(/\[\[_TOC_(.*?)\]\]/) do
       levels = nil
-
-      opts = Regexp.last_match[1].split('|')[1..-1] || []
-      opts.each do |attr|
-        parts = attr.split('=').map { |x| x.strip }
-        if parts[0] == 'levels'
-          levels = Integer(parts[1])
-        end
+      levels_match = Regexp.last_match[1].match /\|\s*levels\s*=\s*(\d+)/
+      if levels_match
+        levels = levels_match[1].to_i
       end
 
       if levels.nil? || toc_str.empty?
@@ -58,6 +54,8 @@ class Gollum::Filter::TOC < Gollum::Filter
         toc_clone.to_xml(@markup.to_xml_opts)
       end
     end
+
+    data
   end
 
   private
