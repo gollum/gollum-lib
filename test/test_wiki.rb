@@ -181,14 +181,22 @@ context "Wiki TOC" do
     HTML
     assert_html_equal toc_formatted_level0 + formatted, page_level0.formatted_data
 
+    page_level1 = @wiki.preview_page("Test", "[[_TOC_ | levels=1]] \n\n" + content, :markdown)
+    toc_formatted_level1 = <<-HTML
+<p><div class="toc">
+<div class="toc-title">Table of Contents</div>
+<ul><li><a href="#ecthelion">Ecthelion</a></li></ul>
+</div></p>
+    HTML
+    assert_html_equal toc_formatted_level1 + formatted, page_level1.formatted_data
+
     page_level2 = @wiki.preview_page("Test", "[[_TOC_ |levels = 2]] \n\n" + content, :markdown)
     toc_formatted_level2 = <<-HTML
 <p><div class="toc">
 <div class="toc-title">Table of Contents</div>
-<ul><li><a href="#ecthelion">Ecthelion</a></li></ul>
-<ul><ul><li><a href="#ecthelion_denethor">Denethor</a></li></ul></ul>
-<ul><ul></ul></ul>
-<ul><ul></ul></ul>
+<ul><li><a href="#ecthelion">Ecthelion</a>
+<ul><li><a href="#ecthelion_denethor">Denethor</a></li></ul>
+</li></ul>
 </div></p>
     HTML
     assert_html_equal toc_formatted_level2 + formatted, page_level2.formatted_data
@@ -199,10 +207,17 @@ context "Wiki TOC" do
     toc_formatted_full = <<-HTML
 <p><div class="toc">
 <div class="toc-title">Table of Contents</div>
-<ul><li><a href="#ecthelion">Ecthelion</a></li></ul>
-<ul><ul><li><a href="#ecthelion_denethor">Denethor</a></li></ul></ul>
-<ul><ul><ul><li><a href="#ecthelion_denethor_boromir">Boromir</a></li></ul></ul></ul>
-<ul><ul><ul><li><a href="#ecthelion_denethor_faramir">Faramir</a></li></ul></ul></ul>
+<ul>
+  <li>
+    <a href="#ecthelion">Ecthelion</a>
+    <ul>
+      <li><a href="#ecthelion_denethor">Denethor</a>
+    <ul>
+      <li><a href="#ecthelion_denethor_boromir">Boromir</a></li>
+      <li><a href="#ecthelion_denethor_faramir">Faramir</a></li>
+    </ul>
+  </li></ul>
+</li></ul>
 </div></p>
     HTML
     assert_html_equal toc_formatted_full + formatted, page_level3.formatted_data

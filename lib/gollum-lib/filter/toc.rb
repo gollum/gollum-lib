@@ -47,7 +47,7 @@ class Gollum::Filter::TOC < Gollum::Filter
         @toc_doc ||= Nokogiri::HTML::DocumentFragment.parse(toc_str)
         toc_clone = @toc_doc.clone
         toc_clone.traverse do |e|
-          if e.name == 'ul' and e.ancestors.length > levels + 1
+          if e.name == 'ul' and e.ancestors('ul').length > levels - 1
             e.remove
           end
         end
