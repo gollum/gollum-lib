@@ -7,12 +7,13 @@ class Gollum::Filter::TOC < Gollum::Filter
   def process(data)
 
     @doc               = Nokogiri::HTML::DocumentFragment.parse(data)
-    @toc               = nil
+    @toc_doc           = nil
     @anchor_names      = {}
     @current_ancestors = []
 
+    toc_str            = ''
     if @markup.sub_page && @markup.parent_page
-      @toc = @markup.parent_page.toc_data
+      toc_str = @markup.parent_page.toc_data
     else
       @doc.css('h1,h2,h3,h4,h5,h6').each_with_index do |header, i|
         next if header.content.empty?
@@ -24,16 +25,37 @@ class Gollum::Filter::TOC < Gollum::Filter
         add_anchor_to_header header, anchor_name
         add_entry_to_toc     header, anchor_name
       end
+      if not @toc_doc.nil?
+        toc_str = @toc_doc.to_xml(@markup.to_xml_opts)
+      end
 
-      @toc  = @toc.to_xml(@markup.to_xml_opts) if @toc != nil
       data  = @doc.to_xml(@markup.to_xml_opts)
-      
     end
- 
-    @markup.toc = @toc
-    data.gsub("[[_TOC_]]") do
-      @toc.nil? ? '' : @toc
+
+    @markup.toc = toc_str
+
+    data.gsub!(/\[\[_TOC_(.*?)\]\]/) do
+      levels = nil
+      levels_match = Regexp.last_match[1].match /\|\s*levels\s*=\s*(\d+)/
+      if levels_match
+        levels = levels_match[1].to_i
+      end
+
+      if levels.nil? || toc_str.empty?
+        toc_str
+      else
+        @toc_doc ||= Nokogiri::HTML::DocumentFragment.parse(toc_str)
+        toc_clone = @toc_doc.clone
+        toc_clone.traverse do |e|
+          if e.name == 'ul' and e.ancestors.length > levels + 1
+            e.remove
+          end
+        end
+        toc_clone.to_xml(@markup.to_xml_opts)
+      end
     end
+
+    data
   end
 
   private
@@ -78,8 +100,8 @@ class Gollum::Filter::TOC < Gollum::Filter
   # Adds an entry to the TOC for the given header.  The generated entry
   # is a link to the given anchor name
   def add_entry_to_toc(header, name)
-    @toc ||= Nokogiri::XML::DocumentFragment.parse('<div class="toc"><div class="toc-title">Table of Contents</div></div>')
-    tail ||= @toc.child
+    @toc_doc ||= Nokogiri::XML::DocumentFragment.parse('<div class="toc"><div class="toc-title">Table of Contents</div></div>')
+    tail ||= @toc_doc.child
     tail_level ||= 0
 
     level = header.name.gsub(/[hH]/, '').to_i
