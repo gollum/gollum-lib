@@ -8,7 +8,7 @@ def specification(version, default_adapter, platform = nil)
     s.name              = 'gollum-lib'
     s.version           = version
     s.platform          = platform if platform
-    s.date              = '2015-08-09'
+    s.date              = '2016-02-21'
     s.rubyforge_project = 'gollum-lib'
     s.license           = 'MIT'
 
@@ -87,6 +87,7 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/macro.rb
     lib/gollum-lib/macro/all_pages.rb
     lib/gollum-lib/macro/global_toc.rb
+    lib/gollum-lib/macro/navigation.rb
     lib/gollum-lib/macro/series.rb
     lib/gollum-lib/markup.rb
     lib/gollum-lib/markups.rb

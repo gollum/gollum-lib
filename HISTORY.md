@@ -1,3 +1,12 @@
+# v4.2.0
+
+* Changes since v4.1.0:
+  ** Various performance improvements
+  ** Dependency updates
+  ** Bugfixes
+  ** New Macro for listing contents of (sub)directories: `Navigation()`
+  ** Table of Contents now supports setting max heading level 
+
 # v4.0.2 /2015-0119
 
 * Bugfixes
