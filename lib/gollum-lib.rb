@@ -3,6 +3,7 @@
 require 'digest/md5'
 require 'digest/sha1'
 require 'ostruct'
+require 'pathname'
 
 DEFAULT_ADAPTER = RUBY_PLATFORM == 'java' ? 'rjgit_adapter' : 'grit_adapter'
 
