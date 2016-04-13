@@ -8,7 +8,7 @@ def specification(version, default_adapter, platform = nil)
     s.name              = 'gollum-lib'
     s.version           = version
     s.platform          = platform if platform
-    s.date              = '2016-02-21'
+    s.date              = '2016-04-15'
     s.rubyforge_project = 'gollum-lib'
     s.license           = 'MIT'
 
@@ -30,6 +30,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_dependency 'stringex', '~> 2.5.1'
     s.add_dependency 'sanitize', '~> 2.1.0'
     s.add_dependency 'github-markup', '~> 1.4.0'
+    s.add_dependency 'gemojione', '~> 2.2'
 
     s.add_development_dependency 'org-ruby', '~> 0.9.9'
     s.add_development_dependency 'kramdown', '~> 1.6.0'
@@ -70,6 +71,7 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/file_view.rb
     lib/gollum-lib/filter.rb
     lib/gollum-lib/filter/code.rb
+    lib/gollum-lib/filter/emoji.rb
     lib/gollum-lib/filter/macro.rb
     lib/gollum-lib/filter/metadata.rb
     lib/gollum-lib/filter/plain_text.rb

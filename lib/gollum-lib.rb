@@ -15,6 +15,7 @@ end
 # external
 require 'github/markup'
 require 'sanitize'
+require 'gemojione'
 
 # internal
 require File.expand_path('../gollum-lib/git_access', __FILE__)
@@ -61,4 +62,3 @@ module Gollum
   class NoSuchPathError < StandardError; end
 
 end
-
