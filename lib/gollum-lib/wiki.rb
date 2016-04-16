@@ -88,9 +88,12 @@ module Gollum
 
       # Gets the default sanitization options for current pages used by
       # instances of this Wiki.
-      def sanitization
+      #
+      # options - Optional Hash:
+      #           :allow_style - Allow style attribute in HTML tags.
+      def sanitization(options = {})
         if @sanitization.nil?
-          @sanitization = Sanitization.new
+          @sanitization = Sanitization.new(options)
         end
         @sanitization
       end
@@ -194,6 +197,7 @@ module Gollum
     #                            Default: false
     #           :collapse_tree - Start with collapsed file view. Default: false
     #           :css           - Include the custom.css file from the repo.
+    #           :allow_style   - Allow style attribute in HTML tags.
     #           :h1_title      - Concatenate all h1's on a page to form the
     #                            page title.
     #           :index_page    - The default page to retrieve or create if the
@@ -231,7 +235,8 @@ module Gollum
       @markup_classes       = options.fetch :markup_classes, self.class.markup_classes
       @repo                 = @access.repo
       @ref                  = options.fetch :ref, self.class.default_ref
-      @sanitization         = options.fetch :sanitization, self.class.sanitization
+      @allow_style          = options.fetch :allow_style, false
+      @sanitization         = options.fetch :sanitization, self.class.sanitization(allow_style: @allow_style)
       @ws_subs              = options.fetch :ws_subs, self.class.default_ws_subs
       @history_sanitization = options.fetch :history_sanitization, self.class.history_sanitization
       @live_preview         = options.fetch :live_preview, true
