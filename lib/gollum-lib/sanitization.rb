@@ -121,7 +121,11 @@ module Gollum
     # output.  Default: false.
     attr_writer :allow_comments
 
-    def initialize
+    # Public: Initialize a new Sanitization.
+    #
+    # options - Optional Hash:
+    #           :allow_style - Allow style attribute in HTML tags.
+    def initialize(options = {})
       @elements        = ELEMENTS.dup
       @attributes      = ATTRIBUTES.dup
       @protocols       = PROTOCOLS.dup
@@ -130,6 +134,7 @@ module Gollum
       @remove_contents = REMOVE_CONTENTS.dup
       @allow_comments  = false
       @id_prefix       = ''
+      @attributes[:all] << 'style' if options[:allow_style]
       yield self if block_given?
     end
 
