@@ -4,7 +4,9 @@ module Gollum
     include Pagination
 
     Wiki.page_class = self
-
+    
+    SUBPAGENAMES = [:header, :footer, :sidebar]
+    
     # Sets a Boolean determing whether this page is a historical version.
     #
     # Returns nothing.
@@ -85,7 +87,7 @@ module Gollum
     # Returns a newly initialized Gollum::Page.
     def initialize(wiki)
       @wiki           = wiki
-      @blob           = @header = @footer = @sidebar = nil
+      @blob           = nil
       @formatted_data = nil
       @doc            = nil
       @parent_page    = nil
@@ -300,21 +302,24 @@ module Gollum
     #
     # Returns the header Page or nil if none exists.
     def header
-      @header ||= find_sub_page(:header)
+      find_sub_pages unless defined?(@header)
+      @header
     end
 
     # Public: The footer Page.
     #
     # Returns the footer Page or nil if none exists.
     def footer
-      @footer ||= find_sub_page(:footer)
+      find_sub_pages unless defined?(@footer)
+      @footer
     end
 
     # Public: The sidebar Page.
     #
     # Returns the sidebar Page or nil if none exists.
     def sidebar
-      @sidebar ||= find_sub_page(:sidebar)
+      find_sub_pages unless defined?(@sidebar)
+      @sidebar
     end
 
     # Gets a Boolean determining whether this page is a historical version.
@@ -461,39 +466,33 @@ module Gollum
       false
     end
 
-    # Loads a sub page.  Sub page names (footers, headers, sidebars) are prefixed with
+
+    # Loads sub pages. Sub page names (footers, headers, sidebars) are prefixed with
     # an underscore to distinguish them from other Pages. If there is not one within
     # the current directory, starts walking up the directory tree to try and find one
     # within parent directories.
-    #
-    # name - String page name.
-    #
-    # Returns the Page or nil if none exists.
-    def find_sub_page(name)
-      return nil unless self.version
-      return nil if self.filename =~ /^_/
-      name = "_#{name.to_s.capitalize}"
-      return nil if page_match(name, self.filename)
-
-      dirs = self.path.split('/')
-      dirs.pop
-      map = @wiki.tree_map_for(@wiki.ref, true)
-      while !dirs.empty?
-        if (page = find_page_in_tree(map, name, dirs.join('/')))
-          page.parent_page = self
-          return page
+    def find_sub_pages(subpagenames = SUBPAGENAMES, map = nil)
+      subpagenames.each{|subpagename| instance_variable_set("@#{subpagename}", nil)}
+      return nil if self.filename =~ /^_/ || ! self.version
+      
+      map ||= @wiki.tree_map_for(@wiki.ref, true)
+      valid_names = subpagenames.map(&:capitalize).join("|")
+      while entry = map.shift do
+        next unless entry.name =~ /^_(#{valid_names})/
+        sub_page_type = ::File.basename(entry.name.downcase.tr('_', ''), ::File.extname(entry.name))
+        next if instance_variable_get("@#{sub_page_type}")
+        ::Pathname.new(::File.join('.', ::File.dirname(self.path))).ascend do |dir|
+          if ::File.join(dir, entry.name) == ::File.join('.', ::Pathname.new(entry.path))
+            instance_variable_set("@#{sub_page_type}", entry.page(@wiki, @version) )
+            break
+          end
         end
-        dirs.pop
       end
-
-      if (page = find_page_in_tree(map, name, ''))
-        page.parent_page = self
-      end
-      page
     end
 
     def inspect
       %(#<#{self.class.name}:#{object_id} #{name} (#{format}) @wiki=#{@wiki.repo.path.inspect}>)
     end
+    
   end
 end
