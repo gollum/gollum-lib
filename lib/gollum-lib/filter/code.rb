@@ -82,16 +82,15 @@ class Gollum::Filter::Code < Gollum::Filter
         hl_code = lexer.highlight(code, :options => { :encoding => encoding.to_s, :startinline => true })
       else # Rouge
         begin
+          # if `lang` was not defined then assume plaintext
           lexer = Rouge::Lexer.find_fancy(lang || 'plaintext')
           formatter = Rouge::Formatters::HTML.new
+          wrap_template = '<pre class="highlight"><code>%s</code></pre>'
 
-          # if `lang` was not defined then assume plaintext
-          # if `lang` is defined but cannot be found then wrap it and escape it
+          # if `lang` is defined but cannot be found then wrap it with an error
           if lexer.nil?
             lexer = Rouge::Lexers::PlainText
             wrap_template = '<pre class="highlight"><span class="err">%s</span></pre>'
-          else
-            wrap_template = '<pre class="highlight"><code>%s</code></pre>'
           end
 
           formatted = formatter.format(lexer.lex(code))
