@@ -4,20 +4,36 @@
 #
 # Render emoji such as :smile:
 class Gollum::Filter::Emoji < Gollum::Filter
-  EMOJI_TAG_PATTERN = %r{
+
+  EXTRACT_PATTERN = %r{
     (?<!\[{2})
-    :(?:([\w-]|</?em>)+):
+    :(?<name>[\w-]+):
     (?!\]{^2})
   }ix
 
+  PROCESS_PATTERN = %r{
+    =EEMMOOJJII=
+    (?<name>[\w-]+)
+    =IIJJOOMMEE=
+  }ix
+
   def extract(data)
+    data.gsub! EXTRACT_PATTERN do
+      emoji_exists?($~[:name]) ? "=EEMMOOJJII=#{$~[:name]}=IIJJOOMMEE=" : $&
+    end
     data
   end
 
   def process(data)
-    data.gsub EMOJI_TAG_PATTERN do |tag|
-      name = tag[1..-2].gsub(%r{</?em>}, '_')   # undo emphasis
-      %Q(<img src="/emoji/#{name}" alt="#{name}" class="emoji">)
-    end
+    data.gsub! PROCESS_PATTERN, %q(<img src="/emoji/\k<name>" alt="\k<name>" class="emoji">)
+    data
   end
+
+  private
+
+  def emoji_exists?(name)
+    @index ||= Gemojione::Index.new
+    !!@index.find_by_name(name)
+  end
+
 end

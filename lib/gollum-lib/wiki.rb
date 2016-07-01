@@ -250,7 +250,7 @@ module Gollum
       @allow_uploads        = options.fetch :allow_uploads, false
       @per_page_uploads     = options.fetch :per_page_uploads, false
       @filter_chain         = options.fetch :filter_chain,
-                                            [:Metadata, :PlainText, :Emoji, :TOC, :RemoteCode, :Code, :Macro, :Sanitize, :WSD, :PlantUML, :Tags, :Render]
+                                            [:Metadata, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :WSD, :PlantUML, :Tags, :Render]
       @filter_chain.delete(:Emoji) unless options.fetch :emoji, false
     end
 
