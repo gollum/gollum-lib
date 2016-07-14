@@ -1,3 +1,8 @@
+# v4.2.1
+
+* Performances improvements
+* Dependency updates
+
 # v4.2.0
 
 * Changes since v4.1.0:
