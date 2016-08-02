@@ -194,6 +194,7 @@ module Gollum
     #                            Default: false
     #           :collapse_tree - Start with collapsed file view. Default: false
     #           :css           - Include the custom.css file from the repo.
+    #           :emoji         - Parse and interpret emoji tags (e.g. :heart:).
     #           :h1_title      - Concatenate all h1's on a page to form the
     #                            page title.
     #           :index_page    - The default page to retrieve or create if the
@@ -240,6 +241,7 @@ module Gollum
       @show_all             = options.fetch :show_all, false
       @collapse_tree        = options.fetch :collapse_tree, false
       @css                  = options.fetch :css, false
+      @emoji                = options.fetch :emoji, false
       @h1_title             = options.fetch :h1_title, false
       @index_page           = options.fetch :index_page, 'Home'
       @bar_side             = options.fetch :sidebar, :right
@@ -248,7 +250,8 @@ module Gollum
       @allow_uploads        = options.fetch :allow_uploads, false
       @per_page_uploads     = options.fetch :per_page_uploads, false
       @filter_chain         = options.fetch :filter_chain,
-                                            [:Metadata, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Sanitize, :WSD, :PlantUML, :Tags, :Render]
+                                            [:Metadata, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :WSD, :PlantUML, :Tags, :Render]
+      @filter_chain.delete(:Emoji) unless options.fetch :emoji, false
     end
 
     # Public: check whether the wiki's git repo exists on the filesystem.
@@ -647,7 +650,7 @@ module Gollum
       options[:max_count] = 10 unless options[:max_count]
       @repo.log(@ref, nil, options)
     end
-    
+
     # Public: Refreshes just the cached Git reference data.  This should
     # be called after every Gollum update.
     #

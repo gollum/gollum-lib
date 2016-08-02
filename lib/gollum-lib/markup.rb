@@ -99,7 +99,7 @@ module Gollum
       @format = format
       @name   = name
 
-      chain = [:Metadata, :PlainText, :TOC, :RemoteCode, :Code, :Sanitize, :WSD, :Tags, :Render]
+      chain = [:Metadata, :PlainText, :Emoji, :TOC, :RemoteCode, :Code, :Sanitize, :WSD, :Tags, :Render]
 
       filter_chain = chain.map do |r|
         Gollum::Filter.const_get(r).new(self)
