@@ -45,10 +45,11 @@ class Gollum::Filter::PlantUML < Gollum::Filter
   #   test: Set to true when running tests to skip the server check.
   #
   class Configuration
-    attr_accessor :url, :test
+    attr_accessor :url, :test, :verify_ssl
 
     def initialize
       @url = DEFAULT_URL
+      @verify_ssl = true
       @test = false
     end
   end
@@ -95,6 +96,10 @@ class Gollum::Filter::PlantUML < Gollum::Filter
 
   def test?
     PlantUML::configuration.test
+  end
+
+  def verify_ssl?
+    PlantUML::configuration.verify_ssl
   end
 
   def render_plantuml(id, code)
@@ -159,7 +164,11 @@ class Gollum::Filter::PlantUML < Gollum::Filter
   def check_server
     return true if test?
     check_url = "#{server_url}/SyfFKj2rKt3CoKnELR1Io4ZDoSa70000"
-    response = Net::HTTP.get_response(URI(check_url))
+    uri = URI.parse(check_url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true if uri.scheme == 'https'
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE unless verify_ssl?
+    response = http.request_get(uri.request_uri)
     return response.is_a?(Net::HTTPSuccess)
   rescue
     return false
