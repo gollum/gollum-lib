@@ -20,8 +20,12 @@ module Gollum
 
     def new_page(page)
       name = page.name
-      url  = url_for_page page
-      %Q(  <li class="file"><a href="#{url}"><span class="icon"></span>#{name}</a></li>)
+      url, valid_page  = url_for_page page
+      %Q(  <li class="file"><a href="#{url}"><span class="icon"></span>#{name}</a>#{valid_page ? "" : delete_file(url, valid_page)}</li>)
+    end
+
+    def delete_file(url, valid_page)
+      %Q(<form method="POST" action="/deleteFile/#{url}" onsubmit="return confirm('Do you really want to delete the file #{url}?');"><button type="submit" name="delete" value="true"></button></form>)
     end
 
     def new_folder(folder_path)
@@ -42,17 +46,19 @@ module Gollum
 
     def url_for_page(page)
       url = ''
+      valid_page_name = false
       if @show_all
         # Remove ext for valid pages.
         filename = page.filename
-        filename = Page::valid_page_name?(filename) ? filename.chomp(::File.extname(filename)) : filename
+        valid_page_name =  Page::valid_page_name?(filename)
+        filename = valid_page_name ? filename.chomp(::File.extname(filename)) : filename
 
         url = ::File.join(::File.dirname(page.path), filename)
       else
         url = ::File.join(::File.dirname(page.path), page.filename_stripped)
       end
       url = url[2..-1] if url[0, 2] == './'
-      url
+      return url, valid_page_name
     end
 
     def render_files

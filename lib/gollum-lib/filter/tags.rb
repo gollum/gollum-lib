@@ -129,6 +129,10 @@ class Gollum::Filter::Tags < Gollum::Filter
       path = ::File.join @markup.wiki.base_path, file.path
     elsif name =~ /^https?:\/\/.+(jpg|png|gif|svg|bmp)$/i
       path = name
+    elsif name =~ /.+(jpg|png|gif|svg|bmp)$/i
+      # If is image, file not found and no link, then populate with empty String
+      # We can than add an image not found alt attribute for this later
+      path = ""
     end
 
     if path
@@ -167,8 +171,10 @@ class Gollum::Filter::Tags < Gollum::Filter
         end
       end
 
-      if (alt = opts['alt'])
+      if path != "" && (alt = opts['alt'])
         attrs << %{alt="#{alt}"}
+      elsif path == ""
+        attrs << %{alt="Image not found"}
       end
 
       attr_string = attrs.size > 0 ? attrs.join(' ') + ' ' : ''
@@ -212,7 +218,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     if parts.size == 1
       url = parts[0].strip
     else
-      name, url = *parts.compact.map(&:strip)      
+      name, url = *parts.compact.map(&:strip)
     end
     accepted_protocols = @markup.wiki.sanitization.protocols['a']['href'].dup
     if accepted_protocols.include?(:relative)
@@ -230,7 +236,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     else
       nil
     end
-    
+
   end
 
   # Attempt to process the tag as a file link tag.
