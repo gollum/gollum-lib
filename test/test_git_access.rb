@@ -22,11 +22,11 @@ context "GitAccess" do
 
     @access.tree '1db89ebba7e2c14d93b94ff98cfa3708a4f0d4e3'
     map = @access.tree_map['1db89ebba7e2c14d93b94ff98cfa3708a4f0d4e3']
-    assert_equal 'Bilbo-Baggins.md', map[0].path
-    assert_equal '', map[0].dir
-    assert_equal map[0].path, map[0].name
-    assert_equal 'Mordor/Eye-Of-Sauron.md', map[3].path
-    assert_equal '/Mordor', map[3].dir
+    assert_equal Pathname.new('Bilbo-Baggins.md'), map[0].path
+    assert_equal Pathname.new(''), map[0].dir
+    assert_equal map[0].path, Pathname.new(map[0].name)
+    assert_equal Pathname.new('Mordor/Eye-Of-Sauron.md'), map[3].path
+    assert_equal Pathname.new('/Mordor'), map[3].dir
     assert_equal 'Eye-Of-Sauron.md', map[3].name
   end
 
@@ -36,7 +36,7 @@ context "GitAccess" do
     assert @access.ref_map.empty?
 
     entry = @access.tree_map['60f12f4254f58801b9ee7db7bca5fa8aeefaa56b'][0]
-    assert_equal 'Bilbo-Baggins.md', entry.path
+    assert_equal 'Bilbo-Baggins.md', entry.path.to_s
   end
 
   test "cannot access commit from invalid ref" do

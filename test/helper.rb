@@ -43,7 +43,7 @@ require 'gollum-lib'
 TEST_DIR = File.join(File.dirname(__FILE__), *%w(.))
 
 def testpath(path)
-  File.join(TEST_DIR, path)
+  Pathname.new(File.join(TEST_DIR, path))
 end
 
 def cloned_testpath(path, bare = false)

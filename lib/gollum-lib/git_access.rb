@@ -166,7 +166,7 @@ module Gollum
       end
       if (dir = @page_file_dir)
         regex = /^#{dir}\//
-        items.select { |i| i.path =~ regex }
+        items.select { |i| i.path.to_s =~ regex }
       else
         items
       end

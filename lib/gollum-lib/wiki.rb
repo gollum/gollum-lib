@@ -222,10 +222,10 @@ module Gollum
       # o[:a] || true # => true
       # o.fetch :a, true # => false
 
-      @path                 = path
+      @path                 = Pathname.new(path)
       @repo_is_bare         = options.fetch :repo_is_bare, nil
       @page_file_dir        = options.fetch :page_file_dir, nil
-      @access               = options.fetch :access, GitAccess.new(path, @page_file_dir, @repo_is_bare)
+      @access               = options.fetch :access, GitAccess.new(@path, @page_file_dir, @repo_is_bare)
       @base_path            = options.fetch :base_path, "/"
       @page_class           = options.fetch :page_class, self.class.page_class
       @file_class           = options.fetch :file_class, self.class.file_class
@@ -379,9 +379,9 @@ module Gollum
       return false if page.nil?
       return false if rename.nil? or rename.empty?
 
-      (target_dir, target_name) = ::File.split(rename)
-      (source_dir, source_name) = ::File.split(page.path)
-      source_name               = page.filename_stripped
+      target_dir, target_name = ::File.split(rename)
+      source_dir, source_name = ::File.split(page.path)
+      source_name             = page.filename_stripped
 
       # File.split gives us relative paths with ".", commiter.add_to_index doesn't like that.
       target_dir                = '' if target_dir == '.'
@@ -395,8 +395,8 @@ module Gollum
 
       multi_commit = !!commit[:committer]
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
-
-      committer.delete(page.path)
+      # Pathname converted to String
+      committer.delete(page.path.to_s)
       committer.add_to_index(target_dir, target_name, page.format, page.raw_data)
 
       committer.after_commit do |index, _sha|
@@ -433,6 +433,7 @@ module Gollum
     def update_page(page, name, format, data, commit = {})
       name     ||= page.name
       format   ||= page.format
+
       dir      = ::File.dirname(page.path)
       dir      = '' if dir == '.'
       filename = (rename = page.name != name) ?
@@ -442,9 +443,11 @@ module Gollum
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       if !rename && page.format == format
-        committer.add(page.path, normalize(data))
+        # Pathname converted to String
+        committer.add(page.path.to_s, normalize(data))
       else
-        committer.delete(page.path)
+        # Pathname converted to String
+        committer.delete(page.path.to_s)
         committer.add_to_index(dir, filename, format, data)
       end
 
@@ -478,7 +481,8 @@ module Gollum
       multi_commit = !!commit[:committer]
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
-      committer.delete(page.path)
+      # Pathname converted to String
+      committer.delete(page.path.to_s)
 
       committer.after_commit do |index, _sha|
         dir = ::File.dirname(page.path)

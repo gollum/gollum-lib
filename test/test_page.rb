@@ -21,13 +21,13 @@ context "Page" do
     actual   = page.formatted_data
     assert_html_equal expected, actual
 
-    assert_equal 'Bilbo-Baggins.md', page.path
+    assert_equal Pathname.new('Bilbo-Baggins.md'), page.path
     assert_equal :markdown, page.format
     assert_equal @wiki.repo.commits.first.id, page.version.id
 
     assert_not_nil page.last_version
     assert_equal page.versions.first.id, page.last_version.id
-    assert page.last_version.stats.files.map{|file| file_path = file.first}.include? page.path
+    assert page.last_version.stats.files.map{|file| file_path = file.first}.include? page.path.to_s
   end
 
   test "get existing page case insensitive" do
@@ -56,7 +56,7 @@ context "Page" do
 
   test "get nested page" do
     page = @wiki.page('Eye Of Sauron')
-    assert_equal 'Mordor/Eye-Of-Sauron.md', page.path
+    assert_equal Pathname.new('Mordor/Eye-Of-Sauron.md'), page.path
   end
 
   test "url_path" do
@@ -141,17 +141,17 @@ context "Page" do
   test "top level header" do
     header = @wiki.page('Home').header
     assert_equal "Hobbits\n", header.raw_data
-    assert_equal "_Header.md", header.path
+    assert_equal Pathname.new('_Header.md'), header.path
   end
 
   test "nested header" do
     header = @wiki.page('Eye Of Sauron').header
     assert_equal "Sauron\n", header.raw_data
-    assert_equal "Mordor/_Header.md", header.path
+    assert_equal Pathname.new('Mordor/_Header.md'), header.path
   end
 
   test "header itself" do
-    header = @wiki.page("_Header")
+    header = @wiki.page('_Header')
     assert_nil header.header
     assert_nil header.footer
     assert_nil header.sidebar
@@ -160,17 +160,17 @@ context "Page" do
   test "top level footer" do
     footer = @wiki.page('Home').footer
     assert_equal 'Lord of the Rings wiki', footer.raw_data
-    assert_equal '_Footer.md', footer.path
+    assert_equal Pathname.new('_Footer.md'), footer.path
   end
 
   test "nested footer" do
     footer = @wiki.page('Eye Of Sauron').footer
     assert_equal "Ones does not simply **walk** into Mordor!\n", footer.raw_data
-    assert_equal "Mordor/_Footer.md", footer.path
+    assert_equal Pathname.new('Mordor/_Footer.md'), footer.path
   end
 
   test "footer itself" do
-    footer = @wiki.page("_Footer")
+    footer = @wiki.page('_Footer')
     assert_nil footer.header
     assert_nil footer.footer
     assert_nil footer.sidebar
@@ -179,17 +179,17 @@ context "Page" do
   test "top level sidebar" do
     sidebar = @wiki.page('Home').sidebar
     assert_equal 'Lord of the Rings wiki', sidebar.raw_data
-    assert_equal '_Sidebar.md', sidebar.path
+    assert_equal Pathname.new('_Sidebar.md'), sidebar.path
   end
 
   test "nested sidebar" do
     sidebar = @wiki.page('Eye Of Sauron').sidebar
     assert_equal "Ones does not simply **walk** into Mordor!\n", sidebar.raw_data
-    assert_equal "Mordor/_Sidebar.md", sidebar.path
+    assert_equal Pathname.new("Mordor/_Sidebar.md"), sidebar.path
   end
 
   test "sidebar itself" do
-    sidebar = @wiki.page("_Sidebar")
+    sidebar = @wiki.page('_Sidebar')
     assert_nil sidebar.header
     assert_nil sidebar.footer
     assert_nil sidebar.sidebar
@@ -201,12 +201,12 @@ context "Page" do
   end
 
   test "normalize_dir" do
-    assert_equal "", Gollum::BlobEntry.normalize_dir("")
-    assert_equal "", Gollum::BlobEntry.normalize_dir(".")
-    assert_equal "", Gollum::BlobEntry.normalize_dir("/")
-    assert_equal "", Gollum::BlobEntry.normalize_dir("c:/")
-    assert_equal "/foo", Gollum::BlobEntry.normalize_dir("foo")
-    assert_equal "/foo", Gollum::BlobEntry.normalize_dir("/foo")
+    assert_equal Pathname.new(""), Gollum::BlobEntry.normalize_dir("")
+    assert_equal Pathname.new(""), Gollum::BlobEntry.normalize_dir(".")
+    assert_equal Pathname.new(""), Gollum::BlobEntry.normalize_dir("/")
+    assert_equal Pathname.new(""), Gollum::BlobEntry.normalize_dir("c:/")
+    assert_equal Pathname.new("/foo"), Gollum::BlobEntry.normalize_dir("foo")
+    assert_equal Pathname.new("/foo"), Gollum::BlobEntry.normalize_dir("/foo")
   end
 end
 
@@ -229,7 +229,7 @@ context "with a checkout" do
     actual   = page.formatted_data
     assert_html_equal expected, actual
 
-    assert_equal 'Hobbit.md', page.path
+    assert_equal Pathname.new('Hobbit.md'), page.path
     assert_equal :markdown, page.format
   end
 end
@@ -243,7 +243,7 @@ context "within a sub-directory" do
     page = @wiki.page('Elrond')
     assert_equal Gollum::Page, page.class
     assert page.raw_data =~ /^# Elrond\n\nElrond/
-    assert_equal 'Rivendell/Elrond.md', page.path
+    assert_equal Pathname.new('Rivendell/Elrond.md'), page.path
     assert_equal :markdown, page.format
     assert_equal @wiki.repo.commits.first.id, page.version.id
   end

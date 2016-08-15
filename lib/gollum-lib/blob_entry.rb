@@ -4,7 +4,7 @@ module Gollum
     # Gets the String SHA for this blob.
     attr_reader :sha
 
-    # Gets the full path String for this blob.
+    # Gets the full Pathname path for this blob.
     attr_reader :path
 
     # Gets the Fixnum size of this blob.
@@ -15,20 +15,20 @@ module Gollum
 
     def initialize(sha, path, size = nil, mode = nil)
       @sha  = sha
-      @path = path
+      @path = Pathname.new(path)
       @size = size
       @mode = mode
       @dir  = @name = @blob = nil
     end
 
-    # Gets the normalized directory path String for this blob.
+    # Gets the normalized directory Pathname path for this blob.
     def dir
-      @dir ||= self.class.normalize_dir(::File.dirname(@path))
+      @dir ||= self.class.normalize_dir(@path.dirname)
     end
 
     # Gets the file base name String for this blob.
     def name
-      @name ||= ::File.basename(@path)
+      @name ||= @path.basename.to_s
     end
 
     # Gets a Gollum::Git::Blob instance for this blob.
@@ -84,11 +84,12 @@ module Gollum
     # Returns a normalized String directory name, or nil if no directory
     # is given.
     def self.normalize_dir(dir)
-      return '' if dir =~ /^.:\/$/
+      return Pathname.new('') if dir.to_s =~ /^.:\/$/
       if dir
         dir = ::File.expand_path(dir, '/')
         dir = dir[2..-1] if dir =~ /^[a-zA-Z]:\// # expand_path may add d:/ on windows
         dir = '' if dir == '/'
+        dir = Pathname.new(dir)
       end
       dir
     end

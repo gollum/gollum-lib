@@ -24,7 +24,7 @@ module Gollum
     #
     # Returns e.g. ["Home", :markdown], or [] if the extension is unregistered
     def self.parse_filename(filename)
-      return [] unless filename =~ /^(.+)\.([a-zA-Z]\w*)$/i
+      return [] unless filename.to_s =~ /^(.+)\.([a-zA-Z]\w*)$/i
       pref, ext = Regexp.last_match[1], Regexp.last_match[2]
 
       Gollum::Markup.formats.each_pair do |name, format|
@@ -141,12 +141,8 @@ module Gollum
     #
     # Returns the String url_path
     def url_path
-      path = if self.path.include?('/')
-               self.path.sub(/\/[^\/]+$/, '/')
-             else
-               ''
-             end
-
+      path = self.path.to_s
+      path = path.include?('/') ? path.sub(/\/[^\/]+$/, '/') : ''
       path << Page.cname(self.name, '-', '-')
       path
     end
@@ -433,7 +429,7 @@ module Gollum
     # Returns the populated Gollum::Page.
     def populate(blob, path=nil)
       @blob = blob
-      @path = "#{path}/#{blob.name}"[1..-1]
+      @path = Pathname.new("#{path}/#{blob.name}"[1..-1])
       self
     end
 
@@ -473,7 +469,7 @@ module Gollum
     # within parent directories.
     def find_sub_pages(subpagenames = SUBPAGENAMES, map = nil)
       subpagenames.each{|subpagename| instance_variable_set("@#{subpagename}", nil)}
-      return nil if self.filename =~ /^_/ || ! self.version
+      return nil if self.filename.to_s =~ /^_/ || ! self.version
       
       map ||= @wiki.tree_map_for(@wiki.ref, true)
       valid_names = subpagenames.map(&:capitalize).join("|")
