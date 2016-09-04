@@ -394,8 +394,8 @@ module Gollum
     #
     # Returns a Gollum::Page or nil if the page could not be found.
     def find(name, version, dir = nil, exact = false)
-      map = @wiki.tree_map_for(version.to_s)
-      if (page = find_page_in_tree(map, name, dir, exact))
+      page_hash = @wiki.tree_page_map_for(version.to_s, dir)
+      if (page = find_page_in_tree_hash(page_hash, name, dir, exact))
         page.version    = version.is_a?(Gollum::Git::Commit) ?
             version : @wiki.commit_for(version)
         page.historical = page.version.to_s == version.to_s
@@ -409,7 +409,7 @@ module Gollum
     # map         - The Array tree map from Wiki#tree_map.
     # name        - The canonical String page name.
     # checked_dir - Optional String of the directory a matching page needs
-    #               to be in.  The string should
+    #               to be in.
     #
     # Returns a Gollum::Page or nil if the page could not be found.
     def find_page_in_tree(map, name, checked_dir = nil, exact = false)
@@ -427,6 +427,25 @@ module Gollum
       end
 
       return nil # nothing was found
+    end
+
+    # Find a page in a given tree.
+    #
+    # page_hash   - The Hash tree map from Wiki#tree_map, preprocessed
+    # name        - The canonical String page name.
+    # checked_dir - Optional String of the directory a matching page needs
+    #               to be in.
+    #
+    # Returns a Gollum::Page or nil if the page could not be found.
+    def find_page_in_tree_hash(page_hash, name, checked_dir = nil, exact = false)
+      return nil if !page_hash || name.to_s.empty?
+
+      checked_dir = BlobEntry.normalize_dir(checked_dir)
+      checked_dir = '' if exact && checked_dir.nil?
+      name        = ::File.join(checked_dir, name) if checked_dir
+
+      normed_name = Page.cname(name).downcase
+      page_hash.has_key?(normed_name) ? page_hash[normed_name].page(@wiki, @version) : nil
     end
 
     # Populate the Page with information from the Blob.
@@ -463,13 +482,26 @@ module Gollum
     # Returns a Boolean.
     def page_match(name, path)
       if (match = self.class.valid_filename?(path))
+        cdname = Page.cname(name).downcase
         @wiki.ws_subs.each do |sub|
-          return true if Page.cname(name).downcase == Page.cname(match, sub).downcase
+          return true if cdname == Page.cname(match, sub).downcase
         end
       end
       false
     end
 
+    # Returns a set of normalized names for a given file pathe
+    #
+    # path     - the String path on disk (including file extension).
+    # ws_subs  - Different substitution pattersn, normally Wiki#ws_subs
+    # Returns a (possibly empty) Array of Strings
+    def self.normalized_names(path, ws_subs)
+      if (match = self.valid_filename?(path))
+        ws_subs.map { |sub| Page.cname(match, sub).downcase}.uniq
+      else
+        []
+      end
+    end
 
     # Loads sub pages. Sub page names (footers, headers, sidebars) are prefixed with
     # an underscore to distinguish them from other Pages. If there is not one within
