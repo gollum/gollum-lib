@@ -140,7 +140,9 @@ module Gollum
       map     = @wiki.tree_map_for(version)
       commit  = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
 
-      if (result = map.detect { |entry| entry.path.downcase == checked })
+      file_map = @wiki.tree_file_map_for(version)
+      if file_map.has_key?(checked)
+        result = file_map[checked]
         @path    = name
         @version = commit
 

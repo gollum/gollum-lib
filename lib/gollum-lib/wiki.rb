@@ -840,6 +840,7 @@ module Gollum
     # Returns nothing.
     def clear
       @tree_page_map = {}
+      @tree_file_map = {}
     end
 
     # Attempts to get the given data from a cache.  If it doesn't exist, it'll
@@ -1037,6 +1038,41 @@ module Gollum
       end
 
       page_hash.empty? ? nil : page_hash
+    end
+
+    # Returns a { canonical_name => BlobEntry } map for a given SHA
+    # Canonicalization happens through path.downcase()
+    #
+    # ref - A String ref that is either a commit SHA or references one.
+    #
+    # Returns a Hash of String => BlobEntry instances
+    def tree_file_map_for(ref)
+      if (sha = @access.ref_to_sha(ref))
+        get_cache(:tree_file, [sha] ) { tree_file_map_for!(ref) }
+      else
+        {}
+      end
+    rescue Gollum::Git::NoSuchShaFound
+      {}
+    end
+
+    # Generates a { canonical_name => BlobEntry } map for a given SHA
+    # Canonicalization happens through path.downcase()
+    #
+    # ref - A String ref that is either a commit SHA or references one.
+    #
+    # Returns a Hash of String => BlobEntry instances or nil
+    def tree_file_map_for!(ref)
+      map = tree_map_for(ref.to_s)
+      return nil if !map
+
+      file_hash = Hash.new
+      map.each do |entry|
+        next if entry.path.to_s.empty?
+        file_hash[ entry.path.downcase ] = entry
+      end
+
+      file_hash.empty? ? nil : file_hash
     end
 
     def inspect
