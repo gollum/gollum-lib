@@ -353,9 +353,13 @@ module Gollum
     #
     # Returns the String canonical name.
     def self.cname(name, char_white_sub = '-', char_other_sub = '-')
-      name.respond_to?(:gsub) ?
-          name.gsub(%r(\s), char_white_sub).gsub(%r([<>+]), char_other_sub) :
-          ''
+      if name.respond_to?(:tr) and char_white_sub.size == 1 and char_other_sub.size == 1
+          name.tr( " \t\r\n\f" '<>+', ('\\'+char_white_sub)*5 + ('\\'+char_other_sub)*3 )
+      else
+          name.respond_to?(:gsub) ?
+              name.gsub(%r(\s), char_white_sub).gsub(%r([<>+]), char_other_sub) :
+              ''
+      end
     end
 
     # Convert a format Symbol into an extension String.
