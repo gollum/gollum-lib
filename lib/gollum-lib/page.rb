@@ -477,7 +477,7 @@ module Gollum
       
       map ||= @wiki.tree_map_for(@wiki.ref, true)
       valid_names = subpagenames.map(&:capitalize).join("|")
-      while entry = map.shift do
+      map.each do |entry|
         next unless entry.name =~ /^_(#{valid_names})/
         sub_page_type = ::File.basename(entry.name.downcase.tr('_', ''), ::File.extname(entry.name))
         next if instance_variable_get("@#{sub_page_type}")
