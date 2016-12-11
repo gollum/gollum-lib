@@ -140,7 +140,7 @@ module Gollum
       map     = @wiki.tree_map_for(version)
       commit  = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
 
-      if (result = map.detect { |entry| entry.path.downcase == checked })
+      if (result = map.detect { |entry| entry.path.force_encoding('utf-8').downcase == checked } })
         @path    = name
         @version = commit
 
