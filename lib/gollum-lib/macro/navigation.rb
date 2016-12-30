@@ -2,7 +2,7 @@ module Gollum
   class Macro
     class Navigation < Gollum::Macro
 
-      def render(title = "Navigate in the TOC", toc_root_path = ::File.dirname(@page.path), full_path = false)
+      def render(title = "Navigate in the TOC", toc_root_path = ::File.dirname(@page.sub_page ? @page.parent_page.path : @page.path), full_path = false)
         if @wiki.pages.size > 0
           list_items = @wiki.pages.map do |page|
             if page.url_path.start_with?(toc_root_path)
