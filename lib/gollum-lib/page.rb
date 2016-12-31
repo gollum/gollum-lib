@@ -151,11 +151,15 @@ module Gollum
       path
     end
 
+    def self.url_path_to_display(url)
+      url.gsub(/[-_]/, " ")
+    end
+
     # Public: The display form of the url path required to reach this page within the repo.
     #
     # Returns the String url_path
     def url_path_display
-      url_path.gsub("-", " ")
+        Gollum::Page.url_path_to_display(url_path)
     end
 
     # Public: Defines title for page.rb

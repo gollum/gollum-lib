@@ -2,10 +2,6 @@ module Gollum
   class Macro
     class Navigation < Gollum::Macro
 
-      def format(name)
-        name.sub("_", " ")
-      end
-
       def render(title = "Navigate in the TOC", toc_root_path = "", full_path = false)
         my_page = @page.sub_page ? @page.parent_page : @page;
 
@@ -14,7 +10,7 @@ module Gollum
         end
 
         title.sub! "%%" do
-            format(::File.basename(toc_root_path))
+            Gollum::Page.url_path_to_display(::File.basename(toc_root_path))
         end
 
         if @wiki.pages.size > 0
