@@ -115,13 +115,39 @@ module Gollum
       self.class.canonicalize_filename(filename)
     end
 
+    # Public: The title as defined by the content.
+    # This is usually equal to either the first h1.
+    #
+    # Returns the title extracted from the content.
+    #
+    # TODO: this case is a bad encapsulation, the markup
+    # class should be able to "know" how to extract this.
+    def content_title
+        case format
+          when :asciidoc
+            doc.css("h1:first-child")
+          when :org
+            doc.css("p.title:first-child")
+          when :pod
+            doc.css("a.dummyTopAnchor:first-child + h1")
+          when :rest
+            doc.css("div > div > h1:first-child")
+          else
+            doc.css("h1:first-child")
+        end
+    end
+
     # Public: The title will be constructed from the
     # filename by stripping the extension and replacing any dashes with
     # spaces.
     #
     # Returns the fully sanitized String title.
     def title
-      Sanitize.clean(name).strip
+      if @wiki.h1_title then
+          content_title
+      else
+          Sanitize.clean(name).strip
+      end
     end
 
     # Public: Determines if this is a sub-page
