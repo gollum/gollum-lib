@@ -14,7 +14,7 @@ module Gollum
             if page.url_path.start_with?(toc_root_path)
               path_display = full_path ? page.url_path_display  : page.url_path_display.sub(toc_root_path,"").sub(/^\//,'')
               if page.path != my_page.path then
-                  "<li><a href=\"/#{page.url_path}\">#{path_display}</a></li>"
+                  "<li><a href=\"#{::File.join(page.wiki.base_path, page.url_path)}\">#{path_display}</a></li>"
               else
                   "<li class=\"current_page\">#{path_display}</li>"
               end
