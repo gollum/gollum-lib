@@ -6,6 +6,7 @@ module Gollum
     Wiki.page_class = self
     
     SUBPAGENAMES = [:header, :footer, :sidebar]
+    @@to_xml       = { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML ^ 1, :indent => 0, :encoding => 'UTF-8' }
     
     # Sets a Boolean determing whether this page is a historical version.
     #
@@ -119,22 +120,8 @@ module Gollum
     # This is usually equal to either the first h1.
     #
     # Returns the title extracted from the content.
-    #
-    # TODO: this case is a bad encapsulation, the markup
-    # class should be able to "know" how to extract this.
     def content_title
-        case format
-          when :asciidoc
-            doc.css("h1:first-child")
-          when :org
-            doc.css("p.title:first-child")
-          when :pod
-            doc.css("a.dummyTopAnchor:first-child + h1")
-          when :rest
-            doc.css("div > div > h1:first-child")
-          else
-            doc.css("h1:first-child")
-        end
+        find_header_node(@doc).inner_text.strip
     end
 
     # Public: The title will be constructed from the
@@ -256,10 +243,21 @@ module Gollum
       else
         @formatted_data = markup_class.render(historical?, encoding, include_levels) do |doc|
           @doc = doc
-          yield doc if block_given?
         end
       end
+      # we may need to extract the title from the content.
+      #
+      # in this case @doc will be kept intact to refect the original intention,
+      # while @formatted_data is the display info won't contain the actual
+      # header.
+      if @wiki.h1_title then
+          doc = @doc.dup
+          header = find_header_node(doc)
+          header.remove unless header.empty?
+          @fomatted_data = doc.to_xml(@@to_xml)
+      end
 
+      yield @doc if block_given?
       @formatted_data
     end
 
@@ -496,6 +494,26 @@ module Gollum
       false
     end
 
+    # Private: get the node where the header is located
+    #
+    # Extracts the header node from doc.
+    #
+    # TODO: this case is a bad encapsulation, the markup
+    # class should be able to "know" how to extract this.
+    def find_header_node(doc)
+        case format
+        when :asciidoc
+            doc.css("h1:first-child")
+        when :org
+            doc.css("p.title:first-child")
+        when :pod
+            doc.css("a.dummyTopAnchor:first-child + h1")
+        when :rest
+            doc.css("div > div > h1:first-child")
+        else
+            doc.css("h1:first-child")
+        end
+    end
 
     # Loads sub pages. Sub page names (footers, headers, sidebars) are prefixed with
     # an underscore to distinguish them from other Pages. If there is not one within
