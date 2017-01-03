@@ -3,7 +3,7 @@ module Gollum
     class GlobalTOC < Gollum::Macro
       def render(title = "Global Table of Contents")
         if @wiki.pages.size > 0
-          result = '<ul>' + @wiki.pages.map { |p| "<li><a href=\"/#{p.url_path}\">#{p.url_path_display}</a></li>" }.join + '</ul>'
+          result = '<ul>' + @wiki.pages.map { |p| "<li><a href=\"#{::File.join(@wiki.base_path, p.url_path)}\">#{p.url_path_display}</a></li>" }.join + '</ul>'
         end
         "<div class=\"toc\"><div class=\"toc-title\">#{title}</div>#{result}</div>"
       end
