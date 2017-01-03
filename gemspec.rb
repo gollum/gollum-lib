@@ -26,9 +26,9 @@ def specification(version, default_adapter, platform = nil)
 
     s.add_dependency *default_adapter
     s.add_dependency 'rouge', '~> 2.0'
-    s.add_dependency 'nokogiri', '~> 1.6.4'
+    s.add_dependency 'nokogiri', '~> 1.7.0'
     s.add_dependency 'stringex', '~> 2.6'
-    s.add_dependency 'sanitize', '~> 2.1'
+    s.add_dependency 'sanitize', '~> 4.4.0'
     s.add_dependency 'github-markup', '~> 1.4'
     s.add_dependency 'gemojione', '~> 3'
 
