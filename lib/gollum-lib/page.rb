@@ -124,6 +124,14 @@ module Gollum
         find_header_node(@doc).inner_text.strip
     end
 
+    # Public: The title as defined by the page name.
+    # This is a sanitized version of the filename.
+    #
+    # Returns the title extracted from the name.
+    def title_from_name
+          Sanitize.clean(name).strip
+    end
+
     # Public: The title will be constructed from the
     # filename by stripping the extension and replacing any dashes with
     # spaces.
@@ -133,7 +141,7 @@ module Gollum
       if @wiki.h1_title then
           content_title
       else
-          Sanitize.clean(name).strip
+          title_from_name
       end
     end
 
@@ -501,6 +509,8 @@ module Gollum
     # TODO: this case is a bad encapsulation, the markup
     # class should be able to "know" how to extract this.
     def find_header_node(doc)
+        return "" unless (!doc.nil?)
+
         case format
         when :asciidoc
             doc.css("h1:first-child")
