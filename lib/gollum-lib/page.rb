@@ -121,7 +121,8 @@ module Gollum
     #
     # Returns the title extracted from the content.
     def content_title
-        find_header_node(@doc).inner_text.strip
+        header = find_header_node(@doc)
+        header.inner_text.strip unless header.nil?
     end
 
     # Public: The title as defined by the page name.
@@ -141,7 +142,7 @@ module Gollum
       if @wiki.h1_title then
           content_title
       else
-          title_from_name
+          title_from_name || content_title
       end
     end
 
@@ -253,7 +254,8 @@ module Gollum
           @doc = doc
         end
       end
-      # we may need to extract the title from the content.
+
+      # we may need to extract the title from the content if h1_title is on.
       #
       # in this case @doc will be kept intact to refect the original intention,
       # while @formatted_data is the display info won't contain the actual
@@ -261,8 +263,10 @@ module Gollum
       if @wiki.h1_title then
           doc = @doc.dup
           header = find_header_node(doc)
-          header.remove unless header.empty?
-          @fomatted_data = doc.to_xml(@@to_xml)
+          if (!header.nil?) then
+              header.remove
+              @formatted_data = doc.to_xml(@@to_xml)
+          end
       end
 
       yield @doc if block_given?
@@ -509,7 +513,7 @@ module Gollum
     # TODO: this case is a bad encapsulation, the markup
     # class should be able to "know" how to extract this.
     def find_header_node(doc)
-        return "" unless (!doc.nil?)
+        return nil unless (!doc.nil?)
 
         case format
         when :asciidoc
@@ -522,7 +526,7 @@ module Gollum
             doc.css("div > div > h1:first-child")
         else
             doc.css("h1:first-child")
-        end
+        end.first
     end
 
     # Loads sub pages. Sub page names (footers, headers, sidebars) are prefixed with
