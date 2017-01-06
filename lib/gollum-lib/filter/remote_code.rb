@@ -31,11 +31,11 @@ class Gollum::Filter::RemoteCode < Gollum::Filter
       protocol    = Regexp.last_match[6]
 
       contents = fetch(protocol, uri)
-
       if (!range.nil?) then
           lines       = contents.lines
-          range_start = range_start.empty? ? 0              : (range_start.to_i-1)
-          range_end   = range_end.empty?   ? lines.size - 1 : (range_end.to_i - 1)
+          range_start = range_start.nil? ? 0              : (range_start.to_i - 1)
+          range_end   = range_end.nil?   ? lines.size - 1 : (range_end.to_i   - 1)
+          print "#{range_start} .. #{range_end}\n"
           contents    = lines.slice(range_start..range_end).join
       end
 
