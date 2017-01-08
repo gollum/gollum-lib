@@ -35,7 +35,10 @@ class Gollum::Filter::RemoteCode < Gollum::Filter
           lines       = contents.lines
           range_start = range_start.nil? ? 0              : (range_start.to_i - 1)
           range_end   = range_end.nil?   ? lines.size - 1 : (range_end.to_i   - 1)
-          print "#{range_start} .. #{range_end}\n"
+          range_end   = range_end   > lines.size - 1? lines.size - 1: range_end;
+          range_start = range_start > lines.size - 1? lines.size - 1: range_start;
+          range_end   = range_end   <              0?              0: range_end;
+          range_start = range_start <              0?              0: range_start;
           contents    = lines.slice(range_start..range_end).join
       end
 
