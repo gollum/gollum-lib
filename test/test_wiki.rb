@@ -54,7 +54,7 @@ context "Wiki" do
   test "list pages" do
     pages = @wiki.pages
     assert_equal \
-      ['Bilbo-Baggins.md', 'Boromir.md', 'Elrond.md', 'Eye-Of-Sauron.md', 'Hobbit.md', 'Home.textile', 'My-Precious.md', 'RingBearers.md', 'Samwise Gamgee.mediawiki', 'todo.txt'],
+      ['Bilbo-Baggins.md', 'Boromir.md', 'Elrond.md', 'Eye-Of-Sauron.md', 'Hobbit.md', 'Home.textile', 'My-Precious.md', 'RingBearers.md', 'Samwise Gamgee.mediawiki', 'Sauron.md', 'todo.txt'],
       pages.map(&:filename).sort
   end
 
@@ -66,11 +66,11 @@ context "Wiki" do
   end
 
   test "counts pages" do
-    assert_equal 10, @wiki.size
+    assert_equal 11, @wiki.size
   end
 
   test "latest changes in repo" do
-    assert_equal @wiki.latest_changes({:max_count => 1}).first.id, "a3e857e03ecc69a99f1dd72dc3f7e0c47602a05a"
+    assert_equal @wiki.latest_changes({:max_count => 1}).first.id, "075c0227cf4cef1c50303237092424d3819c9499"
   end
   
   test "text_data" do

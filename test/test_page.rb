@@ -69,6 +69,11 @@ context "Page" do
     assert_equal 'Mordor/Eye-Of-Sauron', page.url_path
   end
 
+  test "nested_url_path_with_whitespace" do
+    page = @wiki.page('Sauron')
+    assert_equal 'Dol-Guldur/Sauron', page.url_path
+  end
+
   test "url_path_display" do
     page = @wiki.page('Bilbo Baggins')
     assert_equal 'Bilbo Baggins', page.url_path_display
