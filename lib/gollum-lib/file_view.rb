@@ -25,7 +25,7 @@ module Gollum
     end
 
     def delete_file(url, valid_page)
-      %Q(<form method="POST" action="/deleteFile/#{url}" onsubmit="return confirm('Do you really want to delete the file #{url}?');"><button type="submit" name="delete" value="true"></button></form>)
+      %Q(<form method="POST" action="deleteFile/#{url}" onsubmit="return confirm('Do you really want to delete the file #{url}?');"><button type="submit" name="delete" value="true"></button></form>)
     end
 
     def new_folder(folder_path)
