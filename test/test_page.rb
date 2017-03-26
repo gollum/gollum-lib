@@ -13,11 +13,11 @@ context "Page" do
   end
 
   test "get existing page" do
-    page = @wiki.page('Bilbo Baggins')
+    page = @wiki.page('Bilbo-Baggins')
     assert_equal Gollum::Page, page.class
     assert page.raw_data =~ /^# Bilbo Baggins\n\nBilbo Baggins/
 
-    expected = "<h1><a class=\"anchor\" id=\"bilbo-baggins\" href=\"#bilbo-baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.-R.-R.-Tolkien\">J. R. R.\nTolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
+    expected = "<h1><a class=\"anchor\" id=\"bilbo-baggins\" href=\"#bilbo-baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.+R.+R.+Tolkien\">J. R. R. Tolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
     actual   = page.formatted_data
     assert_html_equal expected, actual
 
@@ -30,53 +30,39 @@ context "Page" do
     assert page.last_version.stats.files.map{|file| file_path = file.first}.include? page.path
   end
 
-  test "get existing page case insensitive" do
-    assert_equal @wiki.page('Bilbo Baggins').path, @wiki.page('bilbo baggins').path
+  test "getting pages is case insensitive" do
+    assert_equal Gollum::Page, @wiki.page('bilbo-baggins').class
   end
 
-  test "get existing page with hyphen" do
-    assert_equal @wiki.page('Bilbo Baggins').path, @wiki.page('Bilbo-Baggins').path
-  end
-
-  test "get existing page with underscore" do
+  test "do not substitute whitespace for hyphens or underscores (regression test < 5.x)" do
+    assert_not_nil @wiki.page('Bilbo-Baggins').path
     assert_nil @wiki.page('Bilbo_Baggins')
-  end
-
-  test "get existing page where filename contains whitespace, with hypen" do
-    assert_equal @wiki.page('Samwise Gamgee').path, @wiki.page('Samwise-Gamgee').path
-  end
-
-  test "get existing page where filename contains whitespace, with underscore" do
-    assert_equal @wiki.page('Samwise Gamgee').path, @wiki.page('Samwise_Gamgee').path
-  end
-
-  test "get existing page where filename contains whitespace, with whitespace" do
-    assert_equal @wiki.page('Samwise Gamgee').path, @wiki.page('Samwise Gamgee').path
+    assert_nil @wiki.page('Bilbo Baggins')
   end
 
   test "get nested page" do
-    page = @wiki.page('Eye Of Sauron')
+    page = @wiki.page('Eye-Of-Sauron')
     assert_equal 'Mordor/Eye-Of-Sauron.md', page.path
   end
 
   test "url_path" do
-    page = @wiki.page('Bilbo Baggins')
+    page = @wiki.page('Bilbo-Baggins')
     assert_equal 'Bilbo-Baggins', page.url_path
   end
 
   test "nested url_path" do
-    page = @wiki.page('Eye Of Sauron')
+    page = @wiki.page('Eye-Of-Sauron')
     assert_equal 'Mordor/Eye-Of-Sauron', page.url_path
   end
 
   test "url_path_display" do
-    page = @wiki.page('Bilbo Baggins')
-    assert_equal 'Bilbo Baggins', page.url_path_display
+    page = @wiki.page('Bilbo-Baggins')
+    assert_equal 'Bilbo-Baggins', page.url_path_display
   end
 
   test "page versions" do
-    page = @wiki.page('Bilbo Baggins')
-    assert_equal ["f25eccd98e9b667f9e22946f3e2f945378b8a72d", "5bc1aaec6149e854078f1d0f8b71933bbc6c2e43"],
+    page = @wiki.page('Bilbo-Baggins')
+    assert_equal ["ea8114ad3c40b90c536c18fae9ed8d1063b1b6fc", "f25eccd98e9b667f9e22946f3e2f945378b8a72d", "5bc1aaec6149e854078f1d0f8b71933bbc6c2e43"],
                  page.versions.map { |v| v.id }
   end
 
@@ -93,7 +79,7 @@ context "Page" do
   end
 
   test "specific page version" do
-    page = @wiki.page('Bilbo Baggins', 'fbabba862dfa7ac35b39042dd4ad780c9f67b8cb')
+    page = @wiki.page('Bilbo-Baggins', 'fbabba862dfa7ac35b39042dd4ad780c9f67b8cb')
     assert_equal 'fbabba862dfa7ac35b39042dd4ad780c9f67b8cb', page.version.id
   end
 
@@ -102,40 +88,23 @@ context "Page" do
   end
 
   test "no version match" do
-    assert_nil @wiki.page('Bilbo Baggins', 'I do not exist')
+    assert_nil @wiki.page('Bilbo-Baggins', 'I do not exist')
   end
 
-  test "no ext match" do
+  test "no non-page match" do
     assert_nil @wiki.page('Data')
   end
 
-  test "cname" do
-    assert_equal "Foo", Gollum::Page.cname("Foo")
-    assert_equal "Foo-Bar", Gollum::Page.cname("Foo Bar")
-    # / is now a directory delimiter so it must be preserved
-    assert_equal "Foo-/-Bar", Gollum::Page.cname("Foo / Bar")
-    assert_equal "José", Gollum::Page.cname("José")
-    assert_equal "モルドール", Gollum::Page.cname("モルドール")
+  test "match with page extension" do
+    page = @wiki.page 'Bilbo-Baggins.textile'
+    assert_nil page
+    page = @wiki.page 'Bilbo-Baggins.md'
+    assert_equal Gollum::Page, page.class
   end
 
   test "title from filename with normal contents 1" do
-    page = @wiki.page('Bilbo Baggins')
-    assert_equal 'Bilbo Baggins', page.title
-  end
-
-  test "title from filename with html contents 1" do
-    page = @wiki.page('My <b>Precious', '0ed8cbe0a25235bd867e65193c7d837c66b328ef')
-    assert_equal 'My Precious', page.title
-  end
-
-  test "title from filename with normal contents 2" do
-    page = @wiki.page('Home')
-    assert_equal "Home", page.title
-  end
-
-  test "title from filename with html contents 2" do
-    page = @wiki.page('Eye Of Sauron')
-    assert_equal "Eye Of Sauron", page.title
+    page = @wiki.page('Bilbo-Baggins')
+    assert_equal 'Bilbo-Baggins', page.title
   end
 
   test "top level header" do
@@ -145,7 +114,7 @@ context "Page" do
   end
 
   test "nested header" do
-    header = @wiki.page('Eye Of Sauron').header
+    header = @wiki.page('Eye-Of-Sauron').header
     assert_equal "Sauron\n", header.raw_data
     assert_equal "Mordor/_Header.md", header.path
   end
@@ -164,7 +133,7 @@ context "Page" do
   end
 
   test "nested footer" do
-    footer = @wiki.page('Eye Of Sauron').footer
+    footer = @wiki.page('Eye-Of-Sauron').footer
     assert_equal "Ones does not simply **walk** into Mordor!\n", footer.raw_data
     assert_equal "Mordor/_Footer.md", footer.path
   end
@@ -183,7 +152,7 @@ context "Page" do
   end
 
   test "nested sidebar" do
-    sidebar = @wiki.page('Eye Of Sauron').sidebar
+    sidebar = @wiki.page('Eye-Of-Sauron').sidebar
     assert_equal "Ones does not simply **walk** into Mordor!\n", sidebar.raw_data
     assert_equal "Mordor/_Sidebar.md", sidebar.path
   end
@@ -193,11 +162,6 @@ context "Page" do
     assert_nil sidebar.header
     assert_nil sidebar.footer
     assert_nil sidebar.sidebar
-  end
-
-  test "cannot convert non string to human readable page title" do
-    assert_equal '', Gollum::Page.cname(nil)
-    assert_equal '', Gollum::Page.cname(3)
   end
 
   test "normalize_dir" do
@@ -225,7 +189,7 @@ context "with a checkout" do
     assert_equal Gollum::Page, page.class
     assert page.raw_data =~ /^# Bilbo Baggins\n\nBilbo Baggins/
 
-    expected = "<h1><a class=\"anchor\" id=\"bilbo-baggins\" href=\"#bilbo-baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.-R.-R.-Tolkien\">J. R. R.\nTolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
+    expected = "<h1><a class=\"anchor\" id=\"bilbo-baggins\" href=\"#bilbo-baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.+R.+R.+Tolkien\">J. R. R. Tolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
     actual   = page.formatted_data
     assert_html_equal expected, actual
 
@@ -249,7 +213,7 @@ context "within a sub-directory" do
   end
 
   test "should not get page from parent dir" do
-    page = @wiki.page('Bilbo Baggins')
+    page = @wiki.page('Bilbo-Baggins')
     assert_equal nil, page
   end
 

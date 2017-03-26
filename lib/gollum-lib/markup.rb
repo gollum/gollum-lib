@@ -31,7 +31,7 @@ module Gollum
         end
       end
 
-      # Register a file extension and associated markup type
+      # Register a file format
       #
       # ext     - The file extension
       # name    - The name of the markup type
