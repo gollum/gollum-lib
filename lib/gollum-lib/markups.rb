@@ -3,7 +3,7 @@ module Gollum
   class Markup
     
     GitHub::Markup::Markdown::MARKDOWN_GEMS['kramdown'] = proc { |content|
-        Kramdown::Document.new(content, :auto_ids => false, :input => "markdown").to_html
+        Kramdown::Document.new(content, :auto_ids => false, :smart_quotes => ["'", "'", '"', '"'].map{|char| char.codepoints.first}).to_html
     }
 
     register(:markdown,  "Markdown", :regexp => /md|mkdn?|mdown|markdown/)
