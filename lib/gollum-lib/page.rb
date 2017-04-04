@@ -428,17 +428,31 @@ module Gollum
       
       map ||= @wiki.tree_map_for(@wiki.ref, true)
       valid_names = subpagenames.map(&:capitalize).join("|")
-      while entry = map.shift do
-        next unless entry.name =~ /^_(#{valid_names})/
-        sub_page_type = ::File.basename(entry.name.downcase.tr('_', ''), ::File.extname(entry.name))
-        next if instance_variable_get("@#{sub_page_type}")
-        ::Pathname.new(::File.join('.', ::File.dirname(self.path))).ascend do |dir|
-          if ::File.join(dir, entry.name) == ::File.join('.', ::Pathname.new(entry.path))
-            instance_variable_set("@#{sub_page_type}", entry.page(@wiki, @version) )
+      # From Ruby 2.2 onwards map.select! could be used
+      map = map.select{|entry| entry.name =~ /^_(#{valid_names})/ }
+      return if map.empty?
+
+      subpagenames.each do |subpagename|
+        dir = ::Pathname.new(self.path)
+        while dir = dir.parent do
+          subpageblob = map.find do |blob_entry|
+
+            filename = "_#{subpagename.to_s.capitalize}"
+            searchpath = dir == Pathname.new('.') ? Pathname.new(filename) : dir + filename
+            entrypath = ::Pathname.new(blob_entry.path)
+            # Ignore extentions
+            entrypath = entrypath.dirname + entrypath.basename(entrypath.extname)      
+            entrypath == searchpath
+          end
+          
+          if subpageblob
+            instance_variable_set("@#{subpagename}", subpageblob.page(@wiki, @version) )
             break
           end
+
+          break if dir == Pathname.new('.')
         end
-      end
+      end  
     end
 
     def inspect

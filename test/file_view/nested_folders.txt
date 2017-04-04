@@ -12,7 +12,7 @@
             <input type="checkbox" checked />
             <ol>
               <li class="file">
-                <a href="folder0/folder1/folder2/0"><span class="icon"></span>0</a>
+                <a href="folder0/folder1/folder2/0"><span class="icon"></span>0</a><form method="POST" action="/deleteFile/folder0/folder1/folder2/0" onsubmit="return confirm('Do you really want to delete the file folder0/folder1/folder2/0?');"><button type="submit" name="delete" value="true"></button></form>
               </li>
             </ol>
           </li>
@@ -21,7 +21,7 @@
             <input type="checkbox" checked />
             <ol>
               <li class="file">
-                <a href="folder0/folder1/folder3/1"><span class="icon"></span>1</a>
+                <a href="folder0/folder1/folder3/1"><span class="icon"></span>1</a><form method="POST" action="/deleteFile/folder0/folder1/folder3/1" onsubmit="return confirm('Do you really want to delete the file folder0/folder1/folder3/1?');"><button type="submit" name="delete" value="true"></button></form>
               </li>
             </ol>
           </li>
@@ -34,7 +34,7 @@
     <input type="checkbox" checked />
     <ol>
       <li class="file">
-        <a href="folder4/2"><span class="icon"></span>2</a>
+        <a href="folder4/2"><span class="icon"></span>2</a><form method="POST" action="/deleteFile/folder4/2" onsubmit="return confirm('Do you really want to delete the file folder4/2?');"><button type="submit" name="delete" value="true"></button></form>
       </li>
     </ol>
   </li>

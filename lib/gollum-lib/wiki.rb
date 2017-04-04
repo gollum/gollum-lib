@@ -473,6 +473,43 @@ module Gollum
       multi_commit ? committer : committer.commit
     end
 
+    # Public: Delete a file.
+    #
+    # path   - The path to the file to delete
+    # commit - The commit Hash details:
+    #          :message   - The String commit message.
+    #          :name      - The String author full name.
+    #          :email     - The String email address.
+    #          :parent    - Optional Gollum::Git::Commit parent to this update.
+    #          :tree      - Optional String SHA of the tree to create the
+    #                       index from.
+    #          :committer - Optional Gollum::Committer instance.  If provided,
+    #                       assume that this operation is part of batch of
+    #                       updates and the commit happens later.
+    #
+    # Returns the String SHA1 of the newly written version, or the
+    # Gollum::Committer instance if this is part of a batch update.
+    def delete_file(path, commit)
+      dir      = ::File.dirname(path)
+      ext      = ::File.extname(path)
+      format   = ext.split('.').last || 'txt'
+      filename = ::File.basename(path, ext)
+
+      multi_commit = !!commit[:committer]
+      committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
+
+      committer.delete(path)
+
+      committer.after_commit do |index, _sha|
+        dir = '' if dir == '.'
+
+        @access.refresh
+        index.update_working_dir(dir, filename, format)
+      end
+
+      multi_commit ? committer : committer.commit
+    end
+
     # Public: Applies a reverse diff for a given page.  If only 1 SHA is given,
     # the reverse diff will be taken from its parent (^SHA...SHA).  If two SHAs
     # are given, the reverse diff is taken from SHA1...SHA2.
