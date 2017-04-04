@@ -5,7 +5,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Extract all tags into the tagmap and replace with placeholders.
   def extract(data)
     return data if @markup.format == :txt || @markup.format == :asciidoc
-    data.gsub!(/(.?)\[\[(.+?)\]\]([^\[]?)/m) do
+    data.gsub!(/(.?)\[\[(.+?)\]\]([^\[]?)/) do
       if Regexp.last_match[1] == "'" && Regexp.last_match[3] != "'"
         "[[#{Regexp.last_match[2]}]]#{Regexp.last_match[3]}"
       elsif Regexp.last_match[2].include?('][')
@@ -273,13 +273,13 @@ class Gollum::Filter::Tags < Gollum::Filter
     parts.reverse! if @markup.reverse_links?
 
     name, page_name = *parts.compact.map(&:strip)
-    cname           = @markup.wiki.page_class.cname(page_name || name)
+    cname           = page_name ? page_name : name.to_s
 
     presence    = "absent"
     link_name   = cname
     page, extra = find_page_from_name(cname)
     if page
-      link_name = @markup.wiki.page_class.cname(page.name)
+      link_name = page.name
       presence  = "present"
     end
     link = ::File.join(@markup.wiki.base_path, page ? page.escaped_url_path : CGI.escape(link_name))

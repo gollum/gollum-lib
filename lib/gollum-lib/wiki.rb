@@ -22,9 +22,6 @@ module Gollum
       # Sets the default email for commits.
       attr_writer :default_committer_email
 
-      # Array of chars to substitute whitespace for when trying to locate file in git repo.
-      attr_writer :default_ws_subs
-
       # Sets sanitization options. Set to false to deactivate
       # sanitization altogether.
       attr_writer :sanitization
@@ -118,10 +115,6 @@ module Gollum
         @default_committer_email || 'anon@anon.com'
       end
 
-      def default_ws_subs
-        @default_ws_subs || ['_', '-']
-      end
-
       def default_options
         @default_options || {}
       end
@@ -143,9 +136,6 @@ module Gollum
 
     # Gets the String directory in which all page files reside.
     attr_reader :page_file_dir
-
-    # Gets the Array of chars to sub for ws in filenames.
-    attr_reader :ws_subs
 
     # Gets the boolean live preview value.
     attr_reader :live_preview
@@ -186,7 +176,6 @@ module Gollum
     #           :sanitization  - An instance of Sanitization.
     #           :page_file_dir - String the directory in which all page files reside
     #           :ref - String the repository ref to retrieve pages from
-    #           :ws_subs       - Array of chars to sub for ws in filenames.
     #           :mathjax       - Set to false to disable mathjax.
     #           :user_icons    - Enable user icons on the history page. [gravatar, identicon, none].
     #                            Default: none
@@ -233,7 +222,6 @@ module Gollum
       @repo                 = @access.repo
       @ref                  = options.fetch :ref, self.class.default_ref
       @sanitization         = options.fetch :sanitization, self.class.sanitization
-      @ws_subs              = options.fetch :ws_subs, self.class.default_ws_subs
       @history_sanitization = options.fetch :history_sanitization, self.class.history_sanitization
       @live_preview         = options.fetch :live_preview, true
       @universal_toc        = options.fetch :universal_toc, false
@@ -310,8 +298,8 @@ module Gollum
     def preview_page(name, data, format)
       page = @page_class.new(self)
       ext  = @page_class.format_to_ext(format.to_sym)
-      name = @page_class.cname(name) + '.' + ext
-      blob = OpenStruct.new(:name => name, :data => data, :is_symlink => false)
+      filename = "#{name}.#{ext}"
+      blob = OpenStruct.new(:name => filename, :data => data, :is_symlink => false)
       page.populate(blob)
       page.version = @access.commit(@ref)
       page
@@ -337,21 +325,15 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
     def write_page(name, format, data, commit = {}, dir = '')
-      # spaces must be dashes
-      sanitized_name = name.gsub(' ', '-')
-      sanitized_dir  = dir.gsub(' ', '-')
-      sanitized_dir  = ::File.join([@page_file_dir, sanitized_dir].compact)
+      sanitized_dir  = ::File.join([@page_file_dir, dir].compact) 
 
       multi_commit = !!commit[:committer]
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
-
-      filename = Gollum::Page.cname(sanitized_name)
-
-      committer.add_to_index(sanitized_dir, filename, format, data)
+      committer.add_to_index(sanitized_dir, name, format, data)
 
       committer.after_commit do |index, _sha|
         @access.refresh
-        index.update_working_dir(sanitized_dir, filename, format)
+        index.update_working_dir(sanitized_dir, name, format)
       end
 
       multi_commit ? committer : committer.commit
@@ -436,7 +418,7 @@ module Gollum
       dir      = ::File.dirname(page.path)
       dir      = '' if dir == '.'
       filename = (rename = page.name != name) ?
-          Gollum::Page.cname(name) : page.filename_stripped
+          name : page.filename_stripped
 
       multi_commit = !!commit[:committer]
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
@@ -614,9 +596,9 @@ module Gollum
         results[file_name] = count.to_i
       end
 
-      # Use git ls-files '*query*' to search for file names. Grep only searches file content.
+      # Use ls_files '*query*' to search for file names. Grep only searches file content.
       # Spaces are converted to dashes when saving pages to disk.
-      @repo.git.ls_files(query.gsub(' ','-'), options).each do |path|
+      @repo.git.ls_files(query, options).each do |path|
         # Remove ext only from known extensions.
         file_name          = Page::valid_page_name?(path) ? path.chomp(::File.extname(path)) : path
         # If there's not already a result for file_name then
@@ -811,7 +793,7 @@ module Gollum
     #
     # Returns the String filename.
     def page_file_name(name, format)
-      name + '.' + @page_class.format_to_ext(format)
+      "#{name}.#{@page_class.format_to_ext(format)}"
     end
 
     # Fill an array with a list of pages.
