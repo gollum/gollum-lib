@@ -4,7 +4,7 @@
     <input type="checkbox" checked />
     <ol>
       <li class="file">
-        <a href="folder0"><span class="icon"></span>folder0</a>
+        <a href="folder0"><span class="icon"></span>folder0</a><form method="POST" action="/deleteFile/folder0" onsubmit="return confirm('Do you really want to delete the file folder0?');"><button type="submit" name="delete" value="true"></button></form>
       </li>
     </ol>
   </li>

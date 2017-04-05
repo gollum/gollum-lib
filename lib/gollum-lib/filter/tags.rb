@@ -5,7 +5,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Extract all tags into the tagmap and replace with placeholders.
   def extract(data)
     return data if @markup.format == :txt || @markup.format == :asciidoc
-    data.gsub!(/(.?)\[\[(.+?)\]\]([^\[]?)/m) do
+    data.gsub!(/(.?)\[\[(.+?)\]\]([^\[]?)/) do
       if Regexp.last_match[1] == "'" && Regexp.last_match[3] != "'"
         "[[#{Regexp.last_match[2]}]]#{Regexp.last_match[3]}"
       elsif Regexp.last_match[2].include?('][')
@@ -129,6 +129,10 @@ class Gollum::Filter::Tags < Gollum::Filter
       path = ::File.join @markup.wiki.base_path, file.path
     elsif name =~ /^https?:\/\/.+(jpg|png|gif|svg|bmp)$/i
       path = name
+    elsif name =~ /.+(jpg|png|gif|svg|bmp)$/i
+      # If is image, file not found and no link, then populate with empty String
+      # We can than add an image not found alt attribute for this later
+      path = ""
     end
 
     if path
@@ -167,8 +171,10 @@ class Gollum::Filter::Tags < Gollum::Filter
         end
       end
 
-      if (alt = opts['alt'])
+      if path != "" && (alt = opts['alt'])
         attrs << %{alt="#{alt}"}
+      elsif path == ""
+        attrs << %{alt="Image not found"}
       end
 
       attr_string = attrs.size > 0 ? attrs.join(' ') + ' ' : ''
@@ -212,7 +218,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     if parts.size == 1
       url = parts[0].strip
     else
-      name, url = *parts.compact.map(&:strip)      
+      name, url = *parts.compact.map(&:strip)
     end
     accepted_protocols = @markup.wiki.sanitization.protocols['a']['href'].dup
     if accepted_protocols.include?(:relative)
@@ -230,7 +236,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     else
       nil
     end
-    
+
   end
 
   # Attempt to process the tag as a file link tag.
@@ -273,13 +279,13 @@ class Gollum::Filter::Tags < Gollum::Filter
     parts.reverse! if @markup.reverse_links?
 
     name, page_name = *parts.compact.map(&:strip)
-    cname           = @markup.wiki.page_class.cname(page_name || name)
+    cname           = page_name ? page_name : name.to_s
 
     presence    = "absent"
     link_name   = cname
     page, extra = find_page_from_name(cname)
     if page
-      link_name = @markup.wiki.page_class.cname(page.name)
+      link_name = page.name
       presence  = "present"
     end
     link = ::File.join(@markup.wiki.base_path, page ? page.escaped_url_path : CGI.escape(link_name))
