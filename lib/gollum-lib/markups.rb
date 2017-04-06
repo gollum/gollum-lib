@@ -3,13 +3,13 @@ module Gollum
   module MarkupRegisterUtils
     # Check if a gem exists. This implementation requires Gem::Specificaton to
     # be filled.
-    def gem_exists? name
-      return Gem::Specification.find {|x| x.name == name} != nil
+    def gem_exists?(name)
+      Gem::Specification.find {|spec| spec.name == name} != nil
     end
 
     # Check if an executable exists. This implementation comes from
     # stackoverflow question 2108727.
-    def executable_exists? name
+    def executable_exists?(name)
       exts = ENV["PATHEXT"] ? ENV["PATHEXT"].split(";") : [""]
       paths = ENV["PATH"].split(::File::PATH_SEPARATOR)
       paths.each do |path|
