@@ -31,31 +31,28 @@ module Gollum
       Kramdown::Document.new(content, :auto_ids => false, :input => "markdown").to_html
     }
 
-    # markdown, rdoc, and plain text is always supported.
-    register(:markdown,    "Markdown", :regexp => /md|mkdn?|mdown|markdown/)
-    register(:rdoc,        "RDoc")
-    register(:txt,         "Plain Text")
-
-    if MarkupRegisterUtils::gem_exists? "RedCloth"
-      register(:textile,   "Textile")
-    end
-    if MarkupRegisterUtils::gem_exists? "org-ruby"
-      register(:org,       "Org-mode")
-    end
-    if MarkupRegisterUtils::gem_exists? "creole"
-      register(:creole,    "Creole", :reverse_links => true)
-    end
-    if MarkupRegisterUtils::executable_exists? "python2"
-      register(:rest,      "reStructuredText", :regexp => /re?st(\.txt)?/)
-    end
-    if MarkupRegisterUtils::gem_exists? "asciidoctor"
-      register(:asciidoc,  "AsciiDoc")
-    end
-    if MarkupRegisterUtils::gem_exists? "wikicloth"
-      register(:mediawiki, "MediaWiki", :regexp => /(media)?wiki/, :reverse_links => true)
-    end
-    if MarkupRegisterUtils::executable_exists? "perl"
-      register(:pod,       "Pod")
-    end
+    # markdown, rdoc, and plain text are always supported.
+    register(:markdown, "Markdown", :regexp => /md|mkdn?|mdown|markdown/)
+    register(:rdoc, "RDoc")
+    register(:txt, "Plain Text")
+    # the following formats are available only when certain gem is installed
+    # or certain program exists.
+    register(:textile, "Textile",
+             :enabled => MarkupRegisterUtils::gem_exists?("RedCloth"))
+    register(:org, "Org-mode",
+             :enabled => MarkupRegisterUtils::gem_exists?("org-ruby"))
+    register(:creole, "Creole",
+             :enabled => MarkupRegisterUtils::gem_exists?("creole"),
+             :reverse_links => true)
+    register(:rest, "reStructuredText",
+             :enabled => MarkupRegisterUtils::executable_exists?("python2"),
+             :regexp => /re?st(\.txt)?/)
+    register(:asciidoc, "AsciiDoc",
+             :enabled => MarkupRegisterUtils::gem_exists?("asciidoctor"))
+    register(:mediawiki, "MediaWiki",
+             :enabled => MarkupRegisterUtils::gem_exists?("wikicloth"),
+             :regexp => /(media)?wiki/, :reverse_links => true)
+    register(:pod, "Pod",
+             :enabled => MarkupRegisterUtils::executable_exists?("perl"))
   end
 end
