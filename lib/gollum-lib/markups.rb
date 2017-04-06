@@ -1,4 +1,7 @@
 # ~*~ encoding: utf-8 ~*~
+
+require "pathname"
+
 module Gollum
   module MarkupRegisterUtils
     # Check if a gem exists. This implementation requires Gem::Specificaton to
@@ -14,8 +17,8 @@ module Gollum
       paths = ENV["PATH"].split(::File::PATH_SEPARATOR)
       paths.each do |path|
         exts.each do |ext|
-          exe = ::File.join(path, "#{name}#{ext}")
-          return true if ::File.executable?(exe) && !::File.directory?(exe)
+          exe = ::Pathname(path) + "#{name}#{ext}"
+          return true if exe.executable?
         end
       end
       return false
