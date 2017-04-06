@@ -7,7 +7,7 @@ module Gollum
       return Gem::Specification.find {|x| x.name == name} != nil
     end
 
-    # Check if an executable exsits. This implementation comes from
+    # Check if an executable exists. This implementation comes from
     # stackoverflow question 2108727.
     def executable_exists? name
       exts = ENV["PATHEXT"] ? ENV["PATHEXT"].split(";") : [""]
