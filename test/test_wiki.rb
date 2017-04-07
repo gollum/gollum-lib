@@ -70,7 +70,7 @@ context "Wiki" do
   end
 
   test "latest changes in repo" do
-    assert_equal @wiki.latest_changes({:max_count => 1}).first.id, "ea8114ad3c40b90c536c18fae9ed8d1063b1b6fc"
+    assert_equal @wiki.latest_changes({:max_count => 1}).first.id, "a3945142cd821113c46a3a824e832cf8e37d5e1e"
   end
   
   test "text_data" do
@@ -337,14 +337,12 @@ context "Wiki page writing" do
     end
   end
 
-  if $METADATA
-    test "page title override with metadata" do
-      @wiki.write_page("Gollum", :markdown, "<!-- --- title: Over -->", commit_details)
+  test "page title override with metadata" do
+    @wiki.write_page("Gollum", :markdown, "---\ntitle: Over\n...", commit_details)
 
-      page = @wiki.page("Gollum")
+    page = @wiki.page("Gollum")
 
-      assert_equal 'Over', page.url_path_title
-    end
+    assert_equal 'Over', page.url_path_title
   end
 
   test "update page with format change" do
