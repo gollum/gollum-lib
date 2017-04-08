@@ -217,7 +217,7 @@ module Gollum
       if @formatted_data && @doc then
         yield @doc if block_given?
       else
-        @formatted_data = markup_class.render(historical?, encoding, include_levels) do |doc|
+        @formatted_data = markup.render(historical?, encoding, include_levels) do |doc|
           @doc = doc
           yield doc if block_given?
         end
@@ -233,16 +233,16 @@ module Gollum
     # Returns the String data.
     def toc_data
       return @parent_page.toc_data if @parent_page and @sub_page
-      formatted_data if markup_class.toc == nil
-      markup_class.toc
+      formatted_data if markup.toc == nil
+      markup.toc
     end
 
     # Public: Embedded metadata.
     #
     # Returns Hash of metadata.
     def metadata
-      formatted_data if markup_class.metadata == nil
-      markup_class.metadata
+      formatted_data if markup.metadata == nil
+      markup.metadata
     end
 
     # Public: The format of the page.
@@ -255,8 +255,8 @@ module Gollum
     # Gets the Gollum::Markup instance that will render this page's content.
     #
     # Returns a Gollum::Markup instance.
-    def markup_class
-      @markup_class ||= @wiki.markup_classes[format].new(self)
+    def markup
+      @markup ||= @wiki.markup_classes[format].new(self)
     end
 
     # Public: The current version of the page.
