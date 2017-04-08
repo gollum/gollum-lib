@@ -172,6 +172,28 @@ context "Page" do
     assert_equal "/foo", Gollum::BlobEntry.normalize_dir("foo")
     assert_equal "/foo", Gollum::BlobEntry.normalize_dir("/foo")
   end
+
+  test "tell whether metadata should be rendered" do
+    page = @wiki.page('Bilbo-Baggins')
+    assert_equal false, page.display_metadata?
+
+    page.stubs(:metadata).returns({'race' => 'hobbit'})
+    assert_equal true, page.display_metadata?
+
+    page.stubs(:metadata).returns({'title' => 'Only override title'})
+    assert_equal false, page.display_metadata?
+
+    page.stubs(:metadata).returns({'title' => 'Override title and have some more metadata', 'race' => 'hobbit'})
+    assert_equal true, page.display_metadata?
+
+    page.stubs(:metadata).returns({
+      'title' => 'Override title and have some more metadata but explicitly turn off displaying of metadata',
+      'race' => 'hobbit',
+      'display_metadata' => false
+      })
+    assert_equal false, page.display_metadata?
+  end
+
 end
 
 context "with a checkout" do
