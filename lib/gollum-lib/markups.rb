@@ -17,7 +17,7 @@ module Gollum
       paths = ENV["PATH"].split(::File::PATH_SEPARATOR)
       paths.each do |path|
         exts.each do |ext|
-          exe = ::Pathname(path) + "#{name}#{ext}"
+          exe = Pathname(path) + "#{name}#{ext}"
           return true if exe.executable?
         end
       end
