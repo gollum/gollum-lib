@@ -118,7 +118,7 @@ end
 
 desc 'Create a release build'
 task :release => :build do
-  unless `git branch` =~ 'gollum-lib-5.x'
+  unless `git branch` =~ /gollum-lib-5.x/
     puts "You must be on the gollum-lib-5.x branch to release!"
     exit!
   end
