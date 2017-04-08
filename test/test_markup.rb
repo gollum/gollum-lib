@@ -760,52 +760,80 @@ np.array([[2,2],[1,3]],np.float)
 
   #########################################################################
   #
-  # Metadata Blocks
+  # YAML Frontmatter
   #
   #########################################################################
 
-  test "metadata blocks" do
-    content = "a\n\n<!-- ---\ntags: [foo, bar]\n-->\n\nb"
-    output  = "<p>a</p>\n\n<p>b</p>"
-    result  = { 'tags' => '[foo, bar]' }
+  test "yaml frontmatter" do
+    content = "---\ntitle: YAML in Middle Earth\ntags: [foo, bar]\n---\nSome more content"
+    output = "Some more content\n"
+    result = {'title' => 'YAML in Middle Earth', 'tags' => ['foo', 'bar']}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
+    index.commit("Add metadata")    
 
     page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_html_equal output, rendered
+    assert_equal output, rendered.gsub(/<(\/)?p>/,'')
     assert_equal result, page.metadata
   end
 
-  test "metadata blocks with newline" do
-    content = "a\n\n<!--\n---\ntags: [foo, bar]\n-->\n\nb"
-    output  = "<p>a</p>\n\n<p>b</p>"
-    result  = { 'tags' => '[foo, bar]' }
+
+  test "yaml frontmatter with dots" do
+    content = "---\ntitle: YAML in Middle Earth\ntags: [foo, bar]\n...\nSome more content"
+    output = "Some more content\n"
+    result = {'title' => 'YAML in Middle Earth', 'tags' => ['foo', 'bar']}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
+    index.commit("Add metadata")    
 
     page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_html_equal output, rendered
+    assert_equal output, rendered.gsub(/<(\/)?p>/,'')
     assert_equal result, page.metadata
   end
 
-  test "metadata stripping" do
-    content = "a\n\n<!-- ---\nfoo: <script>alert('');</script>\n-->\n\nb"
-    output  = "<p>a</p>\n\n<p>b</p>"
-    result  = { 'foo' => %{alert('');} }
+  test "yaml sanitation" do
+    content = "---\ntitle: YAML in Middle <script type='text/javascript'>document.write('hello world!');</script>Earth\n...\nSome more content"
+    result = {'title' => 'YAML in Middle Earth'}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
+    index.commit("Add metadata")    
+
+    page     = @wiki.page("Bilbo-Baggins")
+    assert_equal result, page.metadata
+  end
+
+  test "yaml frontmatter with invalid YAML 1" do
+    content = "---\ntitle: YAML in Middle Earth\nFrodo\n...\nSome more content"
+    output = "Some more content\n"
+
+    index = @wiki.repo.index
+    index.add("Bilbo-Baggins.md", content)
+    index.commit("Add metadata")    
 
     page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_html_equal output, rendered
+    assert_equal output, rendered.gsub(/<(\/)?p>/,'')
+    assert_equal 1, page.metadata.size
+    assert_match /Failed to load YAML frontmater:/, page.metadata['errors'].first
+  end
+
+  test "yaml frontmatter with invalid YAML 2" do
+    content = "---\ntitle\n...\nSome more content"
+    output = "Some more content\n"
+    result = {}
+
+    index = @wiki.repo.index
+    index.add("Bilbo-Baggins.md", content)
+    index.commit("Add metadata")    
+
+    page     = @wiki.page("Bilbo-Baggins")
+    rendered = Gollum::Markup.new(page).render
+    assert_equal output, rendered.gsub(/<(\/)?p>/,'')
     assert_equal result, page.metadata
   end
 
@@ -1002,14 +1030,17 @@ def sub_word(mo):
   end
 
   test "plain text (.txt) is rendered with meta data" do
-    content = "a\n\n<!-- ---\ntags: [foo, bar]\n-->\n\nb"
-    result  = { 'tags' => '[foo, bar]' }
+    content = "---\ntags: [foo, bar]\n---\nb"
+    result  = { 'tags' => ['foo', 'bar'] }
+    output  = "<pre>b</pre>"
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.txt", content)
     index.commit("Plain Text with metadata")
 
     page = @wiki.page("Bilbo-Baggins")
+    rendered = Gollum::Markup.new(page).render
+    assert_equal output, rendered
     assert_equal result, page.metadata
   end
 

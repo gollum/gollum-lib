@@ -172,6 +172,13 @@ module Gollum
       nil
     end
 
+    # Public: Whether or not to display the metadata
+    def display_metadata?
+      return false if metadata.empty? || (metadata.size == 1 && metadata['title'])
+      return false if metadata['display_metadata'] == false
+      @wiki.display_metadata
+    end
+
     # Public: The url_path, but CGI escaped.
     #
     # Returns the String url_path
@@ -242,7 +249,7 @@ module Gollum
     # Returns Hash of metadata.
     def metadata
       formatted_data if markup_class.metadata == nil
-      markup_class.metadata
+      markup_class.metadata || {}
     end
 
     # Public: The format of the page.
