@@ -147,8 +147,8 @@ module Gollum
                ''
              end
 
-      path << Page.cname(self.name, '-', '-')
-      path
+      path << self.name
+      Page.cname(path, '-', '-')
     end
 
     # Public: The display form of the url path required to reach this page within the repo.
