@@ -252,6 +252,8 @@ module Gollum
       @filter_chain         = options.fetch :filter_chain,
                                             [:Metadata, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :WSD, :PlantUML, :Tags, :Render]
       @filter_chain.delete(:Emoji) unless options.fetch :emoji, false
+
+      clear
     end
 
     # Public: check whether the wiki's git repo exists on the filesystem.
@@ -694,6 +696,7 @@ module Gollum
     # Returns nothing.
     def clear_cache
       @access.refresh
+      clear
     end
 
     # Public: Creates a Sanitize instance using the Wiki's sanitization
@@ -832,6 +835,43 @@ module Gollum
     # named after the page they were uploaded to.
     attr_reader :per_page_uploads
 
+    # Public: Clears all of the cached data that this Wiki is tracking.
+    #
+    # Returns nothing.
+    def clear
+      @tree_page_map = {}
+      @tree_file_map = {}
+    end
+
+    # Attempts to get the given data from a cache.  If it doesn't exist, it'll
+    # pass the results of the yielded block to the cache for future accesses.
+    #
+    # name - The cache prefix used in building the full cache key.
+    # key  - The unique cache key suffix, usually a String Git SHA.
+    #
+    # Yields a block to pass to the cache.
+    # Returns the cached result.
+    def get_cache(name, key)
+      cache = instance_variable_get("@#{name}_map")
+      value = cache[key]
+      if value.nil? && block_given?
+        set_cache(name, key, value = yield)
+      end
+      value == :_nil ? nil : value
+    end
+
+    # Writes some data to the internal cache.
+    #
+    # name  - The cache prefix used in building the full cache key.
+    # key   - The unique cache key suffix, usually a String Git SHA.
+    # value - The value to write to the cache.
+    #
+    # Returns nothing.
+    def set_cache(name, key, value)
+      cache      = instance_variable_get("@#{name}_map")
+      cache[key] = value || :_nil
+    end
+
     # Normalize the data.
     #
     # data - The String data to be normalized.
@@ -957,6 +997,82 @@ module Gollum
       end
     rescue Gollum::Git::NoSuchShaFound
       []
+    end
+
+    # Returns a { canonical_name => BlobEntry } map for a given SHA
+    # Canonicalization happens through the page_class.normalized_names method
+    #
+    # ref - A String ref that is either a commit SHA or references one.
+    # include_dir - Boolean, if true, include the entry's directory in the Hash key
+    #
+    # Returns a Hash of String => BlobEntry instances
+    def tree_page_map_for(ref, include_dir=false)
+      if (sha = @access.ref_to_sha(ref))
+        get_cache(:tree_page, [sha,!!include_dir] ) { tree_page_map_for!(ref, include_dir) }
+      else
+        {}
+      end
+    rescue Gollum::Git::NoSuchShaFound
+      {}
+    end
+
+    # Generates a { canonical_name => BlobEntry } map for a given SHA
+    # Canonicalization happens through the page_class.normalized_names method
+    # Will cache the value of the map
+    #
+    # ref - A String ref that is either a commit SHA or references one.
+    # include_dir - Boolean, if true, include the entry's directory in the Hash key
+    #
+    # Returns a Hash of String => BlobEntry instances or nil
+    def tree_page_map_for!(ref, include_dir=false)
+      map = tree_map_for(ref.to_s)
+      return nil if !map
+
+      page_hash = Hash.new
+      map.each do |entry|
+        next if entry.name.to_s.empty?
+        path = include_dir ? ::File.join(entry.dir, entry.name) : entry.name
+	page_class.normalized_names(path, ws_subs).each do |pagename|
+          page_hash[ pagename ] = entry
+        end
+      end
+
+      page_hash.empty? ? nil : page_hash
+    end
+
+    # Returns a { canonical_name => BlobEntry } map for a given SHA
+    # Canonicalization happens through path.downcase()
+    #
+    # ref - A String ref that is either a commit SHA or references one.
+    #
+    # Returns a Hash of String => BlobEntry instances
+    def tree_file_map_for(ref)
+      if (sha = @access.ref_to_sha(ref))
+        get_cache(:tree_file, [sha] ) { tree_file_map_for!(ref) }
+      else
+        {}
+      end
+    rescue Gollum::Git::NoSuchShaFound
+      {}
+    end
+
+    # Generates a { canonical_name => BlobEntry } map for a given SHA
+    # Canonicalization happens through path.downcase()
+    #
+    # ref - A String ref that is either a commit SHA or references one.
+    #
+    # Returns a Hash of String => BlobEntry instances or nil
+    def tree_file_map_for!(ref)
+      map = tree_map_for(ref.to_s)
+      return nil if !map
+
+      file_hash = Hash.new
+      map.each do |entry|
+        next if entry.path.to_s.empty?
+        file_hash[ entry.path.downcase ] = entry
+      end
+
+      file_hash.empty? ? nil : file_hash
     end
 
     def inspect
