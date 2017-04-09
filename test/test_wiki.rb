@@ -297,7 +297,10 @@ context "Wiki page writing" do
   test "write page is not allowed to overwrite file" do
     @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
     assert_raises Gollum::DuplicatePageError do
-      @wiki.write_page("aBC-dEF", :textile, "# Gollum", commit_details)
+      @wiki.write_page("aBC-dEF", :markdown, "# Gollum", commit_details)
+    end
+    assert_nothing_raised Gollum::DuplicatePageError do
+      @wiki.write_page("Abc-Def", :textile, "# Gollum", commit_details)
     end
   end
 
