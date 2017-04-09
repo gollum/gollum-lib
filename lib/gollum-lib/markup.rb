@@ -19,6 +19,7 @@ module Gollum
     include Helpers
 
     @formats = {}
+    @extensions = []
 
     class << self
 
@@ -29,6 +30,10 @@ module Gollum
         else
           @formats
         end
+      end
+
+      def extensions
+        @extensions
       end
 
       # Register a file format
@@ -43,10 +48,12 @@ module Gollum
       # If given a block, that block will be registered with GitHub::Markup to
       # render any matching pages
       def register(ext, name, options = {}, &block)
+        new_extension = options.fetch(:extensions, [ext.to_s])
         @formats[ext] = { :name => name,
-          :regexp => options.fetch(:regexp, Regexp.new(ext.to_s)),
+          :extensions => new_extension,
           :reverse_links => options.fetch(:reverse_links, false),
           :enabled => options.fetch(:enabled, true) }
+        @extensions.concat new_extension
       end
     end
 

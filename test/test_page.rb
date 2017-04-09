@@ -55,11 +55,6 @@ context "Page" do
     assert_equal 'Mordor/Eye-Of-Sauron', page.url_path
   end
 
-  test "url_path_display" do
-    page = @wiki.page('Bilbo-Baggins')
-    assert_equal 'Bilbo-Baggins', page.url_path_display
-  end
-
   test "page versions" do
     page = @wiki.page('Bilbo-Baggins')
     assert_equal ["ea8114ad3c40b90c536c18fae9ed8d1063b1b6fc", "f25eccd98e9b667f9e22946f3e2f945378b8a72d", "5bc1aaec6149e854078f1d0f8b71933bbc6c2e43"],
@@ -261,7 +256,7 @@ end
 
 context "with custom markup engines" do
   setup do
-    Gollum::Markup.register(:redacted, "Redacted", :regexp => /rd/) { |content| content.gsub(/\S/, '-') }
+    Gollum::Markup.register(:redacted, "Redacted", :extensions => ['rd']) { |content| content.gsub(/\S/, '-') }
     @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"))
   end
 

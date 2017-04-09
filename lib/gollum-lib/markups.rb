@@ -35,7 +35,7 @@ module Gollum
     }
 
     # markdown, rdoc, and plain text are always supported.
-    register(:markdown, "Markdown", :regexp => /md|mkdn?|mdown|markdown/)
+    register(:markdown, "Markdown", :extensions => ['md','mkd','mkdn','mdown','markdown'])
     register(:rdoc, "RDoc")
     register(:txt, "Plain Text")
     # the following formats are available only when certain gem is installed
@@ -49,12 +49,12 @@ module Gollum
              :reverse_links => true)
     register(:rest, "reStructuredText",
              :enabled => MarkupRegisterUtils::executable_exists?("python2"),
-             :regexp => /re?st(\.txt)?/)
+             :extensions => ['rest', 'rst', 'rst.txt', 'rest.txt'])
     register(:asciidoc, "AsciiDoc",
              :enabled => MarkupRegisterUtils::gem_exists?("asciidoctor"))
     register(:mediawiki, "MediaWiki",
              :enabled => MarkupRegisterUtils::gem_exists?("wikicloth"),
-             :regexp => /(media)?wiki/, :reverse_links => true)
+             :extensions => ['mediawiki','wiki'], :reverse_links => true)
     register(:pod, "Pod",
              :enabled => MarkupRegisterUtils::executable_exists?("perl"))
   end
