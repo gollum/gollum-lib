@@ -38,13 +38,15 @@ module Gollum
       # options - Hash of options:
       #           regexp - Regexp to match against.
       #                    Defaults to exact match of ext.
+      #           enabled - Whether the markup is enabled
       #
       # If given a block, that block will be registered with GitHub::Markup to
       # render any matching pages
       def register(ext, name, options = {}, &block)
         @formats[ext] = { :name => name,
           :regexp => options.fetch(:regexp, Regexp.new(ext.to_s)),
-          :reverse_links => options.fetch(:reverse_links, false) }
+          :reverse_links => options.fetch(:reverse_links, false),
+          :enabled => options.fetch(:enabled, true) }
       end
     end
 
