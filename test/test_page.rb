@@ -168,6 +168,10 @@ context "Page" do
     assert_equal "/foo", Gollum::BlobEntry.normalize_dir("/foo")
   end
 
+  test 'page has sha id' do
+    assert_equal "f83327d2f76d2ba94820f1ca4c20e700e8e62519", page = @wiki.page('Bilbo-Baggins').sha
+  end
+
   test "tell whether metadata should be rendered" do
     page = @wiki.page('Bilbo-Baggins')
     assert_equal false, page.display_metadata?
