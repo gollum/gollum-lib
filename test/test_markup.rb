@@ -135,7 +135,7 @@ context "Markup" do
     page   = @wiki.page("Bilbo Baggins")
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Bilbo\+Baggins"/, output)
+    assert_match(/href="\/Bilbo\+Baggins.md"/, output)
     assert_match(/\>Bilbo Baggins\</, output)
   end
 
@@ -168,7 +168,7 @@ context "Markup" do
       page   = @wiki.page(name)
       output = page.formatted_data
       assert_match(/class="internal present"/, output)
-      assert_match(/href="\/wiki\/Bilbo\+Baggins\+\d"/, output)
+      assert_match(/href="\/wiki\/Bilbo\+Baggins\+\d.md"/, output)
       assert_match(/\>Bilbo Baggins \d\</, output)
     end
   end
@@ -178,7 +178,7 @@ context "Markup" do
     page   = @wiki.page('Precious #1')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Precious\+%231"/, output)
+    assert_match(/href="\/Precious\+%231.md"/, output)
   end
 
   test "page link with extra #" do
@@ -186,7 +186,7 @@ context "Markup" do
     page   = @wiki.page('Potato')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Potato#1"/, output)
+    assert_match(/href="\/Potato.md#1"/, output)
   end
 
   test "external page link" do
@@ -211,14 +211,14 @@ context "Markup" do
     @wiki.write_page("Potato", :markdown, "a [[Potato Heaad|Potato]] ", commit_details)
     page   = @wiki.page("Potato")
     output = page.formatted_data
-    assert_html_equal "<p>a<a class=\"internal present\" href=\"/Potato\">Potato Heaad</a></p>", output
+    assert_html_equal "<p>a<a class=\"internal present\" href=\"/Potato.md\">Potato Heaad</a></p>", output
   end
 
   test "page link with different text on mediawiki" do
     @wiki.write_page("Potato", :mediawiki, "a [[Potato|Potato Heaad]] ", commit_details)
     page   = @wiki.page("Potato")
     output = page.formatted_data
-    assert_html_equal "<p>\na <a class=\"internal present\" href=\"/Potato\">Potato Heaad</a> </p>", output
+    assert_html_equal "<p>\na <a class=\"internal present\" href=\"/Potato.mediawiki\">Potato Heaad</a> </p>", output
   end
 
   test "wiki link within inline code block" do

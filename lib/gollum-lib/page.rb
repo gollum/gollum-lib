@@ -124,7 +124,7 @@ module Gollum
                ''
              end
 
-      path << self.name
+      path << self.filename
       path
     end
 
