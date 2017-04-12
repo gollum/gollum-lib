@@ -159,6 +159,10 @@ context "Page" do
     assert_nil sidebar.sidebar
   end
 
+  test "page sha id" do
+    assert_equal "936b83ee0dd8837adb82511e40d5e4ebe59bb675", @wiki.page('Eye-Of-Sauron').sha
+  end
+
   test "normalize_dir" do
     assert_equal "", Gollum::BlobEntry.normalize_dir("")
     assert_equal "", Gollum::BlobEntry.normalize_dir(".")
