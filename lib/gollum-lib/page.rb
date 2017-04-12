@@ -125,21 +125,14 @@ module Gollum
     #
     # Returns the String url_path
     def url_path
-      path = if self.path.include?('/')
-               self.path.sub(/\/[^\/]+$/, '/')
-             else
-               ''
-             end
-
-      path << self.filename
-      path
+      construct_path(filename)
     end
 
     # Public: Defines title for page.rb
     #
     # Returns the String title
     def url_path_title
-      metadata_title || url_path
+      metadata_title || construct_path(name)
     end
 
     # Public: The url_path, but CGI escaped.
@@ -448,6 +441,17 @@ module Gollum
 
     def inspect
       %(#<#{self.class.name}:#{object_id} #{name} (#{format}) @wiki=#{@wiki.repo.path.inspect}>)
+    end
+
+    private
+
+    def construct_path(name)
+      path = if self.path.include?('/')
+        self.path.sub(/\/[^\/]+$/, '/')
+          else
+            ''
+          end
+      path << name   
     end
     
   end
