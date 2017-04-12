@@ -88,6 +88,13 @@ module Gollum
       @parent_page    = nil
     end
 
+    # Public: The SHA hash identifying this page
+    #
+    # Returns the String SHA.
+    def sha
+      @blob && @blob.id
+    end
+
     # Public: The on-disk filename of the page including extension.
     #
     # Returns the String name.
