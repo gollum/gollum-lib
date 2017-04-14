@@ -103,7 +103,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     resolved_page_name = ::File.expand_path(page_name, "/"+@markup.dir)
 
     if @markup.include_levels > 0
-      page = find_page_from_name(resolved_page_name)
+      page = find_page_from_path(resolved_page_name)
       if page
         page.formatted_data(@markup.encoding, @markup.include_levels-1)
       else
@@ -279,18 +279,20 @@ class Gollum::Filter::Tags < Gollum::Filter
     parts.reverse! if @markup.reverse_links?
 
     name, page_name = *parts.compact.map(&:strip)
-    cname           = page_name ? page_name : name.to_s
+    link            = page_name ? page_name : name.to_s
 
     presence    = "absent"
-    link_name   = cname
-    page, extra = find_page_from_name(cname)
-    if page
-      link_name = page.name
-      presence  = "present"
-    end
-    link = ::File.join(@markup.wiki.base_path, page ? page.escaped_url_path : CGI.escape(link_name))
+    page = find_page_from_path(link)
 
-    # //page is invalid
+    # If no match yet, try finding page with anchor removed
+    if (page.nil? && pos = link.rindex('#'))
+      extra     = link[pos..-1]
+      link      = link[0...pos]
+      page      = find_page_from_path(link)
+    end
+    presence  = "present" if page
+
+    link = ::File.join(@markup.wiki.base_path, page ? page.escaped_url_path : CGI.escape(link))
     # strip all duplicate forward slashes using helpers.rb trim_leading_slash
     # //page => /page
     link = trim_leading_slash link
@@ -298,30 +300,22 @@ class Gollum::Filter::Tags < Gollum::Filter
     %{<a class="internal #{presence}" href="#{link}#{extra}">#{name}</a>}
   end
 
-  # Find a page from a given cname.  If the page has an anchor (#) and has
-  # no match, strip the anchor and try again.
+  # Find a page from a given path
   #
-  # cname - The String canonical page name including path.
+  # path - The String path to search for.
   #
-  # Returns a Gollum::Page instance if a page is found, or an Array of
-  # [Gollum::Page, String extra] if a page without the extra anchor data
-  # is found.
-  def find_page_from_name(cname)
-    slash = cname.rindex('/')
+  # Returns a Gollum::Page instance if a page is found, or nil otherwise
+  def find_page_from_path(path)
+    slash = path.rindex('/')
 
     unless slash.nil?
-      name = cname[slash+1..-1]
-      path = cname[0..slash]
+      name = path[slash+1..-1]
+      path = path[0..slash]
       page = @markup.wiki.paged(name, path)
     else
-      page = @markup.wiki.paged(cname, '/') || @markup.wiki.page(cname)
+      page = @markup.wiki.paged(path, '/') || @markup.wiki.page(path)
     end
 
-    if page
-      return page
-    end
-    if (pos = cname.index('#'))
-      [@markup.wiki.page(cname[0...pos]), cname[pos..-1]]
-    end
+    page
   end
 end
