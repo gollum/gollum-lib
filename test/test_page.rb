@@ -97,6 +97,11 @@ context "Page" do
     assert_equal 'fbabba862dfa7ac35b39042dd4ad780c9f67b8cb', page.version.id
   end
 
+  test "page version returns page's latest version and not repository head when searched with name" do
+    page = @wiki.page 'Bilbo-Baggins'
+    assert_equal 'f25eccd98e9b667f9e22946f3e2f945378b8a72d', page.version.id
+  end
+
   test "no page match" do
     assert_nil @wiki.page('I do not exist')
   end
