@@ -181,12 +181,36 @@ context "Markup" do
     assert_match(/href="\/Precious\+%231.md"/, output)
   end
 
+  test "page link with multiple included #" do
+    @wiki.write_page("Precious #1 #2", :markdown, "a [[Precious #1 #2]] b", commit_details)
+    page   = @wiki.page('Precious #1 #2')
+    output = page.formatted_data
+    assert_match(/class="internal present"/, output)
+    assert_match(/href="\/Precious\+%231\+%232.md"/, output)
+  end
+
+  test "page link with extra # and multiple included #{}" do
+    @wiki.write_page("Potato #1 #2", :markdown, "a [[Potato #1 #2#anchor]] b", commit_details)
+    page   = @wiki.page('Potato #1 #2')
+    output = page.formatted_data
+    assert_match(/class="internal present"/, output)
+    assert_match(/href="\/Potato\+%231\+%232.md#anchor"/, output)
+  end
+
   test "page link with extra #" do
     @wiki.write_page("Potato", :markdown, "a [[Potato#1]] b", commit_details)
     page   = @wiki.page('Potato')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
     assert_match(/href="\/Potato.md#1"/, output)
+  end
+
+  test "absent page link with extra #" do
+    @wiki.write_page("Potato", :markdown, "a [[Tomato#1]] b", commit_details)
+    page   = @wiki.page('Potato')
+    output = page.formatted_data
+    assert_match(/class="internal absent"/, output)
+    assert_match(/href="\/Tomato#1"/, output)
   end
 
   test "external page link" do
