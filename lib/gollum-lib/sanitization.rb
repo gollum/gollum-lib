@@ -5,22 +5,223 @@ module Gollum
   # This class does not yet support all options of Sanitize library.
   # See http://github.com/rgrove/sanitize/.
   class Sanitization
-    # Default whitelisted elements.
-    ELEMENTS   = [
-        'a', 'abbr', 'acronym', 'address', 'area', 'b', 'big',
-        'blockquote', 'br', 'button', 'caption', 'center', 'cite',
-        'code', 'col', 'colgroup', 'dd', 'del', 'dfn', 'dir',
-        'div', 'dl', 'dt', 'em', 'fieldset', 'font', 'form', 'h1',
-        'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'input',
-        'ins', 'kbd', 'label', 'legend', 'li', 'map', 'mark', 'menu',
-        'ol', 'optgroup', 'option', 'p', 'pre', 'q', 's', 'samp',
-        'select', 'small', 'span', 'strike', 'strong', 'sub',
-        'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th',
-        'thead', 'tr', 'tt', 'u', 'ul', 'var'
+
+    # Default whitelisted elements required for MathML. See https://developer.mozilla.org/en-US/docs/Web/MathML/Element
+    # For some help on generating MATHML_ELEMENTS and MATHML_ATTRS, see https://gist.github.com/dometto/52d9cb8b45d68bfc7665e5e6683b75a0
+    MATHML_ELEMENTS = [
+      'math', 'maction', 'maligngroup', 'malignmark', 'menclose',
+      'merror', 'mfenced', 'mfrac', 'mglyph', 'mi', 'mlabeledtr',
+      'mlongdiv', 'mmultiscripts', 'mn', 'mo', 'mover', 'mpadded',
+      'mphantom', 'mroot', 'mrow', 'ms', 'mscarries', 'mscarry',
+      'msgroup', 'msline', 'mspace', 'msqrt', 'msrow', 'mstack',
+      'mstyle', 'msub', 'msup', 'msubsup', 'mtable', 'mtd',
+      'mtext', 'mtr', 'munder', 'munderover', 'semantics'
     ].freeze
 
+
+    # Default whitelisted attributes required for MathML. See https://developer.mozilla.org/en-US/docs/Web/MathML/Attribute 
+    MATHML_ATTRS = {
+     'math'=>
+        ['altimg',
+         'altimg-width',
+         'altimg-height',
+         'altimg-valign',
+         'alttext',
+         'dir',
+         'display',
+         'xmlns',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'maction'=>
+        ['actiontype', 'selection', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'maligngroup'=>['href', 'id', 'mathbackground', 'mathcolor'],
+     'malignmark'=>['href', 'id', 'mathbackground', 'mathcolor'],
+     'menclose'=>['notation', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'merror'=>['href', 'id', 'mathbackground', 'mathcolor'],
+     'mfenced'=>
+        ['close', 'open', 'separators', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'mfrac'=>
+        ['bevelled',
+         'denomalign',
+         'linethickness',
+         'numalign',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'mglyph'=>['height', 'width', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'mi'=>
+        ['dir',
+         'mathbackground',
+         'mathcolor',
+         'mathsize',
+         'mathvariant',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'mlabeledtr'=>['columnalign', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'mlongdiv'=>['href', 'id', 'mathbackground', 'mathcolor'],
+     'mmultiscripts'=>
+        ['subscriptshift',
+         'supscriptshift',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'mn'=>
+        ['mathbackground',
+         'mathcolor',
+         'mathsize',
+         'mathvariant',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'mo'=>
+        ['accent',
+         'dir',
+         'fence',
+         'href',
+         'id',
+         'largeop',
+         'lspace',
+         'mathbackground',
+         'mathcolor',
+         'mathsize',
+         'mathvariant',
+         'maxsize',
+         'minsize',
+         'movablelimits',
+         'rspace',
+         'separator',
+         'stretchy',
+         'symmetric',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'mover'=>['accent', 'align', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'mpadded'=>
+        ['depth',
+         'height',
+         'lspace',
+         'voffset',
+         'width',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'mphantom'=>['href', 'id', 'mathbackground', 'mathcolor'],
+     'mroot'=>['href', 'id', 'mathbackground', 'mathcolor'],
+     'mrow'=>['dir', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'ms'=>
+        ['dir',
+         'lquote',
+         'mathbackground',
+         'mathcolor',
+         'mathsize',
+         'mathvariant',
+         'rquote',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'mscarries'=>['href', 'id', 'mathbackground', 'mathcolor'],
+     'mscarry'=>['href', 'id', 'mathbackground', 'mathcolor'],
+     'msgroup'=>['href', 'id', 'mathbackground', 'mathcolor'],
+     'msline'=>['length', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'mspace'=>['height', 'width', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'msqrt'=>['href', 'id', 'mathbackground', 'mathcolor'],
+     'msrow'=>['href', 'id', 'mathbackground', 'mathcolor'],
+     'mstack'=>['align', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'mstyle'=>
+        ['displaystyle',
+         'scriptlevel',
+         'scriptminsize',
+         'scriptsizemultiplier',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'msub'=>['subscriptshift', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'msup'=>['supscriptshift', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'msubsup'=>
+        ['subscriptshift',
+         'supscriptshift',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'mtable'=>
+        ['align',
+         'columnalign',
+         'columnlines',
+         'columnspacing',
+         'displaystyle',
+         'frame',
+         'framespacing',
+         'rowalign',
+         'rowlines',
+         'rowspacing',
+         'width',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'mtd'=>
+        ['columnalign',
+         'columnspan',
+         'rowalign',
+         'rowspan',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'mtext'=>
+        ['dir',
+         'mathbackground',
+         'mathcolor',
+         'mathsize',
+         'mathvariant',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'mtr'=>
+        ['columnalign', 'rowalign', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'munder'=>
+        ['accentunder', 'align', 'href', 'id', 'mathbackground', 'mathcolor'],
+     'munderover'=>
+        ['accent',
+         'accentunder',
+         'align',
+         'href',
+         'id',
+         'mathbackground',
+         'mathcolor'],
+     'semantics'=>['href', 'id', 'mathbackground', 'mathcolor']
+    }.freeze
+
+    # Default whitelisted elements.
+    ELEMENTS   = ([
+      'a', 'abbr', 'acronym', 'address', 'area', 'b', 'big',
+      'blockquote', 'br', 'button', 'caption', 'center', 'cite',
+      'code', 'col', 'colgroup', 'dd', 'del', 'dfn', 'dir', 'div',
+      'dl', 'dt', 'em', 'fieldset', 'font', 'form', 'h1', 'h2', 'h3',
+      'h4', 'h5', 'h6', 'hr', 'i', 'img', 'input', 'ins', 'kbd', 'label',
+      'legend', 'li', 'map', 'mark', 'math', 'menu', 'mfrac', 'mi', 'mn',
+      'mo', 'mrow', 'msqrt', 'msubsup', 'msup', 'mtext', 'ol', 'optgroup',
+      'option', 'p', 'pre', 'q', 's', 'samp', 'select', 'small', 'span',
+      'strike', 'strong', 'sub', 'sup', 'table', 'tbody', 'td', 'textarea',
+      'tfoot', 'th', 'thead', 'tr', 'tt', 'u', 'ul', 'var'
+    ] + MATHML_ELEMENTS).freeze
+
+
     # Default whitelisted attributes.
-    ATTRIBUTES = {
+    ATTRIBUTES = ({
         'a'   => ['href'],
         'img' => ['src'],
         :all  => ['abbr', 'accept', 'accept-charset',
@@ -40,7 +241,7 @@ module Gollum
                   'start', 'summary', 'tabindex', 'target',
                   'title', 'type', 'usemap', 'valign', 'value',
                   'vspace', 'width']
-    }.freeze
+    }.merge(MATHML_ATTRS)).freeze
 
     # Default whitelisted protocols for URLs.
     PROTOCOLS  = {
