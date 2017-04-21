@@ -148,6 +148,10 @@ module Gollum
     # Defaults to false
     attr_reader :h1_title
 
+    # Whether or not to render a page's metadata on the page
+    # Defaults to true
+    attr_reader :display_metadata
+
     # Gets the custom index page for / and subdirs (e.g. foo/)
     attr_reader :index_page
 
@@ -186,6 +190,7 @@ module Gollum
     #           :emoji         - Parse and interpret emoji tags (e.g. :heart:).
     #           :h1_title      - Concatenate all h1's on a page to form the
     #                            page title.
+    #           :display_metadata - Whether or not to render a page's metadata on the page. Default: true
     #           :index_page    - The default page to retrieve or create if the
     #                            a directory is accessed.
     #           :bar_side      - Where the sidebar should be displayed, may be:
@@ -231,6 +236,7 @@ module Gollum
       @css                  = options.fetch :css, false
       @emoji                = options.fetch :emoji, false
       @h1_title             = options.fetch :h1_title, false
+      @display_metadata     = options.fetch :display_metadata, true
       @index_page           = options.fetch :index_page, 'Home'
       @bar_side             = options.fetch :sidebar, :right
       @user_icons           = ['gravatar', 'identicon'].include?(options[:user_icons]) ?
@@ -238,7 +244,7 @@ module Gollum
       @allow_uploads        = options.fetch :allow_uploads, false
       @per_page_uploads     = options.fetch :per_page_uploads, false
       @filter_chain         = options.fetch :filter_chain,
-                                            [:Metadata, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :WSD, :PlantUML, :Tags, :Render]
+                                            [:YAML, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :PlantUML, :Tags, :Render]
       @filter_chain.delete(:Emoji) unless options.fetch :emoji, false
     end
 

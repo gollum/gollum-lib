@@ -17,7 +17,7 @@ context "Page" do
     assert_equal Gollum::Page, page.class
     assert page.raw_data =~ /^# Bilbo Baggins\n\nBilbo Baggins/
 
-    expected = "<h1><a class=\"anchor\" id=\"bilbo-baggins\" href=\"#bilbo-baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.+R.+R.+Tolkien\">J. R. R. Tolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
+    expected = "<h1><a class=\"anchor\" id=\"bilbo-baggins\" href=\"#bilbo-baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit.md\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.+R.+R.+Tolkien\">J. R. R. Tolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
     actual   = page.formatted_data
     assert_html_equal expected, actual
 
@@ -47,17 +47,12 @@ context "Page" do
 
   test "url_path" do
     page = @wiki.page('Bilbo-Baggins')
-    assert_equal 'Bilbo-Baggins', page.url_path
+    assert_equal 'Bilbo-Baggins.md', page.url_path
   end
 
   test "nested url_path" do
     page = @wiki.page('Eye-Of-Sauron')
-    assert_equal 'Mordor/Eye-Of-Sauron', page.url_path
-  end
-
-  test "url_path_display" do
-    page = @wiki.page('Bilbo-Baggins')
-    assert_equal 'Bilbo-Baggins', page.url_path_display
+    assert_equal 'Mordor/Eye-Of-Sauron.md', page.url_path
   end
 
   test "page versions" do
@@ -172,6 +167,32 @@ context "Page" do
     assert_equal Pathname.new("/foo"), Gollum::BlobEntry.normalize_dir("foo")
     assert_equal Pathname.new("/foo"), Gollum::BlobEntry.normalize_dir("/foo")
   end
+
+  test 'page has sha id' do
+    assert_equal "f83327d2f76d2ba94820f1ca4c20e700e8e62519", page = @wiki.page('Bilbo-Baggins').sha
+  end
+
+  test "tell whether metadata should be rendered" do
+    page = @wiki.page('Bilbo-Baggins')
+    assert_equal false, page.display_metadata?
+
+    page.stubs(:metadata).returns({'race' => 'hobbit'})
+    assert_equal true, page.display_metadata?
+
+    page.stubs(:metadata).returns({'title' => 'Only override title'})
+    assert_equal false, page.display_metadata?
+
+    page.stubs(:metadata).returns({'title' => 'Override title and have some more metadata', 'race' => 'hobbit'})
+    assert_equal true, page.display_metadata?
+
+    page.stubs(:metadata).returns({
+      'title' => 'Override title and have some more metadata but explicitly turn off displaying of metadata',
+      'race' => 'hobbit',
+      'display_metadata' => false
+      })
+    assert_equal false, page.display_metadata?
+  end
+
 end
 
 context "with a checkout" do
@@ -189,7 +210,7 @@ context "with a checkout" do
     assert_equal Gollum::Page, page.class
     assert page.raw_data =~ /^# Bilbo Baggins\n\nBilbo Baggins/
 
-    expected = "<h1><a class=\"anchor\" id=\"bilbo-baggins\" href=\"#bilbo-baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.+R.+R.+Tolkien\">J. R. R. Tolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
+    expected = "<h1><a class=\"anchor\" id=\"bilbo-baggins\" href=\"#bilbo-baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit.md\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.+R.+R.+Tolkien\">J. R. R. Tolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
     actual   = page.formatted_data
     assert_html_equal expected, actual
 
@@ -239,7 +260,7 @@ end
 
 context "with custom markup engines" do
   setup do
-    Gollum::Markup.register(:redacted, "Redacted", :regexp => /rd/) { |content| content.gsub(/\S/, '-') }
+    Gollum::Markup.register(:redacted, "Redacted", :extensions => ['rd']) { |content| content.gsub(/\S/, '-') }
     @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"))
   end
 

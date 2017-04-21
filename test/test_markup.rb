@@ -135,7 +135,7 @@ context "Markup" do
     page   = @wiki.page("Bilbo Baggins")
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Bilbo\+Baggins"/, output)
+    assert_match(/href="\/Bilbo\+Baggins.md"/, output)
     assert_match(/\>Bilbo Baggins\</, output)
   end
 
@@ -168,7 +168,7 @@ context "Markup" do
       page   = @wiki.page(name)
       output = page.formatted_data
       assert_match(/class="internal present"/, output)
-      assert_match(/href="\/wiki\/Bilbo\+Baggins\+\d"/, output)
+      assert_match(/href="\/wiki\/Bilbo\+Baggins\+\d.md"/, output)
       assert_match(/\>Bilbo Baggins \d\</, output)
     end
   end
@@ -178,7 +178,23 @@ context "Markup" do
     page   = @wiki.page('Precious #1')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Precious\+%231"/, output)
+    assert_match(/href="\/Precious\+%231.md"/, output)
+  end
+
+  test "page link with multiple included #" do
+    @wiki.write_page("Precious #1 #2", :markdown, "a [[Precious #1 #2]] b", commit_details)
+    page   = @wiki.page('Precious #1 #2')
+    output = page.formatted_data
+    assert_match(/class="internal present"/, output)
+    assert_match(/href="\/Precious\+%231\+%232.md"/, output)
+  end
+
+  test "page link with extra # and multiple included #{}" do
+    @wiki.write_page("Potato #1 #2", :markdown, "a [[Potato #1 #2#anchor]] b", commit_details)
+    page   = @wiki.page('Potato #1 #2')
+    output = page.formatted_data
+    assert_match(/class="internal present"/, output)
+    assert_match(/href="\/Potato\+%231\+%232.md#anchor"/, output)
   end
 
   test "page link with extra #" do
@@ -186,7 +202,15 @@ context "Markup" do
     page   = @wiki.page('Potato')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Potato#1"/, output)
+    assert_match(/href="\/Potato.md#1"/, output)
+  end
+
+  test "absent page link with extra #" do
+    @wiki.write_page("Potato", :markdown, "a [[Tomato#1]] b", commit_details)
+    page   = @wiki.page('Potato')
+    output = page.formatted_data
+    assert_match(/class="internal absent"/, output)
+    assert_match(/href="\/Tomato#1"/, output)
   end
 
   test "external page link" do
@@ -211,14 +235,14 @@ context "Markup" do
     @wiki.write_page("Potato", :markdown, "a [[Potato Heaad|Potato]] ", commit_details)
     page   = @wiki.page("Potato")
     output = page.formatted_data
-    assert_html_equal "<p>a<a class=\"internal present\" href=\"/Potato\">Potato Heaad</a></p>", output
+    assert_html_equal "<p>a<a class=\"internal present\" href=\"/Potato.md\">Potato Heaad</a></p>", output
   end
 
   test "page link with different text on mediawiki" do
     @wiki.write_page("Potato", :mediawiki, "a [[Potato|Potato Heaad]] ", commit_details)
     page   = @wiki.page("Potato")
     output = page.formatted_data
-    assert_html_equal "<p>\na <a class=\"internal present\" href=\"/Potato\">Potato Heaad</a> </p>", output
+    assert_html_equal "<p>\na <a class=\"internal present\" href=\"/Potato.mediawiki\">Potato Heaad</a> </p>", output
   end
 
   test "wiki link within inline code block" do
@@ -741,71 +765,80 @@ np.array([[2,2],[1,3]],np.float)
 
   #########################################################################
   #
-  # Web Sequence Diagrams
+  # YAML Frontmatter
   #
   #########################################################################
 
-  test "sequence diagram blocks" do
-    content = "a\n\n{{{{{{default\nalice->bob: Test\n}}}}}}\n\nb"
-    output  = /.*<img src="\/\/www\.websequencediagrams\.com\/\?img=\w{9}" \/>.*/
+  test "yaml frontmatter" do
+    content = "---\ntitle: YAML in Middle Earth\ntags: [foo, bar]\n---\nSome more content"
+    output = "Some more content\n"
+    result = {'title' => 'YAML in Middle Earth', 'tags' => ['foo', 'bar']}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add sequence diagram")
+    index.commit("Add metadata")    
 
     page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_not_nil rendered.match(output)
-  end
-
-  #########################################################################
-  #
-  # Metadata Blocks
-  #
-  #########################################################################
-
-  test "metadata blocks" do
-    content = "a\n\n<!-- ---\ntags: [foo, bar]\n-->\n\nb"
-    output  = "<p>a</p>\n\n<p>b</p>"
-    result  = { 'tags' => '[foo, bar]' }
-
-    index = @wiki.repo.index
-    index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
-
-    page     = @wiki.page("Bilbo-Baggins")
-    rendered = Gollum::Markup.new(page).render
-    assert_html_equal output, rendered
+    assert_equal output, rendered.gsub(/<(\/)?p>/,'')
     assert_equal result, page.metadata
   end
 
-  test "metadata blocks with newline" do
-    content = "a\n\n<!--\n---\ntags: [foo, bar]\n-->\n\nb"
-    output  = "<p>a</p>\n\n<p>b</p>"
-    result  = { 'tags' => '[foo, bar]' }
+
+  test "yaml frontmatter with dots" do
+    content = "---\ntitle: YAML in Middle Earth\ntags: [foo, bar]\n...\nSome more content"
+    output = "Some more content\n"
+    result = {'title' => 'YAML in Middle Earth', 'tags' => ['foo', 'bar']}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
+    index.commit("Add metadata")    
 
     page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_html_equal output, rendered
+    assert_equal output, rendered.gsub(/<(\/)?p>/,'')
     assert_equal result, page.metadata
   end
 
-  test "metadata stripping" do
-    content = "a\n\n<!-- ---\nfoo: <script>alert('');</script>\n-->\n\nb"
-    output  = "<p>a</p>\n\n<p>b</p>"
-    result  = { 'foo' => %{alert('');} }
+  test "yaml sanitation" do
+    content = "---\ntitle: YAML in Middle <script type='text/javascript'>document.write('hello world!');</script>Earth\n...\nSome more content"
+    result = {'title' => 'YAML in Middle Earth'}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
+    index.commit("Add metadata")    
+
+    page     = @wiki.page("Bilbo-Baggins")
+    assert_equal result, page.metadata
+  end
+
+  test "yaml frontmatter with invalid YAML 1" do
+    content = "---\ntitle: YAML in Middle Earth\nFrodo\n...\nSome more content"
+    output = "Some more content\n"
+
+    index = @wiki.repo.index
+    index.add("Bilbo-Baggins.md", content)
+    index.commit("Add metadata")    
 
     page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_html_equal output, rendered
+    assert_equal output, rendered.gsub(/<(\/)?p>/,'')
+    assert_equal 1, page.metadata.size
+    assert_match /Failed to load YAML frontmater:/, page.metadata['errors'].first
+  end
+
+  test "yaml frontmatter with invalid YAML 2" do
+    content = "---\ntitle\n...\nSome more content"
+    output = "Some more content\n"
+    result = {}
+
+    index = @wiki.repo.index
+    index.add("Bilbo-Baggins.md", content)
+    index.commit("Add metadata")    
+
+    page     = @wiki.page("Bilbo-Baggins")
+    rendered = Gollum::Markup.new(page).render
+    assert_equal output, rendered.gsub(/<(\/)?p>/,'')
     assert_equal result, page.metadata
   end
 
@@ -1002,14 +1035,17 @@ def sub_word(mo):
   end
 
   test "plain text (.txt) is rendered with meta data" do
-    content = "a\n\n<!-- ---\ntags: [foo, bar]\n-->\n\nb"
-    result  = { 'tags' => '[foo, bar]' }
+    content = "---\ntags: [foo, bar]\n---\nb"
+    result  = { 'tags' => ['foo', 'bar'] }
+    output  = "<pre>b</pre>"
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.txt", content)
     index.commit("Plain Text with metadata")
 
     page = @wiki.page("Bilbo-Baggins")
+    rendered = Gollum::Markup.new(page).render
+    assert_equal output, rendered
     assert_equal result, page.metadata
   end
 

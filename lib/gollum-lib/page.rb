@@ -17,26 +17,13 @@ module Gollum
     # Returns a Page
     attr_accessor :parent_page
 
-    # Find the Symbol format for the file extension
-    #
-    # ext - String file extension, like ".md"
-    #
-    
-    # Returns the Symbol format associated with ext
-    def self.parse_extension(ext)
-      Gollum::Markup.formats.each_pair do |name, format|
-        return name if ext =~ format[:regexp]
-      end
-      nil
-    end
-
     # Checks if a filename has a valid, registered extension
     #
     # filename - String filename, like "Home.md".
     #
     # Returns true or false.
     def self.valid_extension?(filename)
-      !!self.parse_extension(::File.extname(filename))
+      Gollum::Markup.extensions.include?(::File.extname(filename.to_s).sub(/^\./,''))
     end
 
     # Checks if a filename has a valid extension understood by GitHub::Markup.
@@ -56,15 +43,11 @@ module Gollum
     #
     # Returns the Symbol format of the page; one of the registered format types
     def self.format_for(filename)
-      self.parse_extension(::File.extname(filename))
-    end
-
-    # Reusable filter to turn a filename (without path) into a canonical name.
-    # Strips extension, convert to string if possible.
-    #
-    # Returns the filtered String.
-    def self.canonicalize_filename(filename)
-      self.strip_filename(filename.to_s)
+      ext = ::File.extname(filename.to_s).sub(/^\./,'')
+      Gollum::Markup.formats.each_pair do |name, format|
+        return name if format[:extensions].include?(ext)
+      end
+      nil
     end
 
     # Reusable filter to strip extension and path from filename
@@ -73,7 +56,7 @@ module Gollum
     #
     # Returns the stripped String.
     def self.strip_filename(filename)
-      ::File.basename(filename, ::File.extname(filename))
+      ::File.basename(filename.to_s, ::File.extname(filename.to_s))
     end
 
     # Public: Initialize a page.
@@ -87,6 +70,13 @@ module Gollum
       @formatted_data = nil
       @doc            = nil
       @parent_page    = nil
+    end
+
+    # Public: The SHA hash identifying this page
+    #
+    # Returns the String SHA.
+    def sha
+      @blob && @blob.id
     end
 
     # Public: The on-disk filename of the page including extension.
@@ -107,7 +97,7 @@ module Gollum
     #
     # Returns the String name.
     def name
-      self.class.canonicalize_filename(filename)
+      self.class.strip_filename(filename)
     end
 
     # Public: The title will be constructed from the
@@ -135,23 +125,21 @@ module Gollum
     #
     # Returns the String url_path
     def url_path
-      path = self.path.to_s
-      path = path.include?('/') ? path.sub(/\/[^\/]+$/, '/') : ''
-      path << self.name
-    end
-
-    # Public: The display form of the url path required to reach this page within the repo.
-    #
-    # Returns the String url_path
-    def url_path_display
-      url_path
+      construct_path(filename)
     end
 
     # Public: Defines title for page.rb
     #
     # Returns the String title
     def url_path_title
-      metadata_title || url_path
+      metadata_title || construct_path(name)
+    end
+
+    # Public: The url_path, but CGI escaped.
+    #
+    # Returns the String url_path
+    def escaped_url_path
+      CGI.escape(self.url_path).gsub('%2F', '/')
     end
 
     # Public: Metadata title
@@ -168,11 +156,11 @@ module Gollum
       nil
     end
 
-    # Public: The url_path, but CGI escaped.
-    #
-    # Returns the String url_path
-    def escaped_url_path
-      CGI.escape(self.url_path).gsub('%2F', '/')
+    # Public: Whether or not to display the metadata
+    def display_metadata?
+      return false if metadata.empty? || (metadata.size == 1 && metadata['title'])
+      return false if metadata['display_metadata'] == false
+      @wiki.display_metadata
     end
 
     # Public: The raw contents of the page.
@@ -213,7 +201,7 @@ module Gollum
       if @formatted_data && @doc then
         yield @doc if block_given?
       else
-        @formatted_data = markup_class.render(historical?, encoding, include_levels) do |doc|
+        @formatted_data = markup.render(historical?, encoding, include_levels) do |doc|
           @doc = doc
           yield doc if block_given?
         end
@@ -229,16 +217,16 @@ module Gollum
     # Returns the String data.
     def toc_data
       return @parent_page.toc_data if @parent_page and @sub_page
-      formatted_data if markup_class.toc == nil
-      markup_class.toc
+      formatted_data if markup.toc == nil
+      markup.toc
     end
 
     # Public: Embedded metadata.
     #
     # Returns Hash of metadata.
     def metadata
-      formatted_data if markup_class.metadata == nil
-      markup_class.metadata
+      formatted_data if markup.metadata == nil
+      markup.metadata || {}
     end
 
     # Public: The format of the page.
@@ -251,8 +239,8 @@ module Gollum
     # Gets the Gollum::Markup instance that will render this page's content.
     #
     # Returns a Gollum::Markup instance.
-    def markup_class
-      @markup_class ||= @wiki.markup_classes[format].new(self)
+    def markup
+      @markup ||= @wiki.markup_classes[format].new(self)
     end
 
     # Public: The current version of the page.
@@ -379,7 +367,7 @@ module Gollum
 
       map.each do |entry|
         next if entry.name.to_s.empty? || !self.class.valid_extension?(entry.name)
-        entry_name =  ::File.extname(name).empty? ? Page.canonicalize_filename(entry.name) : entry.name
+        entry_name =  ::File.extname(name).empty? ? ::Gollum::Page.strip_filename(entry.name) : entry.name
         path = checked_dir ? ::File.join(entry.dir, entry_name) : entry_name
         next unless query.downcase == path.downcase
         return entry.page(@wiki, @version)
@@ -453,6 +441,17 @@ module Gollum
 
     def inspect
       %(#<#{self.class.name}:#{object_id} #{name} (#{format}) @wiki=#{@wiki.repo.path.inspect}>)
+    end
+
+    private
+
+    def construct_path(name)
+      path = if self.path.include?('/')
+        self.path.sub(/\/[^\/]+$/, '/')
+          else
+            ''
+          end
+      path << name   
     end
     
   end

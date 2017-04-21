@@ -19,6 +19,7 @@ module Gollum
     include Helpers
 
     @formats = {}
+    @extensions = []
 
     class << self
 
@@ -31,20 +32,33 @@ module Gollum
         end
       end
 
+      def extensions
+        @extensions
+      end
+
       # Register a file format
       #
       # ext     - The file extension
       # name    - The name of the markup type
       # options - Hash of options:
-      #           regexp - Regexp to match against.
-      #                    Defaults to exact match of ext.
+      #           extensions - Array of valid file extensions, for instance ['md']
+      #           enabled - Whether the markup is enabled
       #
       # If given a block, that block will be registered with GitHub::Markup to
       # render any matching pages
       def register(ext, name, options = {}, &block)
+        if options[:regexp] then
+          STDERR.puts <<-EOS
+          Warning: attempted to register a markup (name: #{name.to_s}) by passing the deprecated :regexp option.
+          Please pass an Array of valid file extensions (:extensions => ['ext1', 'ext2']) instead.
+          EOS
+        end
+        new_extension = options.fetch(:extensions, [ext.to_s])
         @formats[ext] = { :name => name,
-          :regexp => options.fetch(:regexp, Regexp.new(ext.to_s)),
-          :reverse_links => options.fetch(:reverse_links, false) }
+          :extensions => new_extension,
+          :reverse_links => options.fetch(:reverse_links, false),
+          :enabled => options.fetch(:enabled, true) }
+        @extensions.concat(new_extension)
       end
     end
 
@@ -99,7 +113,7 @@ module Gollum
       @format = format
       @name   = name
 
-      chain = [:Metadata, :PlainText, :Emoji, :TOC, :RemoteCode, :Code, :Sanitize, :WSD, :Tags, :Render]
+      chain = [:YAML, :PlainText, :Emoji, :TOC, :RemoteCode, :Code, :Sanitize, :PlantUML, :Tags, :Render]
 
       filter_chain = chain.map do |r|
         Gollum::Filter.const_get(r).new(self)
