@@ -244,7 +244,7 @@ module Gollum
       @allow_uploads        = options.fetch :allow_uploads, false
       @per_page_uploads     = options.fetch :per_page_uploads, false
       @filter_chain         = options.fetch :filter_chain,
-                                            [:YAML, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :PlantUML, :Tags, :Render]
+                                            [:YAML, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :PlantUML, :Tags, :PandocBib, :Render]
       @filter_chain.delete(:Emoji) unless options.fetch :emoji, false
     end
 

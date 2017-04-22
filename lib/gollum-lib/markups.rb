@@ -30,8 +30,8 @@ include Gollum::MarkupRegisterUtils
 
 module Gollum
   class Markup
-    GitHub::Markup::Markdown::MARKDOWN_GEMS['kramdown'] = proc { |content|
-        Kramdown::Document.new(content, :auto_ids => false, :smart_quotes => ["'", "'", '"', '"'].map{|char| char.codepoints.first}).to_html
+    GitHub::Markup::Markdown::MARKDOWN_GEMS['pandoc-ruby'] = proc { |content|
+        PandocRuby.convert(content, :s, :from => :markdown, :to => :html, :filter => 'pandoc-citeproc')
     }
 
     # markdown, rdoc, and plain text are always supported.
