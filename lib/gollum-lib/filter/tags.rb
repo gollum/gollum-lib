@@ -82,22 +82,21 @@ class Gollum::Filter::Tags < Gollum::Filter
     elsif content =~ /^include:.+/
       process_include_tag(tag)
     elsif MIME::Types.type_for(::File.extname(content)) =~ /^image/
-      process_image_tag(tag)
+      process_image_tag(tag, extra)
+    elsif external = process_external_link_tag(content, extra)
+      external
     end
-    result ? result : process_link_tag(tag)
+    result ? result : process_link_tag(tag, extra)
   end
 
-  def process_link_tag(tag)
-    tag # Placeholder
+  def process_link_tag(content, extra)
+    process_file_link_tag(content, extra) || process_page_link_tag(content, extra)
   end
 
   def parse_link_parts(tag)
-    parts = tag.split('|')
+    parts = tag.split('|').map(&:strip)
     parts.reverse! if @markup.reverse_links?
-    name = parts[0].strip
-    extra = parts[1]
-    extra.strip! if extra
-    content, extra
+    parts
   end
 
   # Attempt to process the tag as an include tag
@@ -129,23 +128,19 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns the String HTML if the tag is a valid image tag or nil
   #   if it is not.
-  def process_image_tag(tag)
-    parts = tag.split('|')
-    return if parts.size.zero?
-
-    name = parts[0].strip
-    if (file = @markup.find_file(name))
-      path = ::File.join @markup.wiki.base_path, file.path
-    elsif name =~ /^https?:\/\/.+(jpg|png|gif|svg|bmp)$/i
+  def process_image_tag(name, options = nil)
+    if name =~ /^https?:\/\/.+$/i
       path = name
-    elsif name =~ /.+(jpg|png|gif|svg|bmp)$/i
+    elsif (file = @markup.find_file(name))
+      path = ::File.join @markup.wiki.base_path, file.path
+    else
       # If is image, file not found and no link, then populate with empty String
       # We can than add an image not found alt attribute for this later
       path = ""
     end
 
     if path
-      opts = parse_image_tag_options(tag)
+      opts = parse_image_tag_options(options)
 
       containered = false
 
@@ -202,7 +197,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     end
   end
 
-  # Parse any options present on the image tag and extract them into a
+  # Parse any options present on the image tag (space separated) and extract them into a
   # Hash of option names and values.
   #
   # tag - The String tag contents (the stuff inside the double brackets).
@@ -210,8 +205,9 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Returns the options Hash:
   #   key - The String option name.
   #   val - The String option value or true if it is a binary option.
-  def parse_image_tag_options(tag)
-    tag.split('|')[1..-1].inject({}) do |memo, attr|
+  def parse_image_tag_options(options)
+    return {} if options.nil?
+    options.split(' ').inject({}) do |memo, attr|
       parts          = attr.split('=').map { |x| x.strip }
       memo[parts[0]] = (parts.size == 1 ? true : parts[1])
       memo
@@ -220,15 +216,7 @@ class Gollum::Filter::Tags < Gollum::Filter
 
   # Return the String HTML if the tag is a valid external link tag or
   # nil if it is not.
-  def process_external_link_tag(tag)
-    parts = tag.split('|')
-    parts.reverse! if @markup.reverse_links?
-    return if parts.size.zero?
-    if parts.size == 1
-      url = parts[0].strip
-    else
-      name, url = *parts.compact.map(&:strip)
-    end
+  def process_external_link_tag(url, name = nil)
     accepted_protocols = @markup.wiki.sanitization.protocols['a']['href'].dup
     if accepted_protocols.include?(:relative)
       accepted_protocols.select!{|protocol| protocol != :relative}
@@ -255,12 +243,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns the String HTML if the tag is a valid file link tag or nil
   #   if it is not.
-  def process_file_link_tag(tag)
-    parts = tag.split('|')
-    return if parts.size.zero?
-
-    name = parts[0].strip
-    path = parts[1] && parts[1].strip
+  def process_file_link_tag(name, path)
     if path && file = @markup.find_file(path)
       path = ::File.join @markup.wiki.base_path, file.path
     else
@@ -283,13 +266,8 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns the String HTML if the tag is a valid page link tag or nil
   #   if it is not.
-  def process_page_link_tag(tag)
-    parts = tag.split('|')
-    parts.reverse! if @markup.reverse_links?
-
-    name, page_name = *parts.compact.map(&:strip)
+  def process_page_link_tag(name, page_name)
     link            = page_name ? page_name : name.to_s
-
     presence    = "absent"
     page = find_page_from_path(link)
 
