@@ -4,8 +4,8 @@
 class Gollum::Filter::Tags < Gollum::Filter
   # Extract all tags into the tagmap and replace with placeholders.
   def extract(data)
-    return data if @markup.format.skip_tags?
-    
+    return data if @markup.skip_tags?
+
     data.gsub!(/(.?)\[\[(.+?)\]\]([^\[]?)/) do
       if Regexp.last_match[1] == "'" && Regexp.last_match[3] != "'"
         "[[#{Regexp.last_match[2]}]]#{Regexp.last_match[3]}"
@@ -27,12 +27,6 @@ class Gollum::Filter::Tags < Gollum::Filter
       end
     end
     data
-  end
-
-  def register_tag(tag)
-    id       = "TAG#{Digest::SHA1.hexdigest(tag)}TAG"
-    @map[id] = tag
-    id
   end
 
   # Process all text nodes from the doc and replace the placeholders with the
@@ -62,6 +56,12 @@ class Gollum::Filter::Tags < Gollum::Filter
 
   PREFORMATTED_TAGS = %w(code tt)
 
+  def register_tag(tag)
+    id       = "TAG#{Digest::SHA1.hexdigest(tag)}TAG"
+    @map[id] = tag
+    id
+  end
+
   def is_preformatted?(node)
     node && (PREFORMATTED_TAGS.include?(node.name) ||
         node.ancestors.any? { |a| PREFORMATTED_TAGS.include?(a.name) })
@@ -74,21 +74,30 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns the String HTML version of the tag.
   def process_tag(tag)
-    if tag =~ /^_TOC_/
+    content, extra = parse_link_parts(tag)
+    result = if content =~ /^_TOC_/
       %{[[#{tag}]]}
-    elsif tag =~ /^_$/
+    elsif content =~ /^_$/
       %{<div class="clearfloats"></div>}
-    elsif (html = process_include_tag(tag))
-      html
-    elsif (html = process_image_tag(tag))
-      html
-    elsif (html = process_external_link_tag(tag))
-      html
-    elsif (html = process_file_link_tag(tag))
-      html
-    else
-      process_page_link_tag(tag)
+    elsif content =~ /^include:.+/
+      process_include_tag(tag)
+    elsif MIME::Types.type_for(::File.extname(content)) =~ /^image/
+      process_image_tag(tag)
     end
+    result ? result : process_link_tag(tag)
+  end
+
+  def process_link_tag(tag)
+    tag # Placeholder
+  end
+
+  def parse_link_parts(tag)
+    parts = tag.split('|')
+    parts.reverse! if @markup.reverse_links?
+    name = parts[0].strip
+    extra = parts[1]
+    extra.strip! if extra
+    content, extra
   end
 
   # Attempt to process the tag as an include tag
@@ -99,7 +108,6 @@ class Gollum::Filter::Tags < Gollum::Filter
   #   if it is not.
   #
   def process_include_tag(tag)
-    return unless /^include:/.match(tag)
     page_name          = tag[8..-1]
     resolved_page_name = ::File.expand_path(page_name, "/"+@markup.dir)
 
