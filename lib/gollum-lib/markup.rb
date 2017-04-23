@@ -57,6 +57,7 @@ module Gollum
         @formats[ext] = { :name => name,
           :extensions => new_extension,
           :reverse_links => options.fetch(:reverse_links, false),
+          :skip_tags => options.fetch(:skip_tags, false),
           :enabled => options.fetch(:enabled, true) }
         @extensions.concat(new_extension)
       end
@@ -97,8 +98,14 @@ module Gollum
       @to_xml_opts = { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML ^ 1, :indent => 0, :encoding => 'UTF-8' }
     end
 
+    # Whether or not this markup's format uses reversed-order links ([description | url] rather than [url | description]). Defaults to false.
     def reverse_links?
       self.class.formats[@format][:reverse_links]
+    end
+
+    # Whether or not Gollum tags are supported for this markup's format. Defaults to false.
+    def skip_tags?
+      self.class.formats[@format][:skip_tags]
     end
 
     # Render data using default chain in the target format.

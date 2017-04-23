@@ -4,7 +4,8 @@
 class Gollum::Filter::Tags < Gollum::Filter
   # Extract all tags into the tagmap and replace with placeholders.
   def extract(data)
-    return data if @markup.format == :txt || @markup.format == :asciidoc
+    return data if @markup.format.skip_tags?
+    
     data.gsub!(/(.?)\[\[(.+?)\]\]([^\[]?)/) do
       if Regexp.last_match[1] == "'" && Regexp.last_match[3] != "'"
         "[[#{Regexp.last_match[2]}]]#{Regexp.last_match[3]}"
