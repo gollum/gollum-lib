@@ -81,7 +81,7 @@ class Gollum::Filter::Tags < Gollum::Filter
       %{<div class="clearfloats"></div>}
     elsif content =~ /^include:.+/
       process_include_tag(tag)
-    elsif MIME::Types.type_for(::File.extname(content)) =~ /^image/
+    elsif MIME::Types.type_for(::File.extname(content.to_s)) =~ /^image/
       process_image_tag(tag, extra)
     elsif external = process_external_link_tag(content, extra)
       external
@@ -266,7 +266,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns the String HTML if the tag is a valid page link tag or nil
   #   if it is not.
-  def process_page_link_tag(name, page_name)
+  def process_page_link_tag(name, page_name = nil)
     link            = page_name ? page_name : name.to_s
     presence    = "absent"
     page = find_page_from_path(link)
