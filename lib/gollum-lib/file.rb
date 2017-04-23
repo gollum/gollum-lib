@@ -26,6 +26,13 @@ module Gollum
       path
     end
 
+    # Public: The SHA hash identifying this file
+    #
+    # Returns the String SHA.
+    def sha
+      @blob && @blob.id
+    end
+
     # Public: The url_path, but CGI escaped.
     #
     # Returns the String url_path

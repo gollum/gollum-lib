@@ -1,6 +1,6 @@
 # ~*~ encoding: utf-8 ~*~
 
-require "pathname"
+require 'pathname'
 
 module Gollum
   module MarkupRegisterUtils
@@ -8,6 +8,13 @@ module Gollum
     # be filled.
     def gem_exists?(name)
       Gem::Specification.find {|spec| spec.name == name} != nil
+    end
+
+    def gems_exist?(names)
+      names.each do |name|
+        return false unless gem_exists?(name)
+      end
+      true
     end
 
     # Check if an executable exists. This implementation comes from
@@ -30,9 +37,23 @@ include Gollum::MarkupRegisterUtils
 
 module Gollum
   class Markup
-    GitHub::Markup::Markdown::MARKDOWN_GEMS['kramdown'] = proc { |content|
-        Kramdown::Document.new(content, :auto_ids => false, :smart_quotes => ["'", "'", '"', '"'].map{|char| char.codepoints.first}).to_html
+    GitHub::Markup::Markdown::MARKDOWN_GEMS['pandoc-ruby'] = proc { |content|
+        PandocRuby.convert(content, :s, :from => :markdown, :to => :html, :filter => 'pandoc-citeproc')
     }
+
+    begin
+      require 'citeproc'
+      require 'csl/styles'
+
+      GitHub::Markup.markup(:bib, 'bibtex', /bib/, ["BibTex"]) do |filename, content|
+        b = ::BibTeX.parse(content).convert(:latex)
+        cp = CiteProc::Processor.new style: 'apa', format: 'html'
+        cp.import b.to_citeproc
+        cp.bibliography.references.join("<br/>")
+      end
+    rescue
+    end
+
 
     # markdown, rdoc, and plain text are always supported.
     register(:markdown, "Markdown", :extensions => ['md','mkd','mkdn','mdown','markdown'])
@@ -57,5 +78,8 @@ module Gollum
              :extensions => ['mediawiki','wiki'], :reverse_links => true)
     register(:pod, "Pod",
              :enabled => MarkupRegisterUtils::executable_exists?("perl"))
+    register(:bib, "Bib",
+             :enabled => MarkupRegisterUtils::gems_exist?(["bibtex-ruby", "citeproc-ruby", "csl-styles"]),
+             :extensions => ['bib'])
   end
 end
