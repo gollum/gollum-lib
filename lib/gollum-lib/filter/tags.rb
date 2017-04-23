@@ -75,14 +75,16 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Returns the String HTML version of the tag.
   def process_tag(tag)
     content, extra = parse_link_parts(tag)
+    mime = MIME::Types.type_for(::File.extname(content.to_s)).first
+
     result = if content =~ /^_TOC_/
       %{[[#{tag}]]}
     elsif content =~ /^_$/
       %{<div class="clearfloats"></div>}
     elsif content =~ /^include:.+/
       process_include_tag(tag)
-    elsif MIME::Types.type_for(::File.extname(content.to_s)) =~ /^image/
-      process_image_tag(tag, extra)
+    elsif mime && mime.content_type =~ /^image/
+      process_image_tag(content, extra)
     elsif external = process_external_link_tag(content, extra)
       external
     end
