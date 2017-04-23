@@ -298,11 +298,9 @@ class Gollum::Filter::Tags < Gollum::Filter
     unless slash.nil?
       name = path[slash+1..-1]
       path = path[0..slash]
-      page = @markup.wiki.paged(name, path)
+      @markup.wiki.paged(name, path)
     else
-      page = @markup.wiki.paged(path, '/') || @markup.wiki.page(path)
+      @markup.wiki.page(path)
     end
-
-    page
   end
 end
