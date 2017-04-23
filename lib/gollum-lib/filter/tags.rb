@@ -74,28 +74,28 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns the String HTML version of the tag.
   def process_tag(tag)
-    content, extra = parse_link_parts(tag)
-    mime = MIME::Types.type_for(::File.extname(content.to_s)).first
+    link_part, extra = parse_tag_parts(tag)
+    mime = MIME::Types.type_for(::File.extname(link_part.to_s)).first
 
-    result = if content =~ /^_TOC_/
+    result = if link_part =~ /^_TOC_/
       %{[[#{tag}]]}
-    elsif content =~ /^_$/
+    elsif link_part =~ /^_$/
       %{<div class="clearfloats"></div>}
-    elsif content =~ /^include:.+/
-      process_include_tag(tag)
+    elsif link_part =~ /^include:/
+      process_include_tag(link_part)
     elsif mime && mime.content_type =~ /^image/
-      process_image_tag(content, extra)
-    elsif external = process_external_link_tag(content, extra)
+      process_image_tag(link_part, extra)
+    elsif external = process_external_link_tag(extra, link_part)
       external
     end
-    result ? result : process_link_tag(tag, extra)
+    result ? result : process_link_tag(link_part, extra)
   end
 
-  def process_link_tag(content, extra)
-    process_file_link_tag(content, extra) || process_page_link_tag(content, extra)
+  def process_link_tag(link_part, extra)
+    process_file_link_tag(link_part, extra) || process_page_link_tag(link_part, extra)
   end
 
-  def parse_link_parts(tag)
+  def parse_tag_parts(tag)
     parts = tag.split('|').map(&:strip)
     parts.reverse! if @markup.reverse_links?
     parts
@@ -109,9 +109,9 @@ class Gollum::Filter::Tags < Gollum::Filter
   #   if it is not.
   #
   def process_include_tag(tag)
+    return html_error('Cannot process include directive: no page name given') if tag.length <= 8
     page_name          = tag[8..-1]
-    resolved_page_name = ::File.expand_path(page_name, "/"+@markup.dir)
-
+    resolved_page_name = ::File.expand_path(page_name, "#{::File::SEPARATOR}#{@markup.dir}")
     if @markup.include_levels > 0
       page = find_page_from_path(resolved_page_name)
       if page
@@ -209,7 +209,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   #   val - The String option value or true if it is a binary option.
   def parse_image_tag_options(options)
     return {} if options.nil?
-    options.split(' ').inject({}) do |memo, attr|
+    options.split(',').inject({}) do |memo, attr|
       parts          = attr.split('=').map { |x| x.strip }
       memo[parts[0]] = (parts.size == 1 ? true : parts[1])
       memo
@@ -219,6 +219,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Return the String HTML if the tag is a valid external link tag or
   # nil if it is not.
   def process_external_link_tag(url, name = nil)
+    url = name if url.nil? && name
     accepted_protocols = @markup.wiki.sanitization.protocols['a']['href'].dup
     if accepted_protocols.include?(:relative)
       accepted_protocols.select!{|protocol| protocol != :relative}

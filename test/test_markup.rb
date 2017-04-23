@@ -430,7 +430,6 @@ org
       con:
       /dev/null
       \0
-      \ \ \ 
       \\\\\\\\
 
     ).each_with_index do |ugly, n|
@@ -440,6 +439,13 @@ org
       @wiki.write_page(name, :textile, "hello\n[[include:#{ugly}]]\n", commit_details)
       page1 = @wiki.page(name)
       assert_match("does not exist yet", page1.formatted_data)
+    end
+    %w(
+      \ \ \ 
+    ).each_with_index do |ugly, n|
+      @wiki.write_page(name, :textile, "hello\n[[include:#{ugly}]]\n", commit_details)
+      page1 = @wiki.page(name)
+      assert_match("no page name given", page1.formatted_data)
     end
   end
 
@@ -574,7 +580,7 @@ org
 
   test "image with float and align" do
     %w{left right}.each do |align|
-      content = "a\n\n[[alpha.jpg|float|align=#{align}]]\n\nb"
+      content = "a\n\n[[alpha.jpg|float, align=#{align}]]\n\nb"
       output  = "<p>a</p><p><span class=\"float-#{align}\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
       relative_image(content, output)
     end
@@ -593,7 +599,7 @@ org
   end
 
   test "image with frame and alt" do
-    content = "a\n\n[[alpha.jpg|frame|alt=Alpha]]\n\nb"
+    content = "a\n\n[[alpha.jpg|frame, alt=Alpha]]\n\nb"
     output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"/greek/alpha.jpg\"alt=\"Alpha\"/><span>Alpha</span></span></span></p><p>b</p>"
     relative_image(content, output)
   end
