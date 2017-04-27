@@ -610,6 +610,17 @@ org
   #
   #########################################################################
 
+  test "file link without description" do
+    index = @wiki.repo.index
+    index.add("alpha.csv", "hi")
+    index.commit("Add alpha.csv")
+    @wiki.write_page("Bilbo Baggins", :markdown, "a [[alpha.csv]] b", commit_details)
+
+    page   = @wiki.page("Bilbo Baggins")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a href="/alpha.csv">alpha.csv</a> b</p>}, output
+  end
+
   test "file link with absolute path" do
     index = @wiki.repo.index
     index.add("alpha.jpg", "hi")
