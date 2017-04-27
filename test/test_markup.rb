@@ -542,7 +542,7 @@ org
     %w{em px}.each do |unit|
       %w{width height}.each do |dim|
         content = "a [[alpha.jpg|#{dim}=100#{unit}]] b"
-        output  = "<p>a<img src=\"/greek/alpha.jpg\"#{dim}=\"100#{unit}\"/>b</p>"
+        output  = "<p>a<img src=\"/greek/alpha.jpg\" #{dim}=\"100#{unit}\"/>b</p>"
         relative_image(content, output)
       end
     end
@@ -559,7 +559,7 @@ org
   test "image with vertical align" do
     %w{top texttop middle absmiddle bottom absbottom baseline}.each do |align|
       content = "a [[alpha.jpg|align=#{align}]] b"
-      output  = %Q{<p>a<img src=\"/greek/alpha.jpg\"align=\"#{align}\"/>b</p>}
+      output  = %Q{<p>a<img src=\"/greek/alpha.jpg\" align=\"#{align}\"/>b</p>}
       relative_image(content, output)
     end
   end
@@ -600,7 +600,7 @@ org
 
   test "image with frame and alt" do
     content = "a\n\n[[alpha.jpg|frame, alt=Alpha]]\n\nb"
-    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"/greek/alpha.jpg\"alt=\"Alpha\"/><span>Alpha</span></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"/greek/alpha.jpg\" alt=\"Alpha\"/><span>Alpha</span></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
