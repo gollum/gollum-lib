@@ -57,7 +57,7 @@ module Gollum
         @formats[ext] = { :name => name,
           :extensions => new_extension,
           :reverse_links => options.fetch(:reverse_links, false),
-          :skip_tags => options.fetch(:skip_tags, false),
+          :skip_filters => options.fetch(:skip_filters, nil),
           :enabled => options.fetch(:enabled, true) }
         @extensions.concat(new_extension)
       end
@@ -103,9 +103,15 @@ module Gollum
       self.class.formats[@format][:reverse_links]
     end
 
-    # Whether or not Gollum tags are supported for this markup's format. Defaults to false.
-    def skip_tags?
-      self.class.formats[@format][:skip_tags]
+    # Whether or not a particular filter should be skipped for this format.
+    def skip_filter?(filter)
+      if self.class.formats[@format][:skip_filters].respond_to?(:include)
+        self.class.formats[@format][:skip_filters].include?(filter)
+      elsif self.class.formats[@format][:skip_filters].respond_to?(:call)
+        self.class.formats[@format][:skip_filters].call(filter)
+      else
+        false
+      end
     end
 
     # Render data using default chain in the target format.
@@ -138,12 +144,12 @@ module Gollum
     def process_chain(data, filter_chain)
       # First we extract the data through the chain...
       filter_chain.each do |filter|
-        data = filter.extract(data)
+        data = filter.do_extract(data)
       end
 
       # Then we process the data through the chain *backwards*
       filter_chain.reverse.each do |filter|
-        data = filter.process(data)
+        data = filter.do_process(data)
       end
 
       # Finally, a little bit of cleanup, just because
