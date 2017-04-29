@@ -129,11 +129,6 @@ module Gollum
         data = filter.process(data)
       end
 
-      # Finally, a little bit of cleanup, just because
-      data.gsub!(/<p><\/p>/) do
-        ''
-      end
-
       data
     end
 
@@ -202,5 +197,4 @@ module Gollum
     end
   end
 
-  MarkupGFM = Markup
 end
