@@ -1,7 +1,6 @@
 # ~*~ encoding: utf-8 ~*~
 path = File.join(File.dirname(__FILE__), "..", "helper")
 require File.expand_path(path)
-require 'ostruct'
 
 context "Gollum::Filter::Emoji" do
   setup do

@@ -65,15 +65,24 @@ def commit_details
     :email   => "tom@github.com" }
 end
 
+class MockWiki
+  def file(path)
+    OpenStruct.new(
+      :sha => 'dasd',
+      :raw_data => 'dsa'
+    )
+  end
+end
+
 def mock_page
   OpenStruct.new(
-      :wiki => true,
+      :wiki => MockWiki.new,
       :filename => 'Name.md',
       :text_data => "# Title\nData",
       :version => nil,
       :format => :markdown,
       :sub_page => false,
-      :partent_page => false,
+      :parent_page => false,
       :path => "Name.md"
     )
 end
