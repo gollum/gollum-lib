@@ -47,10 +47,6 @@ module Gollum
   class Filter
     include Gollum::Helpers
 
-    def self.to_sym
-      name.split('::').last.to_sym
-    end
-
     # Setup the object.  Sets `@markup` to be the instance of Gollum::Markup that
     # is running this filter chain, and sets `@map` to be an empty hash (for use
     # in your extract/process operations).
@@ -59,28 +55,14 @@ module Gollum
       @map    = {}
     end
 
-    def do_process(_d)
-      skip? ? _d : process(_d)
-    end
-
-    def do_extract(_d)
-      skip? ? _d : extract(_d)
-    end
-
-    def extract(_d)
+    def extract(data)
       raise RuntimeError,
             "#{self.class} has not implemented ##extract!"
     end
 
-    def process(_d)
+    def process(data)
       raise RuntimeError,
             "#{self.class} has not implemented ##process!"
-    end
-
-    private
-    
-    def skip?
-      @markup.skip_filter?(self.class.to_sym)
     end
 
     protected

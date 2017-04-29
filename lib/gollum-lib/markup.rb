@@ -126,7 +126,7 @@ module Gollum
       @format = format
       @name   = name
 
-      chain = [:YAML, :PlainText, :Emoji, :TOC, :RemoteCode, :Code, :Sanitize, :PlantUML, :Tags, :Render]
+      chain = [:YAML, :PlainText, :Emoji, :TOC, :RemoteCode, :Code, :Sanitize, :PlantUML, :Tags, :Render].reject {|filter| skip_filter?(filter)}
 
       filter_chain = chain.map do |r|
         Gollum::Filter.const_get(r).new(self)
@@ -144,12 +144,12 @@ module Gollum
     def process_chain(data, filter_chain)
       # First we extract the data through the chain...
       filter_chain.each do |filter|
-        data = filter.do_extract(data)
+        data = filter.extract(data)
       end
 
       # Then we process the data through the chain *backwards*
       filter_chain.reverse.each do |filter|
-        data = filter.do_process(data)
+        data = filter.process(data)
       end
 
       # Finally, a little bit of cleanup, just because
@@ -177,8 +177,9 @@ module Gollum
       @include_levels = include_levels
 
       data         = @data.dup
-      filter_chain = @wiki.filter_chain.map do |r|
-        Gollum::Filter.const_get(r).new(self)
+      filter_chain = @wiki.filter_chain.reject {|filter| skip_filter?(filter)}
+      filter_chain.map! do |filter_sym|
+        Gollum::Filter.const_get(filter_sym).new(self)
       end
 
       # Since the last 'extract' action in our chain *should* be the markup
