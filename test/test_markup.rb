@@ -60,6 +60,27 @@ context "Markup" do
     assert Gollum::Markup.formats.size > 1
   end
 
+  test "knows whether to skip specified filters" do
+      Gollum::Markup.stubs(:formats).returns({:markdown => {:skip_filters => [:Render], :extensions => ['md']}})
+      @wiki.write_page("Test", :markdown, "abc", commit_details)
+      page   = @wiki.page("Test")
+      markup = Gollum::Markup.new(page)
+      assert_equal false, markup.skip_filter?(:YAML)
+      assert_equal true, markup.skip_filter?(:Render)
+
+      Gollum::Markup.stubs(:formats).returns({:markdown => {:skip_filters => Proc.new {|x| x == :Render}, :extensions => ['md']}})
+      assert_equal false, markup.skip_filter?(:YAML)
+      assert_equal true, markup.skip_filter?(:Render)
+  end
+
+  test "knows whether link parts for this markup are reversed" do
+    Gollum::Markup.stubs(:formats).returns({:markdown => {:reverse_links => true, :extensions => ['md']}})
+    @wiki.write_page("Test", :markdown, "abc", commit_details)
+    page   = @wiki.page("Test")
+    markup = Gollum::Markup.new(page)
+    assert_equal true, markup.reverse_links?
+  end
+
   test "Gollum::Markup#formats is limited by Gollum::Page::FORMAT_NAMES" do
     begin
       Gollum::Page::FORMAT_NAMES = { :markdown => "Markdown" }
@@ -1072,15 +1093,11 @@ def sub_word(mo):
     compare(content, output, "txt")
   end
 
-  test 'static rendering and font awesome class' do
-    uses_wiki = false
-    markup    = Gollum::Markup.new uses_wiki
-
+  test 'font awesome class' do
+    content = "#hi\n[[_TOC_]]"
     # must expect <i class="fa fa-link">
-    expected = "<h1><a class=\"anchor\" id=\"hi\" href=\"#hi\"><i class=\"fa fa-link\"></i></a>hi</h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
-    actual   = markup.render_default "#hi\n[[_TOC_]]"
-
-    assert_html_equal expected, actual
+    output = "<h1><a class=\"anchor\" id=\"hi\" href=\"#hi\"><i class=\"fa fa-link\"></i></a>hi</h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
+    compare(content, output)
   end
 
   #########################################################################

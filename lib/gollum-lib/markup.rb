@@ -83,17 +83,15 @@ module Gollum
     #
     # Returns a new Gollum::Markup object, ready for rendering.
     def initialize(page)
-      if page
-        @wiki        = page.wiki
-        @name        = page.filename
-        @data        = page.text_data
-        @version     = page.version.id if page.version
-        @format      = page.format
-        @sub_page    = page.sub_page
-        @parent_page = page.parent_page
-        @page        = page
-        @dir         = ::File.dirname(page.path)
-      end
+      @wiki        = page.wiki
+      @name        = page.filename
+      @data        = page.text_data
+      @version     = page.version.id if page.version
+      @format      = page.format
+      @sub_page    = page.sub_page
+      @parent_page = page.parent_page
+      @page        = page
+      @dir         = ::File.dirname(page.path)
       @metadata    = nil
       @to_xml_opts = { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML ^ 1, :indent => 0, :encoding => 'UTF-8' }
     end
@@ -105,34 +103,13 @@ module Gollum
 
     # Whether or not a particular filter should be skipped for this format.
     def skip_filter?(filter)
-      if self.class.formats[@format][:skip_filters].respond_to?(:include)
+      if self.class.formats[@format][:skip_filters].respond_to?(:include?)
         self.class.formats[@format][:skip_filters].include?(filter)
       elsif self.class.formats[@format][:skip_filters].respond_to?(:call)
         self.class.formats[@format][:skip_filters].call(filter)
       else
         false
       end
-    end
-
-    # Render data using default chain in the target format.
-    #
-    # data - the data to render
-    # format - format to use as a symbol
-    # name - name using the extension of the format
-    #
-    # Returns the processed data
-    def render_default(data, format=:markdown, name='render_default.md')
-      # set instance vars so we're able to render data without a wiki or page.
-      @format = format
-      @name   = name
-
-      chain = [:YAML, :PlainText, :Emoji, :TOC, :RemoteCode, :Code, :Sanitize, :PlantUML, :Tags, :Render].reject {|filter| skip_filter?(filter)}
-
-      filter_chain = chain.map do |r|
-        Gollum::Filter.const_get(r).new(self)
-      end
-
-      process_chain data, filter_chain
     end
 
     # Process the filter chain
@@ -169,14 +146,13 @@ module Gollum
     #
     # Returns the formatted String content.
     def render(no_follow = false, encoding = nil, include_levels = 10)
-      @sanitize = no_follow ?
-          @wiki.history_sanitizer :
-          @wiki.sanitizer
+      @sanitize = no_follow ? @wiki.history_sanitizer : @wiki.sanitizer
 
       @encoding       = encoding
       @include_levels = include_levels
 
-      data         = @data.dup
+      data     = @data.dup
+
       filter_chain = @wiki.filter_chain.reject {|filter| skip_filter?(filter)}
       filter_chain.map! do |filter_sym|
         Gollum::Filter.const_get(filter_sym).new(self)
