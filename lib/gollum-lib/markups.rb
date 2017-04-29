@@ -37,7 +37,8 @@ module Gollum
     # markdown, rdoc, and plain text are always supported.
     register(:markdown, "Markdown", :extensions => ['md','mkd','mkdn','mdown','markdown'])
     register(:rdoc, "RDoc")
-    register(:txt, "Plain Text")
+    register(:txt, "Plain Text",
+             :skip_filters => Proc.new {|filter| ![:PlainText,:YAML].include?(filter) })
     # the following formats are available only when certain gem is installed
     # or certain program exists.
     register(:textile, "Textile",
@@ -51,6 +52,7 @@ module Gollum
              :enabled => MarkupRegisterUtils::executable_exists?("python2"),
              :extensions => ['rest', 'rst', 'rst.txt', 'rest.txt'])
     register(:asciidoc, "AsciiDoc",
+             :skip_filters => [:Tags],
              :enabled => MarkupRegisterUtils::gem_exists?("asciidoctor"))
     register(:mediawiki, "MediaWiki",
              :enabled => MarkupRegisterUtils::gem_exists?("wikicloth"),

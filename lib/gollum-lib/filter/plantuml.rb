@@ -69,7 +69,6 @@ class Gollum::Filter::PlantUML < Gollum::Filter
   # Extract all sequence diagram blocks into the map and replace with
   # placeholders.
   def extract(data)
-    return data if @markup.format == :txt
     data.gsub(/(@startuml\r?\n.+?\r?\n@enduml\r?$)/m) do
       id       = Digest::SHA1.hexdigest($1)
       @map[id] = { :code => $1 }
