@@ -16,7 +16,7 @@ context "Gollum::Filter::PandocBib" do
   test "processing pandoc bibliography metadata" do
     content = 'Test'
     assert_equal content, filter(content)
-    GitHub::Markup::Markdown.any_instance.stubs(:implementation_name).returns('pandoc-ruby')
+    GitHub::Markup::Markdown.stubs(:implementation_name).returns('pandoc-ruby')
     assert_match /^---.*bibliography:.+.bib.*csl:.+.csl.*---.*Test/m, filter(content)
   end
 end

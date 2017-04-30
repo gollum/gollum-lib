@@ -31,8 +31,10 @@ include Gollum::MarkupRegisterUtils
 module GitHub
   module Markup
     class Markdown < Implementation
-      def implementation_name
-        @implementation_name ||= MARKDOWN_GEMS.keys.detect {|gem_name| try_require(gem_name) }
+      class << self
+        def implementation_name
+          @implementation_name ||= MARKDOWN_GEMS.keys.detect {|gem_name| self.new.send(:try_require, gem_name) }
+        end
       end
     end
   end

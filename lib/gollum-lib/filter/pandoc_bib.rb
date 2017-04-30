@@ -36,7 +36,7 @@ class Gollum::Filter::PandocBib < Gollum::Filter
   end
 
   def using_pandoc?
-    GitHub::Markup::Markdown.new.implementation_name == 'pandoc-ruby'
+    GitHub::Markup::Markdown.implementation_name == 'pandoc-ruby'
   end
 
   def bibliography_metadata_present?
