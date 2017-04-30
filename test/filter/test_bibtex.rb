@@ -9,12 +9,16 @@ context "Gollum::Filter::BibTeX" do
     @chicago = "Tolkien, John Ronald Reuel. 2012. <i>The Lord of the Rings: One Volume</i>. Houghton Mifflin Harcourt."
     @markup = Gollum::Markup.new(mock_page(:bib, @content))
     @filter = Gollum::Filter::BibTeX.new(@markup)
-    ::CSL::Locale.root = testpath(['examples', 'bibtex', 'locales'])
+    @test_locale_dir = testpath(['examples', 'bibtex', 'locales'])
+    @default_locale_dir = ::File.join('usr','local', 'share', 'csl', 'locales')
+    @test_csl_dir = testpath(['examples', 'bibtex', 'csl'])
+    @default_csl_dir = ::File.join('usr','local', 'share', 'csl', 'styles')
+    ::CSL::Locale.root = @test_locale_dir
   end
 
   teardown do
     # Reset
-    ::CSL::Locale.root = '/usr/local/share/csl/locales'
+    ::CSL::Locale.root = @default_locale_dir
   end
 
   def filter(content)
@@ -52,24 +56,24 @@ context "Gollum::Filter::BibTeX" do
     @markup.stubs(:metadata).returns({'locale' => 'locales-en-GB.xml'})
     MockWiki.any_instance.stubs(:file).with('locales-en-GB.xml').returns(filestub)
     begin
-      ::CSL::Locale.root = '/usr/local/share/csl/locales'
-      ::CSL::Style.root = testpath(['examples', 'bibtex', 'csl'])
+      ::CSL::Locale.root = @default_locale_dir
+      ::CSL::Style.root = @test_csl_dir
       assert_equal @apa, filter(@content)
     ensure
-      ::CSL::Style.root = '/usr/local/share/csl/styles'
-      ::CSL::Locale.root = testpath(['examples', 'bibtex', 'locales'])
+      ::CSL::Style.root = @default_csl_dir
+      ::CSL::Locale.root = @test_locale_dir
     end
   end
 
   test "bibtex with external style file" do
     MockWiki.any_instance.stubs(:file).returns(nil)
     begin
-      ::CSL::Style.root = testpath(['examples', 'bibtex', 'csl'])
+      ::CSL::Style.root = @test_csl_dir
       assert_equal @apa, filter(@content)
       assert_equal @apa, filter(@content)
       assert_equal @apa, filter("---\nvalid: false---\n#{@content}INVALID\nBIBTEX\n#Some More Invalid Bibtex")
     ensure 
-      ::CSL::Style.root = '/usr/local/share/csl/styles'
+      ::CSL::Style.root = @default_csl_dir
     end
   end
 end
