@@ -38,6 +38,9 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'mocha', '~> 1.1.0'
     s.add_development_dependency 'shoulda', '~> 3.5.0'
     s.add_development_dependency 'wikicloth', '~> 0.8.3'
+    s.add_development_dependency 'bibtex-ruby', '~> 4.3'
+    s.add_development_dependency 'citeproc-ruby', '~> 1.1'
+    s.add_development_dependency 'csl-styles', '~> 1.0'
     s.add_development_dependency 'rake', '~> 10.4.0'
     s.add_development_dependency 'pry', '~> 0.10.1'
     # required by pry

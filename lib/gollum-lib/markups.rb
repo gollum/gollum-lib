@@ -10,6 +10,13 @@ module Gollum
       Gem::Specification.find {|spec| spec.name == name} != nil
     end
 
+    def gems_exist?(names)
+      names.each do |name|
+        return false unless gem_exists?(name)
+      end
+      true
+    end
+
     # Check if an executable exists. This implementation comes from
     # stackoverflow question 2108727.
     def executable_exists?(name)
@@ -59,5 +66,8 @@ module Gollum
              :extensions => ['mediawiki','wiki'], :reverse_links => true)
     register(:pod, "Pod",
              :enabled => MarkupRegisterUtils::executable_exists?("perl"))
+    register(:bib, "BibTeX", :extensions => ['bib'],
+             :enabled => MarkupRegisterUtils::gems_exist?(["bibtex-ruby", "citeproc-ruby", "csl-styles"]),
+             :skip_filters => Proc.new {|filter| filter != :BibTeX})
   end
 end
