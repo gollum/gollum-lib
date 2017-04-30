@@ -14,7 +14,7 @@ context "Gollum::Filter::BibTeX" do
 
   teardown do
     # Reset
-    ::CSL::Locale.root = '/usr/local/share/csl/styles'
+    ::CSL::Locale.root = '/usr/local/share/csl/locales'
   end
 
   def filter(content)
@@ -52,7 +52,7 @@ context "Gollum::Filter::BibTeX" do
     @markup.stubs(:metadata).returns({'locale' => 'locales-en-GB.xml'})
     MockWiki.any_instance.stubs(:file).with('locales-en-GB.xml').returns(filestub)
     begin
-      ::CSL::Locale.root = '/usr/local/share/csl/styles'
+      ::CSL::Locale.root = '/usr/local/share/csl/locales'
       ::CSL::Style.root = testpath(['examples', 'bibtex', 'csl'])
       assert_equal @apa, filter(@content)
     ensure
