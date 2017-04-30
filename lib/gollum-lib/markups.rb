@@ -45,7 +45,7 @@ module Gollum
     }
     GitHub::Markup::Markdown::MARKDOWN_GEMS['pandoc-ruby'] = proc { |content|
         PandocRuby.convert(content, :s, :from => :markdown, :to => :html, :filter => 'pandoc-citeproc')
-    }
+    } if gem_exists?('pandoc-ruby')
 
     # markdown, rdoc, and plain text are always supported.
     register(:markdown, "Markdown", :extensions => ['md','mkd','mkdn','mdown','markdown'])

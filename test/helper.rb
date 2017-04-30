@@ -68,8 +68,8 @@ end
 class MockWiki
   def file(path)
     OpenStruct.new(
-      :sha => 'dasd',
-      :raw_data => 'dsa'
+      :sha => 'a35311d46dcd49c2ab63ad9bcbcf16254ac53142',
+      :raw_data => 'Very raw data'
     )
   end
 end
