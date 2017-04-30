@@ -65,9 +65,18 @@ def commit_details
     :email   => "tom@github.com" }
 end
 
+class MockWiki
+  def file(path)
+    OpenStruct.new(
+      :sha => 'a35311d46dcd49c2ab63ad9bcbcf16254ac53142',
+      :raw_data => 'Very raw data'
+    )
+  end
+end
+
 def mock_page(format = nil, data = nil)
   OpenStruct.new(
-      :wiki => true,
+      :wiki => MockWiki.new,
       :filename => 'Name.md',
       :text_data => data || "# Title\nData",
       :version => nil,

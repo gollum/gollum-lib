@@ -1,6 +1,7 @@
 begin
   require 'bibtex'
   require 'citeproc'
+  require 'csl'
   require 'csl/styles'
 rescue LoadError => error
   puts "Error trying to require an optional gem for BibTeX parsing: #{error.to_s}"
@@ -11,15 +12,20 @@ class Gollum::Filter::BibTeX < Gollum::Filter
 
   def extract(data)
     return data unless supported_format? && gems_available? && bib = ::BibTeX.parse(data).convert(:latex)
-    style = @markup.metadata['bibstyle'] if @markup.metadata
+    style = find_csl_data('csl') || ::CSL::Style.default
+    locale = find_csl_data('locale') || ::CSL::Locale.default
+
     begin
-      style = ::CSL::Style.load(style.to_sym) if style
-    rescue ::CSL::ParseError
-      style = nil
+      style = ::CSL::Style.load(style)
+      ::CSL::Locale.load(locale)
+    rescue ::CSL::ParseError => error
+      log_failure(error.to_s)
+      return CGI.escapeHTML(data)
     end
-    citeproc = ::CiteProc::Processor.new(style: style || 'apa', format: 'html')
+
+    citeproc = ::CiteProc::Processor.new(style: style, locale: locale, format: 'html')
     citeproc.import(bib.to_citeproc)
-    citeproc.bibliography.references.join("<br/>")
+    citeproc.bibliography.references.join('<br/>')
   end
 
   def process(data)
@@ -28,11 +34,23 @@ class Gollum::Filter::BibTeX < Gollum::Filter
 
   private
 
+  def log_failure(msg)
+    @markup.metadata = {} unless @markup.metadata
+    @markup.metadata['errors'] = [] unless @markup.metadata['errors']
+    @markup.metadata['errors'] << "Could not render the bibliography because no valid CSL or locale file was found in the wiki or in the CSL directory. Please commited a valid file, or install the csl-styles gem. The message from the parser was: #{msg.to_s}."
+  end
+
   def supported_format?
     @markup.format == :bib
   end
 
   def gems_available?
-    ::Gollum::MarkupRegisterUtils::gems_exist?(["bibtex-ruby", "citeproc-ruby", "csl"])
+    ::Gollum::MarkupRegisterUtils::gems_exist?(['bibtex-ruby', 'citeproc-ruby', 'csl'])
+  end
+
+  def find_csl_data(key)
+    path = @markup.metadata ? @markup.metadata[key] : nil
+    file = path ? @markup.wiki.file(path) : nil
+    file.nil? ? path : file.raw_data
   end
 end
