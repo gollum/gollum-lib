@@ -68,6 +68,6 @@ module Gollum
              :enabled => MarkupRegisterUtils::executable_exists?("perl"))
     register(:bib, "BibTeX", :extensions => ['bib'],
              :enabled => MarkupRegisterUtils::gems_exist?(["bibtex-ruby", "citeproc-ruby", "csl-styles"]),
-             :skip_filters => Proc.new {|filter| filter != :BibTeX})
+             :skip_filters => Proc.new {|filter| ![:YAML,:BibTeX,:Sanitize].include?(filter)})
   end
 end
