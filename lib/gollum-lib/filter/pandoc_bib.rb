@@ -4,7 +4,9 @@ require 'pathname'
 # When using pandoc, put relevant bibliography metadata extracted in the YAML filter back in the document so it gets passed on to pandoc.
 class Gollum::Filter::PandocBib < Gollum::Filter
 
-  BIB_KEYS = ['bibliography', 'csl', 'link-citations', 'nocite']
+  BIB_PATH_KEYS = ['bibliography', 'csl']
+  BIB_KEYS = ['link-citations', 'nocite']
+  ALL_BIB_KEYS = BIB_PATH_KEYS + BIB_KEYS
   
   def process(data)
     data
@@ -13,8 +15,9 @@ class Gollum::Filter::PandocBib < Gollum::Filter
   def extract(data)
     return data unless supported_format? && bibliography_metadata_present? && using_pandoc?
     bib_metadata = {}
+    bib_metadata.merge!(@markup.metadata.select {|key, _value| BIB_KEYS.include?(key)})
 
-    BIB_KEYS.each do |bibliography_key|
+    BIB_PATH_KEYS.each do |bibliography_key|
       if path = @markup.metadata[bibliography_key]
         next unless file = @markup.wiki.file(path)
         path = Pathname.new("#{::File.join(::Dir.tmpdir, file.sha)}#{::File.extname(path)}")
@@ -40,6 +43,6 @@ class Gollum::Filter::PandocBib < Gollum::Filter
   end
 
   def bibliography_metadata_present?
-     @markup.metadata && @markup.metadata.keys.any? {|key| BIB_KEYS.include?(key)}
+     @markup.metadata && @markup.metadata.keys.any? {|key| ALL_BIB_KEYS.include?(key)}
   end
 end

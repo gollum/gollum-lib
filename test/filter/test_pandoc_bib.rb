@@ -5,7 +5,7 @@ require File.expand_path(path)
 context "Gollum::Filter::PandocBib" do
   setup do
     @markup = Gollum::Markup.new(mock_page)
-    @markup.stubs(:metadata).returns({'bibliography' => 'some.bib', 'csl' => 'chicago.csl'})
+    @markup.stubs(:metadata).returns({'bibliography' => 'some.bib', 'csl' => 'chicago.csl', 'link-citations' => true})
     @filter = Gollum::Filter::PandocBib.new(@markup)
   end
 
@@ -17,6 +17,6 @@ context "Gollum::Filter::PandocBib" do
     content = 'Test'
     assert_equal content, filter(content)
     GitHub::Markup::Markdown.stubs(:implementation_name).returns('pandoc-ruby')
-    assert_match /^---.*bibliography:.+.bib.*csl:.+.csl.*---.*Test/m, filter(content)
+    assert_match /^---\nlink-citations:.*bibliography:.+.bib.*csl:.+.csl.*---.*Test/m, filter(content)
   end
 end
