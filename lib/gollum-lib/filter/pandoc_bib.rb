@@ -4,7 +4,7 @@ require 'pathname'
 # When using pandoc, put relevant bibliography metadata extracted in the YAML filter back in the document so it gets passed on to pandoc.
 class Gollum::Filter::PandocBib < Gollum::Filter
 
-  BIB_KEYS = ['bibliography', 'csl']
+  BIB_KEYS = ['bibliography', 'csl', 'link-citations', 'nocite']
   
   def process(data)
     data
