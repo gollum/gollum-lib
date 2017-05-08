@@ -1,6 +1,6 @@
 ## License
 
-These CSL and locale files were copied form the csl-styles gem (https://github.com/inukshuk/csl-styles).
+These CSL and locale files were copied from the csl-styles gem (https://github.com/inukshuk/csl-styles).
 
 The csl-styles gem includes all [Citation Style Language](http://citationstyles.org/)
 (CSL) styles and locale files from the official

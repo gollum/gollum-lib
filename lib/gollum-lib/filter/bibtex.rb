@@ -4,7 +4,6 @@ begin
   require 'csl'
   require 'csl/styles'
 rescue LoadError => error
-  puts "Error trying to require an optional gem for BibTeX parsing: #{error.to_s}"
 end
 
 # Render BibTeX files.
@@ -45,7 +44,7 @@ class Gollum::Filter::BibTeX < Gollum::Filter
   end
 
   def gems_available?
-    ::Gollum::MarkupRegisterUtils::gems_exist?(['bibtex-ruby', 'citeproc-ruby', 'csl'])
+    ::Gollum::Markup.formats[:bib][:enabled]
   end
 
   def find_csl_data(key)

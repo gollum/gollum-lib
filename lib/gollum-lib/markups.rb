@@ -9,7 +9,7 @@ module Gollum
       Gem::Specification.find {|spec| spec.name == name} != nil
     end
 
-    def gems_exist?(names)
+    def all_gems_available?(names)
       names.each do |name|
         return false unless gem_exists?(name)
       end
@@ -66,7 +66,7 @@ module Gollum
     register(:pod, "Pod",
              :enabled => MarkupRegisterUtils::executable_exists?("perl"))
     register(:bib, "BibTeX", :extensions => ['bib'],
-             :enabled => MarkupRegisterUtils::gems_exist?(["bibtex-ruby", "citeproc-ruby", "csl-styles"]),
-             :skip_filters => Proc.new {|filter| ![:YAML,:BibTeX,:Sanitize].include?(filter)})
+             :enabled => MarkupRegisterUtils::all_gems_available?(["bibtex-ruby", "citeproc-ruby", "csl"]),
+             :skip_filters => Proc.new {|filter| true unless [:YAML,:BibTeX,:Sanitize].include?(filter)})
   end
 end
