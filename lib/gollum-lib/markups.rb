@@ -4,6 +4,7 @@ require 'pathname'
 
 module Gollum
   module MarkupRegisterUtils
+
     # Check if a gem exists. This implementation requires Gem::Specificaton to
     # be filled.
     def gem_exists?(name)
@@ -22,6 +23,11 @@ module Gollum
         end
       end
       return false
+    end
+
+    # Whether the current markdown renderer is pandoc
+    def using_pandoc?
+      GitHub::Markup::Markdown.implementation_name == 'pandoc-ruby'
     end
   end
 end

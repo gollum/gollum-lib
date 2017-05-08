@@ -252,6 +252,7 @@ module Gollum
       @filter_chain         = options.fetch :filter_chain,
                                             [:YAML, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :PlantUML, :Tags, :PandocBib, :Render]
       @filter_chain.delete(:Emoji) unless options.fetch :emoji, false
+      @filter_chain.delete(:PandocBib) unless ::Gollum::MarkupRegisterUtils.using_pandoc?
     end
 
     # Public: check whether the wiki's git repo exists on the filesystem.

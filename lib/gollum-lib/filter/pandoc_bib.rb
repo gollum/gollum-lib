@@ -13,7 +13,7 @@ class Gollum::Filter::PandocBib < Gollum::Filter
   end
 
   def extract(data)
-    return data unless supported_format? && bibliography_metadata_present? && using_pandoc?
+    return data unless supported_format? && bibliography_metadata_present?
     bib_metadata = {}
     bib_metadata.merge!(@markup.metadata.select {|key, _value| BIB_KEYS.include?(key)})
 
@@ -44,10 +44,6 @@ class Gollum::Filter::PandocBib < Gollum::Filter
 
   def supported_format?
     @markup.format == :markdown
-  end
-
-  def using_pandoc?
-    GitHub::Markup::Markdown.implementation_name == 'pandoc-ruby'
   end
 
   def bibliography_metadata_present?
