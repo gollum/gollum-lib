@@ -750,9 +750,8 @@ np.array([[2,2],[1,3]],np.float)
 ```
     END
 
-    # rendered with Gollum::Markup
     _page, rendered = render_page(content)
-    assert_markup_highlights_code Gollum::Markup, rendered
+    assert_markup_highlights_code rendered
   end
 
   test "code with trailing whitespace" do
@@ -766,13 +765,13 @@ np.array([[2,2],[1,3]],np.float)
 
     # rendered with Gollum::Markup
     _page, rendered = render_page(content)
-    assert_markup_highlights_code Gollum::Markup, rendered
+    assert_markup_highlights_code rendered
   end
 
-  def assert_markup_highlights_code(markup_class, rendered)
-    assert_match(/pre class="highlight"/, rendered, "#{markup_class} doesn't highlight code\n #{rendered}")
-    assert_match(/span class="n"/, rendered, "#{markup_class} doesn't highlight code\n #{rendered}")
-    assert_match(/\(\[\[/, rendered, "#{markup_class} parses out wiki links\n#{rendered}")
+  def assert_markup_highlights_code(rendered)
+    assert_match(/pre class="highlight"/, rendered, "Gollum::Markup doesn't highlight code\n #{rendered}")
+    assert_match(/span class="n"/, rendered, "Gollum::Markup doesn't highlight code\n #{rendered}")
+    assert_match(/\(\[\[/, rendered, "Gollum::Markup parses out wiki links\n#{rendered}")
   end
 
   test "embed code page absolute link" do

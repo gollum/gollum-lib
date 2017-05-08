@@ -291,6 +291,16 @@ module Gollum
         end
     ].freeze
 
+    # Modifies the current Sanitization instance to sanitize older revisions
+    # of pages.
+    #
+    # Returns a Sanitization instance.
+    def self.history_sanitization
+      self.new do |sanitize|
+        sanitize.add_attributes['a'] = { 'rel' => 'nofollow' }
+      end
+    end
+
     # Gets an Array of whitelisted HTML elements.  Default: ELEMENTS.
     attr_reader :elements
 
@@ -339,16 +349,6 @@ module Gollum
     # Returns True if comments are allowed, or False.
     def allow_comments?
       !!@allow_comments
-    end
-
-    # Modifies the current Sanitization instance to sanitize older revisions
-    # of pages.
-    #
-    # Returns a Sanitization instance.
-    def history_sanitization
-      self.class.new do |sanitize|
-        sanitize.add_attributes['a'] = { 'rel' => 'nofollow' }
-      end
     end
 
     # Builds a Hash of options suitable for Sanitize.clean.

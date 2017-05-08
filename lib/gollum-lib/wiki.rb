@@ -4,15 +4,6 @@ module Gollum
     include Pagination
 
     class << self
-      # Sets the page class used by all instances of this Wiki.
-      attr_writer :page_class
-
-      # Sets the file class used by all instances of this Wiki.
-      attr_writer :file_class
-
-      # Sets the markup class used by all instances of this Wiki.
-      attr_writer :markup_classes
-
       # Sets the default ref for the wiki.
       attr_writer :default_ref
 
@@ -22,86 +13,9 @@ module Gollum
       # Sets the default email for commits.
       attr_writer :default_committer_email
 
-      # Sets sanitization options. Set to false to deactivate
-      # sanitization altogether.
-      attr_writer :sanitization
-
-      # Sets sanitization options. Set to false to deactivate
-      # sanitization altogether.
-      attr_writer :history_sanitization
-
       # Hash for setting different default wiki options
       # These defaults can be overridden by options passed directly to initialize()
       attr_writer :default_options
-
-      # Gets the page class used by all instances of this Wiki.
-      # Default: Gollum::Page.
-      def page_class
-        @page_class ||
-            if superclass.respond_to?(:page_class)
-              superclass.page_class
-            else
-              ::Gollum::Page
-            end
-      end
-
-      # Gets the file class used by all instances of this Wiki.
-      # Default: Gollum::File.
-      def file_class
-        @file_class ||
-            if superclass.respond_to?(:file_class)
-              superclass.file_class
-            else
-              ::Gollum::File
-            end
-      end
-
-      # Gets the markup class used by all instances of this Wiki.
-      # Default: Gollum::Markup
-      def markup_classes
-        @markup_classes ||=
-            if superclass.respond_to?(:markup_classes)
-              superclass.markup_classes
-            else
-              Hash.new(::Gollum::Markup)
-            end
-      end
-
-      # Gets the default markup class used by all instances of this Wiki.
-      # Kept for backwards compatibility until Gollum v2.x
-      def markup_class(language=:default)
-        markup_classes[language]
-      end
-
-      # Sets the default markup class used by all instances of this Wiki.
-      # Kept for backwards compatibility until Gollum v2.x
-      def markup_class=(default)
-        @markup_classes = Hash.new(default).update(markup_classes)
-        default
-      end
-
-      alias_method :default_markup_class, :markup_class
-      alias_method :default_markup_class=, :markup_class=
-
-      # Gets the default sanitization options for current pages used by
-      # instances of this Wiki.
-      def sanitization
-        if @sanitization.nil?
-          @sanitization = Sanitization.new
-        end
-        @sanitization
-      end
-
-      # Gets the default sanitization options for older page revisions used by
-      # instances of this Wiki.
-      def history_sanitization
-        if @history_sanitization.nil?
-          @history_sanitization = sanitization ?
-              sanitization.history_sanitization :
-              false
-        end
-        @history_sanitization
-      end
 
       def default_ref
         @default_ref || 'master'
@@ -124,12 +38,6 @@ module Gollum
     # to "/wiki", the page "Hobbit" will be linked as "/wiki/Hobbit". Defaults
     # to "/".
     attr_reader :base_path
-
-    # Gets the sanitization options for current pages used by this Wiki.
-    attr_reader :sanitization
-
-    # Gets the sanitization options for older page revisions used by this Wiki.
-    attr_reader :history_sanitization
 
     # Gets the String ref in which all page files reside.
     attr_reader :ref
@@ -173,11 +81,6 @@ module Gollum
     #           :live_preview  - Livepreview editing for markdown files. Default: true
     #           :base_path     - String base path for all Wiki links.
     #                            Default: "/"
-    #           :page_class    - The page Class. Default: Gollum::Page
-    #           :file_class    - The file Class. Default: Gollum::File
-    #           :markup_classes - A hash containing the markup Classes for each
-    #                             document type. Default: { Gollum::Markup }
-    #           :sanitization  - An instance of Sanitization.
     #           :page_file_dir - String the directory in which all page files reside
     #           :ref - String the repository ref to retrieve pages from
     #           :mathjax       - Set to false to disable mathjax.
@@ -210,24 +113,13 @@ module Gollum
         path             = path.path
       end
 
-      # Use .fetch instead of ||
-      #
-      # o = { :a => false }
-      # o[:a] || true # => true
-      # o.fetch :a, true # => false
-
       @path                 = path
       @repo_is_bare         = options.fetch :repo_is_bare, nil
       @page_file_dir        = options.fetch :page_file_dir, nil
       @access               = options.fetch :access, GitAccess.new(path, @page_file_dir, @repo_is_bare)
       @base_path            = options.fetch :base_path, "/"
-      @page_class           = options.fetch :page_class, self.class.page_class
-      @file_class           = options.fetch :file_class, self.class.file_class
-      @markup_classes       = options.fetch :markup_classes, self.class.markup_classes
       @repo                 = @access.repo
       @ref                  = options.fetch :ref, self.class.default_ref
-      @sanitization         = options.fetch :sanitization, self.class.sanitization
-      @history_sanitization = options.fetch :history_sanitization, self.class.history_sanitization
       @live_preview         = options.fetch :live_preview, true
       @universal_toc        = options.fetch :universal_toc, false
       @mathjax              = options.fetch :mathjax, false
@@ -264,7 +156,7 @@ module Gollum
     # Returns a Gollum::Page or nil if no matching page was found.
     def page(name, version = @ref, dir = nil, exact = false)
       version = @ref if version.nil?
-      @page_class.new(self).find(name, version, dir, exact)
+      ::Gollum::Page.new(self).find(name, version, dir, exact)
     end
 
     # Public: Convenience method instead of calling page(name, nil, dir).
@@ -289,7 +181,7 @@ module Gollum
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
     def file(name, version = @ref, try_on_disk = false)
-      @file_class.new(self).find(name, version, try_on_disk)
+      ::Gollum::File.new(self).find(name, version, try_on_disk)
     end
 
     # Public: Create an in-memory Page with the given data and format. This
@@ -302,8 +194,8 @@ module Gollum
     #
     # Returns the in-memory Gollum::Page.
     def preview_page(name, data, format)
-      page = @page_class.new(self)
-      ext  = @page_class.format_to_ext(format.to_sym)
+      page = ::Gollum::Page.new(self)
+      ext  = ::Gollum::Page.format_to_ext(format.to_sym)
       filename = "#{name}.#{ext}"
       blob = OpenStruct.new(:name => filename, :data => data, :is_symlink => false)
       page.populate(blob)
@@ -616,7 +508,7 @@ module Gollum
     # Returns a Fixnum
     def size(ref = nil)
       tree_map_for(ref || @ref).inject(0) do |num, entry|
-        num + (@page_class.valid_page_name?(entry.name) ? 1 : 0)
+        num + (::Gollum::Page.valid_page_name?(entry.name) ? 1 : 0)
       end
     rescue Gollum::Git::NoSuchShaFound
       0
@@ -684,92 +576,28 @@ module Gollum
       @access.refresh
     end
 
-    # Public: Creates a Sanitize instance using the Wiki's sanitization
-    # options.
+    # Returns an instance of Gollum::Sanitization
+    def sanitization
+      @sanitization ||= ::Gollum::Sanitization.new
+    end
+
+    # Returns an instance of Gollum::Sanitization set to allow elements required for viewing older versions of files
+    def history_sanitization
+      @history_sanitization ||= ::Gollum::Sanitization.history_sanitization
+    end
+
+    # Public: Creates a Sanitize instance
     #
     # Returns a Sanitize instance.
     def sanitizer
-      if (options = sanitization)
-        @sanitizer ||= options.to_sanitize
-      end
+      @sanitizer ||= sanitization.to_sanitize
     end
 
-    # Public: Creates a Sanitize instance using the Wiki's history sanitization
-    # options.
-    #
+    # Public: Creates a Sanitize instance set to allow elements required for viewing older versions of files
+    # 
     # Returns a Sanitize instance.
     def history_sanitizer
-      if (options = history_sanitization)
-        @history_sanitizer ||= options.to_sanitize
-      end
-    end
-
-    # Public: Add an additional link to the filter chain.
-    #
-    # name - A symbol which represents the name of a class under the
-    #        Gollum::Render namespace to insert into the chain.
-    #
-    # loc  - A "location specifier" -- that is, where to put the new
-    #        filter in the chain.  This can be one of `:first`, `:last`,
-    #        `:before => :SomeElement`, or `:after => :SomeElement`, where
-    #        `:SomeElement` (if specified) is a symbol already in the
-    #        filter chain.  A `:before` or `:after` which references a
-    #        filter that doesn't exist will cause `ArgumentError` to be
-    #        raised.
-    #
-    # Returns nothing.
-    def add_filter(name, loc)
-      unless name.is_a? Symbol
-        raise ArgumentError,
-              "Invalid filter name #{name.inspect} (must be a symbol)"
-      end
-
-      case loc
-        when :first
-          @filter_chain.unshift(name)
-        when :last
-          @filter_chain.push(name)
-        when Hash
-          if loc.length != 1
-            raise ArgumentError,
-                  "Invalid location specifier"
-          end
-          if ([:before, :after] && loc.keys).empty?
-            raise ArgumentError,
-                  "Invalid location specifier"
-          end
-
-          next_to  = loc.values.first
-          relative = loc.keys.first
-
-          i = @filter_chain.index(next_to)
-          if i.nil?
-            raise ArgumentError,
-                  "Unknown filter #{next_to.inspect}"
-          end
-
-          i += 1 if relative == :after
-          @filter_chain.insert(i, name)
-        else
-          raise ArgumentError,
-                "Invalid location specifier"
-      end
-    end
-
-    # Remove the named filter from the filter chain.
-    #
-    # Returns nothing.  Raises `ArgumentError` if the named filter doesn't
-    # exist in the chain.
-    def remove_filter(name)
-      unless name.is_a? Symbol
-        raise ArgumentError,
-              "Invalid filter name #{name.inspect} (must be a symbol)"
-      end
-
-      unless @filter_chain.delete(name)
-        raise ArgumentError,
-              "#{name.inspect} not found in filter chain"
-      end
+      @history_sanitizer ||= history_sanitization.to_sanitize
     end
 
     #########################################################################
@@ -787,15 +615,6 @@ module Gollum
     #
     # Returns the String path.
     attr_reader :path
-
-    # Gets the page class used by all instances of this Wiki.
-    attr_reader :page_class
-
-    # Gets the file class used by all instances of this Wiki.
-    attr_reader :file_class
-
-    # Gets the markup class used by all instances of this Wiki.
-    attr_reader :markup_classes
 
     # Toggles display of universal table of contents
     attr_reader :universal_toc
@@ -836,7 +655,7 @@ module Gollum
     #
     # Returns the String filename.
     def page_file_name(name, format)
-      "#{name}.#{@page_class.format_to_ext(format)}"
+      "#{name}.#{::Gollum::Page.format_to_ext(format)}"
     end
 
     # Fill an array with a list of pages.
@@ -848,7 +667,7 @@ module Gollum
       if (sha = @access.ref_to_sha(ref))
         commit = @access.commit(sha)
         tree_map_for(sha).inject([]) do |list, entry|
-          next list unless @page_class.valid_page_name?(entry.name)
+          next list unless ::Gollum::Page.valid_page_name?(entry.name)
           list << entry.page(self, commit)
         end
       else
@@ -866,7 +685,7 @@ module Gollum
         commit = @access.commit(sha)
         tree_map_for(sha).inject([]) do |list, entry|
           next list if entry.name.start_with?('_')
-          next list if @page_class.valid_page_name?(entry.name)
+          next list if ::Gollum::Page.valid_page_name?(entry.name)
           list << entry.file(self, commit)
         end
       else
