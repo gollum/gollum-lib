@@ -66,12 +66,23 @@ def commit_details
 end
 
 class MockWiki
+  def initialize(bare = false)
+    @repo_is_bare = bare
+  end
+
   def file(path)
     OpenStruct.new(
       :sha => 'a35311d46dcd49c2ab63ad9bcbcf16254ac53142',
-      :raw_data => 'Very raw data'
+      :raw_data => 'Very raw data',
+      :path => path
     )
   end
+  
+  def path
+    TEST_DIR
+  end
+
+  attr_reader :repo_is_bare
 end
 
 def mock_page

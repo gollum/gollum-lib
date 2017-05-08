@@ -20,19 +20,27 @@ class Gollum::Filter::PandocBib < Gollum::Filter
     BIB_PATH_KEYS.each do |bibliography_key|
       if path = @markup.metadata[bibliography_key]
         next unless file = @markup.wiki.file(path)
-        path = Pathname.new("#{::File.join(::Dir.tmpdir, file.sha)}#{::File.extname(path)}")
-        bib_metadata[bibliography_key] = path.to_s
-        unless path.exist?
-          path.open('w') do |copy_file|
-            copy_file.write(file.raw_data)
-          end
-        end
+        bib_metadata[bibliography_key] = path_for_bibfile(file)
       end
     end
     bib_metadata.empty? ? data : "#{bib_metadata.to_yaml}---\n#{data}"
   end
 
   private
+
+  def path_for_bibfile(file)
+    if @markup.wiki.repo_is_bare
+      path = Pathname.new("#{::File.join(::Dir.tmpdir, file.sha)}#{::File.extname(file.path)}")
+        unless path.exist?
+          path.open('w') do |copy_file|
+            copy_file.write(file.raw_data)
+          end
+        end
+      path.to_s
+    else
+      ::File.expand_path(::File.join(@markup.wiki.path, file.path))
+    end
+  end
 
   def supported_format?
     @markup.format == :markdown

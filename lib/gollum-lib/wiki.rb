@@ -120,6 +120,12 @@ module Gollum
       end
     end
 
+    # Whether or not the wiki's repository is bare (doesn't have a working directory)
+    attr_reader :repo_is_bare
+
+    # The String path to the repository
+    attr_reader :path
+
     # The String base path to prefix to internal links. For example, when set
     # to "/wiki", the page "Hobbit" will be linked as "/wiki/Hobbit". Defaults
     # to "/".

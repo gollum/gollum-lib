@@ -17,6 +17,10 @@ context "Gollum::Filter::PandocBib" do
     content = 'Test'
     assert_equal content, filter(content)
     GitHub::Markup::Markdown.stubs(:implementation_name).returns('pandoc-ruby')
-    assert_match /^---\nlink-citations:.*bibliography:.+.bib.*csl:.+.csl.*---.*Test/m, filter(content)
+    assert_match /^---.*link-citations:.*bibliography:.*#{File.expand_path(testpath('some.bib'))}.*csl:.*#{File.expand_path(testpath('chicago.csl'))}.*---.*Test/m, filter(content)
+
+    MockWiki.any_instance.stubs(:repo_is_bare).returns(true)
+    sha = MockWiki.new.file(nil).sha
+    assert_match /^---.*link-citations:.*bibliography:.*#{sha}.bib.*csl:.*#{sha}.csl.*---.*Test/m, filter(content)
   end
 end
