@@ -1,6 +1,7 @@
 # ~*~ encoding: utf-8 ~*~
 require File.expand_path('../helper', __FILE__)
 require File.expand_path('../wiki_factory', __FILE__)
+require 'pry'
 
 class Gollum::Macro::ListArgs < Gollum::Macro
   def render(*args)
@@ -126,4 +127,22 @@ context "Macros" do
     @wiki.write_page("ListNamedArgsPage", :markdown, "<<ListNamedArgs(xyzzy=\"Foo\")>>", commit_details)
     assert_match(/@xyzzy = Foo@/, @wiki.pages[0].formatted_data)
   end
+
+  test "Video macro given a valid mp4 file displays an html5 video tag with a video type of mp4" do
+    file = "/assets/vid.mp4"
+    @wiki.write_page("VideoMacroValidFileTest", :markdown, "<<Video(#{file})>>", commit_details)
+    assert_match /<video (.*) (.*) controls=""> <source src="#{file}" type="video\/mp4"> (.*) <\/source><\/video>/, @wiki.pages[0].formatted_data
+  end  
+
+  test "Video macro given a valid ogg file renders an html5 video tag with a video type of ogg" do
+    file = "/assets/vid.ogg"
+    @wiki.write_page("VideoMacroValidFileTest", :markdown, "<<Video(#{file})>>", commit_details)
+    assert_match /<video (.*) (.*) controls=""> <source src="#{file}" type="video\/ogg"> (.*) <\/source><\/video>/, @wiki.pages[0].formatted_data
+  end 
+
+  test "Video macro given an invalid file name or invalid file path-name displays a file error message" do
+    file = "/assets/nonexisten.file"
+    @wiki.write_page("VideoMacroValidFileTest", :markdown, "<<Video(#{file})>>", commit_details)
+    assert_match /File Error/, @wiki.pages[0].formatted_data
+  end  
 end
