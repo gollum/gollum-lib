@@ -128,21 +128,10 @@ context "Macros" do
     assert_match(/@xyzzy = Foo@/, @wiki.pages[0].formatted_data)
   end
 
-  test "Video macro given a valid mp4 file displays an html5 video tag with a video type of mp4" do
-    file = "/assets/vid.mp4"
-    @wiki.write_page("VideoMacroValidFileTest", :markdown, "<<Video(#{file})>>", commit_details)
-    assert_match /<video (.*) (.*) controls=""> <source src="#{file}" type="video\/mp4"> (.*) <\/source><\/video>/, @wiki.pages[0].formatted_data
-  end  
-
-  test "Video macro given a valid ogg file renders an html5 video tag with a video type of ogg" do
-    file = "/assets/vid.ogg"
-    @wiki.write_page("VideoMacroValidFileTest", :markdown, "<<Video(#{file})>>", commit_details)
-    assert_match /<video (.*) (.*) controls=""> <source src="#{file}" type="video\/ogg"> (.*) <\/source><\/video>/, @wiki.pages[0].formatted_data
+   
+  test "Video macro given a name of a file displays an html5 video tag " do
+    file = "/Uploads/foo.mp4"
+    @wiki.write_page("VideoTagTest", :markdown, "<<Video(#{file})>>", commit_details)
+    assert_match /<video (.*) (.*) src="#{file}" controls=""> (.*)<\/video>/, @wiki.pages[0].formatted_data
   end 
-
-  test "Video macro given an invalid file name or invalid file path-name displays a file error message" do
-    file = "/assets/nonexisten.file"
-    @wiki.write_page("VideoMacroValidFileTest", :markdown, "<<Video(#{file})>>", commit_details)
-    assert_match /File Error/, @wiki.pages[0].formatted_data
-  end  
 end
