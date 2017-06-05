@@ -131,6 +131,6 @@ context "Macros" do
   test "Video macro given a name of a file displays an html5 video tag " do
     file = "/Uploads/foo.mp4"
     @wiki.write_page("VideoTagTest", :markdown, "<<Video(#{file})>>", commit_details)
-    assert_match /<video (.*) (.*) src="#{file}" controls=""> (.*)<\/video>/, @wiki.pages[0].formatted_data
+    assert_match /<video (.*) (.*) src="#{file}" (.*)> (.*)<\/video>/, @wiki.pages[0].formatted_data
   end 
 end
