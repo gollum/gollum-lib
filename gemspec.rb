@@ -8,7 +8,7 @@ def specification(version, default_adapter, platform = nil)
     s.name              = 'gollum-lib'
     s.version           = version
     s.platform          = platform if platform
-    s.date              = '2017-04-08'
+    s.date              = '2017-07-31'
     s.rubyforge_project = 'gollum-lib'
     s.license           = 'MIT'
 
@@ -25,7 +25,7 @@ def specification(version, default_adapter, platform = nil)
     s.extra_rdoc_files = %w(README.md LICENSE)
 
     s.add_dependency *default_adapter
-    s.add_dependency 'rouge', '~> 2.0'
+    s.add_dependency 'rouge', '~> 2.1'
     if RUBY_VERSION < '2.1'
       s.add_dependency 'nokogiri', '~> 1.6.1'
     else
