@@ -26,7 +26,11 @@ def specification(version, default_adapter, platform = nil)
 
     s.add_dependency *default_adapter
     s.add_dependency 'rouge', '~> 2.0'
-    s.add_dependency 'nokogiri', '~> 1.6.4'
+    if RUBY_VERSION < '2.1'
+      s.add_dependency 'nokogiri', '~> 1.6.1'
+    else
+      s.add_dependency 'nokogiri', '>= 1.6.1', '< 2.0'
+    end
     s.add_dependency 'stringex', '~> 2.6'
     s.add_dependency 'sanitize', '~> 2.1'
     s.add_dependency 'github-markup', '~> 1.6'
