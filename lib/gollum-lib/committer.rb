@@ -78,18 +78,12 @@ module Gollum
     # name   - The String Gollum::Page filename_stripped.
     # format - The Symbol Gollum::Page format.
     # data   - The String wiki data to store in the tree map.
-    # allow_same_ext - A Boolean determining if the tree map allows the same
-    #                  filename with the same extension.
     #
     # Raises Gollum::DuplicatePageError if a matching filename already exists.
     # This way, pages are not inadvertently overwritten.
     #
     # Returns nothing (modifies the Index in place).
-    def add_to_index(dir, name, format, data, allow_same_ext = false)
-      # spaces must be dashes
-      dir.gsub!(' ', '-')
-      name.gsub!(' ', '-')
-
+    def add_to_index(dir, name, format, data)
       path = @wiki.page_file_name(name, format)
 
       dir  = '/' if dir.strip.empty?
@@ -112,7 +106,7 @@ module Gollum
 
           new_file_ext = ::File.extname(path).sub(/^\./, '')
 
-          if downpath == existing_file && !(allow_same_ext && new_file_ext == existing_file_ext)
+          if downpath == existing_file && (new_file_ext == existing_file_ext)
             raise DuplicatePageError.new(dir, blob.name, path)
           end
         end

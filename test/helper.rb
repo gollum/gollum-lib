@@ -65,6 +65,19 @@ def commit_details
     :email   => "tom@github.com" }
 end
 
+def mock_page
+  OpenStruct.new(
+      :wiki => true,
+      :filename => 'Name.md',
+      :text_data => "# Title\nData",
+      :version => nil,
+      :format => :markdown,
+      :sub_page => false,
+      :partent_page => false,
+      :path => "Name.md"
+    )
+end
+
 # test/spec/mini 3
 # http://gist.github.com/25455
 # chris@ozmm.org

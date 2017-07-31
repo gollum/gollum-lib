@@ -17,29 +17,13 @@ module Gollum
     # Returns a Page
     attr_accessor :parent_page
 
-
-    # Checks a filename against the registered markup extensions
-    #
-    # filename - String filename, like "Home.md"
-    #
-    # Returns e.g. ["Home", :markdown], or [] if the extension is unregistered
-    def self.parse_filename(filename)
-      return [] unless filename =~ /^(.+)\.([a-zA-Z]\w*)$/i
-      pref, ext = Regexp.last_match[1], Regexp.last_match[2]
-
-      Gollum::Markup.formats.each_pair do |name, format|
-        return [pref, name] if ext =~ format[:regexp]
-      end
-      []
-    end
-
     # Checks if a filename has a valid, registered extension
     #
     # filename - String filename, like "Home.md".
     #
-    # Returns the matching String basename of the file without the extension.
-    def self.valid_filename?(filename)
-      self.parse_filename(filename).first
+    # Returns true or false.
+    def self.valid_extension?(filename)
+      Gollum::Markup.extensions.include?(::File.extname(filename.to_s).sub(/^\./,''))
     end
 
     # Checks if a filename has a valid extension understood by GitHub::Markup.
@@ -48,10 +32,9 @@ module Gollum
     #
     # filename - String filename, like "Home.md".
     #
-    # Returns the matching String basename of the file without the extension.
+    # Returns true or false.
     def self.valid_page_name?(filename)
-      match = valid_filename?(filename)
-      filename =~ /^_/ ? false : match
+      !(filename =~ /^_/) && self.valid_extension?(filename)
     end
 
     # Public: The format of a given filename.
@@ -60,15 +43,11 @@ module Gollum
     #
     # Returns the Symbol format of the page; one of the registered format types
     def self.format_for(filename)
-      self.parse_filename(filename).last
-    end
-
-    # Reusable filter to turn a filename (without path) into a canonical name.
-    # Strips extension, converts dashes to spaces.
-    #
-    # Returns the filtered String.
-    def self.canonicalize_filename(filename)
-      strip_filename(filename).gsub('-', ' ')
+      ext = ::File.extname(filename.to_s).sub(/^\./,'')
+      Gollum::Markup.formats.each_pair do |name, format|
+        return name if format[:extensions].include?(ext)
+      end
+      nil
     end
 
     # Reusable filter to strip extension and path from filename
@@ -77,7 +56,7 @@ module Gollum
     #
     # Returns the stripped String.
     def self.strip_filename(filename)
-      ::File.basename(filename, ::File.extname(filename))
+      ::File.basename(filename.to_s, ::File.extname(filename.to_s))
     end
 
     # Public: Initialize a page.
@@ -91,6 +70,13 @@ module Gollum
       @formatted_data = nil
       @doc            = nil
       @parent_page    = nil
+    end
+
+    # Public: The SHA hash identifying this page
+    #
+    # Returns the String SHA.
+    def sha
+      @blob && @blob.id
     end
 
     # Public: The on-disk filename of the page including extension.
@@ -107,17 +93,15 @@ module Gollum
       self.class.strip_filename(filename)
     end
 
-    # Public: The canonical page name without extension, and dashes converted
-    # to spaces.
+    # Public: The canonical page name without extension.
     #
     # Returns the String name.
     def name
-      self.class.canonicalize_filename(filename)
+      self.class.strip_filename(filename)
     end
 
     # Public: The title will be constructed from the
-    # filename by stripping the extension and replacing any dashes with
-    # spaces.
+    # filename by stripping the extension.
     #
     # Returns the fully sanitized String title.
     def title
@@ -141,28 +125,21 @@ module Gollum
     #
     # Returns the String url_path
     def url_path
-      path = if self.path.include?('/')
-               self.path.sub(/\/[^\/]+$/, '/')
-             else
-               ''
-             end
-
-      path << Page.cname(self.name, '-', '-')
-      path
-    end
-
-    # Public: The display form of the url path required to reach this page within the repo.
-    #
-    # Returns the String url_path
-    def url_path_display
-      url_path.gsub("-", " ")
+      construct_path(filename)
     end
 
     # Public: Defines title for page.rb
     #
     # Returns the String title
     def url_path_title
-      metadata_title || url_path_display
+      metadata_title || construct_path(name)
+    end
+
+    # Public: The url_path, but CGI escaped.
+    #
+    # Returns the String url_path
+    def escaped_url_path
+      CGI.escape(self.url_path).gsub('%2F', '/')
     end
 
     # Public: Metadata title
@@ -179,11 +156,11 @@ module Gollum
       nil
     end
 
-    # Public: The url_path, but CGI escaped.
-    #
-    # Returns the String url_path
-    def escaped_url_path
-      CGI.escape(self.url_path).gsub('%2F', '/')
+    # Public: Whether or not to display the metadata
+    def display_metadata?
+      return false if metadata.empty? || (metadata.size == 1 && metadata['title'])
+      return false if metadata['display_metadata'] == false
+      @wiki.display_metadata
     end
 
     # Public: The raw contents of the page.
@@ -224,7 +201,7 @@ module Gollum
       if @formatted_data && @doc then
         yield @doc if block_given?
       else
-        @formatted_data = markup_class.render(historical?, encoding, include_levels) do |doc|
+        @formatted_data = markup.render(historical?, encoding, include_levels) do |doc|
           @doc = doc
           yield doc if block_given?
         end
@@ -240,16 +217,16 @@ module Gollum
     # Returns the String data.
     def toc_data
       return @parent_page.toc_data if @parent_page and @sub_page
-      formatted_data if markup_class.toc == nil
-      markup_class.toc
+      formatted_data if markup.toc == nil
+      markup.toc
     end
 
     # Public: Embedded metadata.
     #
     # Returns Hash of metadata.
     def metadata
-      formatted_data if markup_class.metadata == nil
-      markup_class.metadata
+      formatted_data if markup.metadata == nil
+      markup.metadata || {}
     end
 
     # Public: The format of the page.
@@ -262,8 +239,8 @@ module Gollum
     # Gets the Gollum::Markup instance that will render this page's content.
     #
     # Returns a Gollum::Markup instance.
-    def markup_class
-      @markup_class ||= @wiki.markup_classes[format].new(self)
+    def markup
+      @markup ||= @wiki.markup_classes[format].new(self)
     end
 
     # Public: The current version of the page.
@@ -331,33 +308,6 @@ module Gollum
       !!@historical
     end
 
-    #########################################################################
-    #
-    # Class Methods
-    #
-    #########################################################################
-
-    # Convert a human page name into a canonical page name.
-    #
-    # name           - The String human page name.
-    # char_white_sub - Substitution for whitespace
-    # char_other_sub - Substitution for other special chars
-    #
-    # Examples
-    #
-    #   Page.cname("Bilbo Baggins")
-    #   # => 'Bilbo-Baggins'
-    #
-    #   Page.cname("Bilbo Baggins",'_')
-    #   # => 'Bilbo_Baggins'
-    #
-    # Returns the String canonical name.
-    def self.cname(name, char_white_sub = '-', char_other_sub = '-')
-      name.respond_to?(:gsub) ?
-          name.gsub(%r(\s), char_white_sub).gsub(%r([<>+]), char_other_sub) :
-          ''
-    end
-
     # Convert a format Symbol into an extension String.
     #
     # format - The format Symbol.
@@ -413,12 +363,13 @@ module Gollum
 
       checked_dir = BlobEntry.normalize_dir(checked_dir)
       checked_dir = '' if exact && checked_dir.nil?
-      name        = ::File.join(checked_dir, name) if checked_dir
+      query       = checked_dir ? ::File.join(checked_dir, name) : name
 
       map.each do |entry|
-        next if entry.name.to_s.empty?
-        path = checked_dir ? ::File.join(entry.dir, entry.name) : entry.name
-        next unless page_match(name, path)
+        next if entry.name.to_s.empty? || !self.class.valid_extension?(entry.name)
+        entry_name =  ::File.extname(name).empty? ? ::Gollum::Page.strip_filename(entry.name) : entry.name
+        path = checked_dir ? ::File.join(entry.dir, entry_name) : entry_name
+        next unless query.downcase == path.downcase
         return entry.page(@wiki, @version)
       end
 
@@ -450,22 +401,6 @@ module Gollum
         ''
       end
     end
-
-    # Compare the canonicalized versions of the two names.
-    #
-    # name     - The human or canonical String page name.
-    # path     - the String path on disk (including file extension).
-    #
-    # Returns a Boolean.
-    def page_match(name, path)
-      if (match = self.class.valid_filename?(path))
-        @wiki.ws_subs.each do |sub|
-          return true if Page.cname(name).downcase == Page.cname(match, sub).downcase
-        end
-      end
-      false
-    end
-
 
     # Loads sub pages. Sub page names (footers, headers, sidebars) are prefixed with
     # an underscore to distinguish them from other Pages. If there is not one within
@@ -506,6 +441,17 @@ module Gollum
 
     def inspect
       %(#<#{self.class.name}:#{object_id} #{name} (#{format}) @wiki=#{@wiki.repo.path.inspect}>)
+    end
+
+    private
+
+    def construct_path(name)
+      path = if self.path.include?('/')
+        self.path.sub(/\/[^\/]+$/, '/')
+          else
+            ''
+          end
+      path << name   
     end
     
   end

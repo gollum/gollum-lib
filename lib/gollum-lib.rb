@@ -34,10 +34,6 @@ require File.expand_path('../gollum-lib/markups', __FILE__)
 require File.expand_path('../gollum-lib/sanitization', __FILE__)
 require File.expand_path('../gollum-lib/filter', __FILE__)
 
-# Set ruby to UTF-8 mode
-# This is required for Ruby 1.8.7 which gollum still supports.
-$KCODE = 'U' if RUBY_VERSION[0, 3] == '1.8'
-
 module Gollum
 
   def self.assets_path
