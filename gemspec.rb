@@ -8,6 +8,7 @@ def specification(version, default_adapter, platform = nil)
     s.name              = 'gollum-lib'
     s.version           = version
     s.platform          = platform if platform
+    s.date              = '2017-05-17'
     s.date              = '2017-04-13'
     s.rubyforge_project = 'gollum-lib'
     s.license           = 'MIT'
@@ -25,8 +26,8 @@ def specification(version, default_adapter, platform = nil)
     s.extra_rdoc_files = %w(README.md LICENSE)
 
     s.add_dependency *default_adapter
-    s.add_dependency 'rouge', '~> 2.0'
-    s.add_dependency 'nokogiri', '~> 1.7', '>= 1.7.1'
+    s.add_dependency 'rouge', '~> 2.1'
+    s.add_dependency 'nokogiri', '~> 1.8'
     s.add_dependency 'stringex', '~> 2.6'
     s.add_dependency 'sanitize', '~> 2.1'
     s.add_dependency 'github-markup', '~> 1.6'
@@ -35,9 +36,11 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'org-ruby', '~> 0.9.9'
     s.add_development_dependency 'kramdown', '~> 1.13'
     s.add_development_dependency 'RedCloth', '~> 4.2.9'
-    s.add_development_dependency 'mocha', '~> 1.1.0'
+    s.add_development_dependency 'mocha', '~> 1.2.0'
     s.add_development_dependency 'shoulda', '~> 3.5.0'
     s.add_development_dependency 'wikicloth', '~> 0.8.3'
+    s.add_development_dependency 'bibtex-ruby', '~> 4.3'
+    s.add_development_dependency 'citeproc-ruby', '~> 1.1'
     s.add_development_dependency 'rake', '~> 10.4.0'
     s.add_development_dependency 'pry', '~> 0.10.1'
     # required by pry

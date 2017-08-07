@@ -85,13 +85,13 @@ class MockWiki
   attr_reader :repo_is_bare
 end
 
-def mock_page
+def mock_page(format = nil, data = nil)
   OpenStruct.new(
       :wiki => MockWiki.new,
       :filename => 'Name.md',
-      :text_data => "# Title\nData",
+      :text_data => data || "# Title\nData",
       :version => nil,
-      :format => :markdown,
+      :format => format || :markdown,
       :sub_page => false,
       :parent_page => false,
       :path => "Name.md"
