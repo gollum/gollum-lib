@@ -120,6 +120,12 @@ module Gollum
       end
     end
 
+    # Whether or not the wiki's repository is bare (doesn't have a working directory)
+    attr_reader :repo_is_bare
+
+    # The String path to the repository
+    attr_reader :path
+
     # The String base path to prefix to internal links. For example, when set
     # to "/wiki", the page "Hobbit" will be linked as "/wiki/Hobbit". Defaults
     # to "/".
@@ -244,8 +250,9 @@ module Gollum
       @allow_uploads        = options.fetch :allow_uploads, false
       @per_page_uploads     = options.fetch :per_page_uploads, false
       @filter_chain         = options.fetch :filter_chain,
-                                            [:YAML, :BibTeX, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :PlantUML, :Tags, :Render]
+                                            [:YAML, :BibTeX, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :PlantUML, :Tags, :PandocBib, :Render]
       @filter_chain.delete(:Emoji) unless options.fetch :emoji, false
+      @filter_chain.delete(:PandocBib) unless ::Gollum::MarkupRegisterUtils.using_pandoc?
     end
 
     # Public: check whether the wiki's git repo exists on the filesystem.

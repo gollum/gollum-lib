@@ -1,8 +1,10 @@
 # ~*~ encoding: utf-8 ~*~
+
 require 'pathname'
 
 module Gollum
   module MarkupRegisterUtils
+
     # Check if a gem exists. This implementation requires Gem::Specificaton to
     # be filled.
     def gem_exists?(name)
@@ -29,16 +31,36 @@ module Gollum
       end
       return false
     end
+
+    # Whether the current markdown renderer is pandoc
+    def using_pandoc?
+      GitHub::Markup::Markdown.implementation_name == 'pandoc-ruby'
+    end
   end
 end
 
 include Gollum::MarkupRegisterUtils
+
+module GitHub
+  module Markup
+    class Markdown < Implementation
+      class << self
+        def implementation_name
+          @implementation_name ||= MARKDOWN_GEMS.keys.detect {|gem_name| self.new.send(:try_require, gem_name) }
+        end
+      end
+    end
+  end
+end
 
 module Gollum
   class Markup
     GitHub::Markup::Markdown::MARKDOWN_GEMS['kramdown'] = proc { |content|
         Kramdown::Document.new(content, :auto_ids => false, :smart_quotes => ["'", "'", '"', '"'].map{|char| char.codepoints.first}).to_html
     }
+    GitHub::Markup::Markdown::MARKDOWN_GEMS['pandoc-ruby'] = proc { |content|
+        PandocRuby.convert(content, :s, :from => :markdown, :to => :html, :filter => 'pandoc-citeproc')
+    } if gem_exists?('pandoc-ruby')
 
     # markdown, rdoc, and plain text are always supported.
     register(:markdown, "Markdown", :extensions => ['md','mkd','mkdn','mdown','markdown'])
