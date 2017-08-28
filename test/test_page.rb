@@ -256,11 +256,12 @@ context "within a sub-directory" do
   test "should inherit header/footer/sidebar pages from parent directories" do
     page = @wiki.page('Elrond')
 
+    assert page.sidebar.parent_page == page
+
     assert_equal Gollum::Page, page.sidebar.class
     assert_equal Gollum::Page, page.header.class
     assert_equal Gollum::Page, page.footer.class
 
-    assert page.sidebar.parent_page = page
     assert page.sidebar.raw_data =~ /^Lord of the Rings/
     assert page.header.raw_data =~ /^Hobbits/
     assert page.footer.raw_data =~ /^Lord of the Rings/
