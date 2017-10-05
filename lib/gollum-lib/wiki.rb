@@ -641,14 +641,24 @@ module Gollum
     # Returns an Array with Objects of page name and count of matches
     def search(query)
       options = {:path => page_file_dir, :ref => ref}
+
       results = {}
+      @repo.git.verbose_grep(query, options).each do |hit|
+        name = hit[:name]
+        count = hit[:count]
+        file_name = Page::valid_page_name?(name) ? name.chomp(::File.extname(name)) : name
+        results[file_name] = results[file_name] ? results[file_name] : Hash({:count => "",:text => []})
+        output = Hash({ context:count })
+        results[file_name][:text] = results[file_name][:text].push(output)
+      end
+
       @repo.git.grep(query, options).each do |hit|
         name = hit[:name]
         count = hit[:count]
         # Remove ext only from known extensions.
         # test.pdf => test.pdf, test.md => test
         file_name = Page::valid_page_name?(name) ? name.chomp(::File.extname(name)) : name
-        results[file_name] = count.to_i
+        results[file_name][:count] = count.to_i
       end
 
       # Use git ls-files '*query*' to search for file names. Grep only searches file content.
@@ -658,11 +668,11 @@ module Gollum
         file_name          = Page::valid_page_name?(path) ? path.chomp(::File.extname(path)) : path
         # If there's not already a result for file_name then
         # the value is nil and nil.to_i is 0.
-        results[file_name] = results[file_name].to_i + 1;
+        results[file_name][:count] = results[file_name][:count].to_i + 1;
       end
 
       results.map do |key, val|
-        { :count => val, :name => key }
+        { :val => val, :name => key }
       end
     end
 
