@@ -238,7 +238,8 @@ sed -i '' 's/[[:space:]]*$//'
 org
     @wiki.write_page("Pipe", :org, code, commit_details)
     page = @wiki.page("Pipe")
-    assert_html_equal "<pre class=\"highlight\"><code>sed <span class=\"nt\">-i</span> <span class=\"s1\">''</span> <span class=\"s1\">'s/[[:space:]]*$//'</span></code></pre>", page.formatted_data
+    assert_html_equal "<pre class=\"highlight\"><code><span class=\"nb\">sed</span> <span class=\"nt\">-i</span> <span class=\"s1\">''</span> <span class=\"s1\">'s/[[:space:]]*$//'</span></code></pre>\n",
+                      page.formatted_data
   end
 
   test "regexp gsub! backref (#383)" do
