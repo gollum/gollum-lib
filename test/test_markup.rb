@@ -239,7 +239,7 @@ context "Markup" do
     page = @wiki.page("Bilbo Baggins")
     assert_html_equal "<p>a <a href=\"http://example.com\">http://example.com</a> b</p>", page.formatted_data
   end
-  
+
   test "external page link with different text" do
     @wiki.write_page("Bilbo Baggins", :markdown, "a [[Words|http://example.com]] b", commit_details)
     page = @wiki.page("Bilbo Baggins")
@@ -283,7 +283,8 @@ sed -i '' 's/[[:space:]]*$//'
 org
     @wiki.write_page("Pipe", :org, code, commit_details)
     page = @wiki.page("Pipe")
-    assert_html_equal "<pre class=\"highlight\"><code>sed <span class=\"nt\">-i</span> <span class=\"s1\">''</span> <span class=\"s1\">'s/[[:space:]]*$//'</span></code></pre>", page.formatted_data
+    assert_html_equal "<pre class=\"highlight\"><code><span class=\"nb\">sed</span> <span class=\"nt\">-i</span> <span class=\"s1\">''</span> <span class=\"s1\">'s/[[:space:]]*$//'</span></code></pre>\n",
+                      page.formatted_data
   end
 
   test "regexp gsub! backref (#383)" do
@@ -970,7 +971,7 @@ np.array([[2,2],[1,3]],np.float)
         /name="wiki-Header"/
     ]
   end
-  
+
   test "toc with h1_title does not include page title" do
     @wiki.instance_variable_set(:@h1_title, true)
     @wiki.write_page("H1Test", :markdown, "# This is the page title\n\n# Testing\n\nTest", commit_details)

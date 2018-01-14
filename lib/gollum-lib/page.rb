@@ -430,7 +430,9 @@ module Gollum
           end
           
           if subpageblob
-            instance_variable_set("@#{subpagename}", subpageblob.page(@wiki, @version) )
+            subpage =  subpageblob.page(@wiki, @version)
+            subpage.parent_page = self
+            instance_variable_set("@#{subpagename}", subpage)
             break
           end
 
