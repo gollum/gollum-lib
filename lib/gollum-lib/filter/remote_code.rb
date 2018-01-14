@@ -13,7 +13,6 @@ require 'open-uri'
 #
 class Gollum::Filter::RemoteCode < Gollum::Filter
   def extract(data)
-    return data if @markup.format == :txt
     data.gsub(/^[ \t]*``` ?([^:\n\r]+):((http)?[^`\n\r]+)```/) do
       language = Regexp.last_match[1]
       uri      = Regexp.last_match[2]

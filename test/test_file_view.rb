@@ -32,7 +32,7 @@ class FakePage
 
   # From page.rb
   def self.canonicalize_filename filename
-    strip_filename(filename).gsub('-', ' ')
+    strip_filename(filename)
   end
 end
 
