@@ -114,7 +114,7 @@ class Gollum::Filter::PlantUML < Gollum::Filter
   # Transcoder class in the PlantUML java code.
   def gen_url(text)
     result = ""
-    compressedData = Zlib::Deflate.deflate(text)
+    compressedData = Zlib::Deflate.new(nil, -Zlib::MAX_WBITS).deflate(text, Zlib::FINISH)
     compressedData.chars.each_slice(3) do |bytes|
       #print bytes[0], ' ' , bytes[1] , ' ' , bytes[2]
       b1 = bytes[0].nil? ? 0 : (bytes[0].ord & 0xFF)
