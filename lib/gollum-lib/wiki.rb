@@ -396,8 +396,17 @@ module Gollum
       multi_commit = !!commit[:committer]
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
+      # This piece only works for multi_commit
+      # If we are in a commit batch and one of the previous operations
+      # has updated the page, any information we ask to the page can be outdated.
+      # Therefore, we should ask first to the current committer tree to see if
+      # there is any updated change.
+      raw_data = raw_data_in_commiter(committer, source_dir, page.filename) ||
+                 raw_data_in_commiter(committer, source_dir, "#{target_name}.#{Page.format_to_ext(page.format)}") ||
+                 page.raw_data
+
       committer.delete(page.path)
-      committer.add_to_index(target_dir, target_name, page.format, page.raw_data)
+      committer.add_to_index(target_dir, target_name, page.format, raw_data)
 
       committer.after_commit do |index, _sha|
         @access.refresh
@@ -431,7 +440,7 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
     def update_page(page, name, format, data, commit = {})
-      name     ||= page.name
+      name     = name.present? ? ::File.basename(name) : page.name
       format   ||= page.format
       dir      = ::File.dirname(page.path)
       dir      = '' if dir == '.'
@@ -961,6 +970,10 @@ module Gollum
 
     def inspect
       %(#<#{self.class.name}:#{object_id} #{@repo.path}>)
+    end
+
+    def raw_data_in_commiter(committer, dir, filename)
+      committer.tree.dig(*dir.split(::File::SEPARATOR), filename)
     end
   end
 end
