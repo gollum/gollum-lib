@@ -115,8 +115,8 @@ class Gollum::Filter::PlantUML < Gollum::Filter
   def gen_url(text)
     result = ""
     compressedData = Zlib::Deflate.new(nil, -Zlib::MAX_WBITS).deflate(text, Zlib::FINISH)
+
     compressedData.chars.each_slice(3) do |bytes|
-      #print bytes[0], ' ' , bytes[1] , ' ' , bytes[2]
       b1 = bytes[0].nil? ? 0 : (bytes[0].ord & 0xFF)
       b2 = bytes[1].nil? ? 0 : (bytes[1].ord & 0xFF)
       b3 = bytes[2].nil? ? 0 : (bytes[2].ord & 0xFF)
