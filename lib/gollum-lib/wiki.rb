@@ -440,7 +440,7 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
     def update_page(page, name, format, data, commit = {})
-      name     = name.present? ? ::File.basename(name) : page.name
+      name     = name ? ::File.basename(name) : page.name
       format   ||= page.format
       dir      = ::File.dirname(page.path)
       dir      = '' if dir == '.'
@@ -973,7 +973,14 @@ module Gollum
     end
 
     def raw_data_in_commiter(committer, dir, filename)
-      committer.tree.dig(*dir.split(::File::SEPARATOR), filename)
+      data = nil
+
+      [*dir.split(::File::SEPARATOR), filename].each do |key|
+        data = data ? data[key] : committer.tree[key]
+        break unless data
+      end
+
+      data
     end
   end
 end
