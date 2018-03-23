@@ -150,7 +150,7 @@ module Gollum
       end
     end
 
-    # Builds a Hash of options suitable for Sanitize.clean.
+    # Builds a Hash of options suitable for Sanitize.fragment.
     #
     # Returns a Hash.
     def to_hash

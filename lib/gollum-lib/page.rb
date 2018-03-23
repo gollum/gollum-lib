@@ -121,7 +121,7 @@ module Gollum
     #
     # Returns the fully sanitized String title.
     def title
-      Sanitize.clean(name).strip
+      Sanitize.fragment(name).strip
     end
 
     # Public: Determines if this is a sub-page
