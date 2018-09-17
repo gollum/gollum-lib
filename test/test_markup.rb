@@ -156,7 +156,7 @@ context "Markup" do
     page   = @wiki.page("Bilbo Baggins")
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Bilbo\+Baggins.md"/, output)
+    assert_match(/href="\/Bilbo%20Baggins.md"/, output)
     assert_match(/\>Bilbo Baggins\</, output)
   end
 
@@ -176,7 +176,7 @@ context "Markup" do
     page   = @wiki.page("Tolkien")
     output = page.formatted_data
     assert_match(/class="internal absent"/, output)
-    assert_match(/href="\/J\.\+R\.\+R\.\+Tolkien"/, output)
+    assert_match(/href="\/J\.\%20R\.\%20R\.\%20Tolkien"/, output)
     assert_match(/\>J\. R\. R\. Tolkien\</, output)
   end
 
@@ -189,7 +189,7 @@ context "Markup" do
       page   = @wiki.page(name)
       output = page.formatted_data
       assert_match(/class="internal present"/, output)
-      assert_match(/href="\/wiki\/Bilbo\+Baggins\+\d.md"/, output)
+      assert_match(/href="\/wiki\/Bilbo\%20Baggins\%20\d.md"/, output)
       assert_match(/\>Bilbo Baggins \d\</, output)
     end
   end
@@ -199,7 +199,7 @@ context "Markup" do
     page   = @wiki.page('Precious #1')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Precious\+%231.md"/, output)
+    assert_match(/href="\/Precious\%20%231.md"/, output)
   end
 
   test "page link with multiple included #" do
@@ -207,7 +207,7 @@ context "Markup" do
     page   = @wiki.page('Precious #1 #2')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Precious\+%231\+%232.md"/, output)
+    assert_match(/href="\/Precious\%20%231\%20%232.md"/, output)
   end
 
   test "page link with extra # and multiple included #{}" do
@@ -215,7 +215,7 @@ context "Markup" do
     page   = @wiki.page('Potato #1 #2')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Potato\+%231\+%232.md#anchor"/, output)
+    assert_match(/href="\/Potato\%20%231\%20%232.md#anchor"/, output)
   end
 
   test "page link with extra #" do

@@ -12,6 +12,7 @@ require "#{Gollum::GIT_ADAPTER.downcase}_adapter"
 
 # external
 require 'github/markup'
+require 'erb'
 require 'sanitize'
 require 'gemojione'
 
