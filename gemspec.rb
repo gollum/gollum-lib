@@ -8,7 +8,7 @@ def specification(version, default_adapter, platform = nil)
     s.name              = 'gollum-lib'
     s.version           = version
     s.platform          = platform if platform
-    s.date              = '2017-07-31'
+    s.date              = '2018-09-17'
     s.rubyforge_project = 'gollum-lib'
     s.license           = 'MIT'
 
