@@ -235,7 +235,7 @@ module Gollum
 
     # Proxies methods t
     def method_missing(name, *args)
-      args.map! { |item| item.respond_to?(:force_encoding) ? item.force_encoding('ascii-8bit') : item }
+      args.map! { |item| item.respond_to?(:force_encoding) ? item.force_encoding('ascii-8bit') : item } if Gollum::GIT_ADAPTER == 'grit'
       index.send(name, *args)
     end
   end
