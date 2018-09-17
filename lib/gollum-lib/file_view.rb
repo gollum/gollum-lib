@@ -10,12 +10,13 @@ module Gollum
     # set pages to wiki.pages + wiki.files and show_all to true
     def initialize(pages, options = {})
       @pages    = pages
+      @wiki     = @pages.first ? @pages.first.wiki : nil
       @show_all = options[:show_all] || false
       @checked  = options[:collapse_tree] ? '' : "checked"
     end
 
     def enclose_tree(string)
-      %Q(<ol class="tree">\n) + string + %Q(</ol>)
+      sanitize_html(%Q(<ol class="tree">\n) + string + %Q(</ol>))
     end
 
     def new_page(page)
@@ -96,7 +97,7 @@ module Gollum
         </li>
         HTML
 
-        return enclose_tree html
+        return enclose_tree(html)
       end
 
       sorted_folders = []
@@ -153,8 +154,11 @@ module Gollum
         changed = false
       end
 
-      # return the completed html
-      enclose_tree html
+      enclose_tree(html)
     end # end render_files
+
+    def sanitize_html(data)
+      @wiki ? @wiki.sanitizer.clean(data) : data
+    end
   end # end FileView class
 end # end Gollum module
