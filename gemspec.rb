@@ -42,6 +42,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'wikicloth', '~> 0.8.3'
     s.add_development_dependency 'bibtex-ruby', '~> 4.3'
     s.add_development_dependency 'citeproc-ruby', '~> 1.1'
+    s.add_development_dependency 'unicode_utils', '~> 1.4.0' # required by citeproc-ruby on ruby < 2.4
     s.add_development_dependency 'rake', '~> 10.4.0'
     s.add_development_dependency 'pry', '~> 0.10.1'
     # required by pry
