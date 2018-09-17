@@ -8,7 +8,7 @@ def specification(version, default_adapter, platform = nil)
     s.name              = 'gollum-lib'
     s.version           = version
     s.platform          = platform if platform
-    s.date              = '2017-05-17'
+    s.date              = '2018-09-17'
     s.date              = '2017-04-13'
     s.rubyforge_project = 'gollum-lib'
     s.license           = 'MIT'
@@ -75,9 +75,11 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/file.rb
     lib/gollum-lib/file_view.rb
     lib/gollum-lib/filter.rb
+    lib/gollum-lib/filter/bibtex.rb
     lib/gollum-lib/filter/code.rb
     lib/gollum-lib/filter/emoji.rb
     lib/gollum-lib/filter/macro.rb
+    lib/gollum-lib/filter/pandoc_bib.rb
     lib/gollum-lib/filter/plain_text.rb
     lib/gollum-lib/filter/plantuml.rb
     lib/gollum-lib/filter/remote_code.rb
@@ -85,7 +87,6 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/filter/sanitize.rb
     lib/gollum-lib/filter/tags.rb
     lib/gollum-lib/filter/toc.rb
-    lib/gollum-lib/filter/wsd.rb
     lib/gollum-lib/filter/yaml.rb
     lib/gollum-lib/git_access.rb
     lib/gollum-lib/helpers.rb
@@ -95,6 +96,7 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/macro/global_toc.rb
     lib/gollum-lib/macro/navigation.rb
     lib/gollum-lib/macro/series.rb
+    lib/gollum-lib/macro/video.rb
     lib/gollum-lib/markup.rb
     lib/gollum-lib/markups.rb
     lib/gollum-lib/page.rb
