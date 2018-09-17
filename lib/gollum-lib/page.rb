@@ -135,11 +135,11 @@ module Gollum
       metadata_title || construct_path(name)
     end
 
-    # Public: The url_path, but CGI escaped.
+    # Public: The url_path, but URL encoded.
     #
     # Returns the String url_path
     def escaped_url_path
-      CGI.escape(self.url_path).gsub('%2F', '/')
+      ERB::Util.url_encode(self.url_path).gsub('%2F', '/')
     end
 
     # Public: Metadata title
