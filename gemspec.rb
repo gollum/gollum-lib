@@ -32,7 +32,7 @@ def specification(version, default_adapter, platform = nil)
       s.add_dependency 'nokogiri', '>= 1.6.1', '< 2.0'
     end
     s.add_dependency 'stringex', '~> 2.6'
-    s.add_dependency 'sanitize', '~> 2.1'
+    s.add_dependency 'sanitize', '~> 4.6.4'
     s.add_dependency 'github-markup', '~> 1.6'
     s.add_dependency 'gemojione', '~> 3.2'
     s.add_dependency 'twitter-text', '1.14.7'

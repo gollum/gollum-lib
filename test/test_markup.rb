@@ -16,7 +16,7 @@ context "Markup" do
     assert @wiki.pages[0].formatted_data
   end
 
-  # This test is to assume that Sanitize.clean doesn't raise Encoding::CompatibilityError on ruby 1.9
+  # This test is to assume that Sanitize.fragment doesn't raise Encoding::CompatibilityError on ruby 1.9
   test "formats non ASCII-7 character page from Wiki#pages" do
     wiki = Gollum::Wiki.new(testpath("examples/yubiwa.git"))
     assert_nothing_raised(defined?(Encoding) && Encoding::CompatibilityError) do
