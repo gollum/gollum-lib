@@ -680,7 +680,7 @@ module Gollum
     # Returns an Array of Gollum::Git::Commit.
     def latest_changes(options={})
       options[:max_count] = 10 unless options[:max_count]
-      @repo.log(@ref, nil, options)
+      @repo.log(@ref, page_file_dir, options)
     end
 
     # Public: Refreshes just the cached Git reference data.  This should
