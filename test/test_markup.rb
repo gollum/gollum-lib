@@ -1095,7 +1095,7 @@ def sub_word(mo):
   end
 
   test 'font awesome class' do
-    content = "#hi\n[[_TOC_]]"
+    content = "# hi\n\n[[_TOC_]]"
     # must expect <i class="fa fa-link">
     output = "<h1><a class=\"anchor\" id=\"hi\" href=\"#hi\"><i class=\"fa fa-link\"></i></a>hi</h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
     compare(content, output)
