@@ -133,4 +133,11 @@ context "Macros" do
     @wiki.write_page("VideoTagTest", :markdown, "<<Video(#{file})>>", commit_details)
     assert_match /<video (.*) (.*) src="#{file}" (.*)> (.*)<\/video>/, @wiki.pages[0].formatted_data
   end 
+
+  test "Audio macro given a name of a file displays an audio tag " do
+    file = "/Uploads/foo.mp3"
+    @wiki.write_page("AudioTagTest", :markdown, "<<Audio(#{file})>>", commit_details)
+    assert_match /<audio (.*) (.*) src="#{file}" (.*)> (.*)<\/audio>/, @wiki.pages[0].formatted_data
+  end
+
 end
