@@ -620,6 +620,12 @@ org
     relative_image(content, output)
   end
 
+  test "image with align and alt" do
+    content = "a [[alpha.jpg|alt=Alpha Dog, align=center]] b"
+    output  ="<p>a<span class=\"align-center\"><span><img src=\"/greek/alpha.jpg\" alt=\"Alpha Dog\"/></span></span>b</p>"
+    relative_image(content, output)
+  end
+
   test "image with frame and alt" do
     content = "a\n\n[[alpha.jpg|frame, alt=Alpha]]\n\nb"
     output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"/greek/alpha.jpg\" alt=\"Alpha\"/><span>Alpha</span></span></span></p><p>b</p>"
