@@ -302,7 +302,7 @@ class Gollum::Filter::Tags < Gollum::Filter
       %{<span class="#{classes.join(' ')}">} +
           %{<span>} +
           %{<img src="#{path}" #{attr_string}/>} +
-          (attrs[:alt] ? %{<span>#{attrs[:alt]}</span>} : '') +
+          (classes.include?('frame') && attrs[:alt] ? %{<span>#{attrs[:alt]}</span>} : '') +
           %{</span>} +
           %{</span>}
     else
