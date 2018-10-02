@@ -70,11 +70,11 @@ context "Unicode Support" do
   end
 
   test "create and read non-latin page with anchor 3" do
-    @wiki.write_page("test", :markdown, "# \"La\" faune d'Édiacara")
+    @wiki.write_page("test", :markdown, "# \"La\" faune d'édiacara")
 
     page = @wiki.page("test")
     assert_equal Gollum::Page, page.class
-    assert_equal "# \"La\" faune d'Édiacara", utf8(page.raw_data)
+    assert_equal "# \"La\" faune d'édiacara", utf8(page.raw_data)
 
     # markup.rb test: ', ", É
     doc     = Nokogiri::HTML page.formatted_data
@@ -83,8 +83,8 @@ context "Unicode Support" do
     anchors = h1 / :a
     assert_equal 1, h1s.size
     assert_equal 1, anchors.size
-    assert_equal %q(#la-faune-d-Édiacara), anchors[0]['href']
-    assert_equal %q(la-faune-d-Édiacara), anchors[0]['id']
+    assert_equal %q(#la-faune-d-édiacara), anchors[0]['href']
+    assert_equal %q(la-faune-d-édiacara), anchors[0]['id']
     assert_equal 'anchor', anchors[0]['class']
     assert_equal '', anchors[0].text
   end

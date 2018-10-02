@@ -4,7 +4,10 @@ rvm:
   - 2.1.1
   - 2.2.1
   - 2.3.0
+  - 2.4.0
   - jruby-19mode
+jdk:
+  - oraclejdk8
 before_install:
  - sudo apt-get update
  - sudo apt-get install libicu-dev
