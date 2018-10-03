@@ -17,7 +17,12 @@ module Gollum
           list_items = @wiki.pages.map do |page|
             if page.url_path.start_with?(toc_root_path)
               path_display = full_path ? page.url_path_display  : page.url_path_display.sub(toc_root_path.gsub("-", " "), "").sub(/^\//,'')
-              "<li><a href=\"/#{page.url_path}\">#{path_display}</a></li>"
+
+              if page.path != my_page.path then
+                  "<li><a href=\"#{::File.join(page.wiki.base_path, page.url_path)}\">#{path_display}</a></li>"
+              else
+                  "<li class=\"current_page\">#{path_display}</li>"
+              end
             end
           end
           result = "<ul>#{list_items.join}</ul>"
