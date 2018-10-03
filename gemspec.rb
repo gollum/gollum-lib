@@ -25,17 +25,12 @@ def specification(version, default_adapter, platform = nil)
     s.extra_rdoc_files = %w(README.md LICENSE)
 
     s.add_dependency *default_adapter
-    s.add_dependency 'rouge', '~> 2.1'
-    if RUBY_VERSION < '2.1'
-      s.add_dependency 'nokogiri', '~> 1.6.1'
-    else
-      s.add_dependency 'nokogiri', '>= 1.6.1', '< 2.0'
-    end
+    s.add_dependency 'rouge', '~> 2.0'
+    s.add_dependency 'nokogiri', '~> 1.7.0'
     s.add_dependency 'stringex', '~> 2.6'
-    s.add_dependency 'sanitize', '~> 2.1.1', '>= 2.1.1'
-    s.add_dependency 'github-markup', '~> 1.6'
-    s.add_dependency 'gemojione', '~> 3.2'
-    s.add_dependency 'twitter-text', '1.14.7'
+    s.add_dependency 'sanitize', '~> 4.4.0'
+    s.add_dependency 'github-markup', '~> 1.4'
+    s.add_dependency 'gemojione', '~> 3'
 
     s.add_development_dependency 'org-ruby', '~> 0.9.9'
     s.add_development_dependency 'kramdown', '~> 1.6.0'

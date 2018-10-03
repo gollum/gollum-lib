@@ -11,24 +11,35 @@ require 'open-uri'
 #              ```language:/abs/other-file.ext```
 #              ```language:https://example.com/somefile.txt```
 #
+#           Optionally you can include only a subset of lines by prefixing the url
+#           with a range in square quotes.
+#
+#           Example:
+#              ```language:10-20:local-file.ext```
+#              ```language:12-:/abs/other-file.ext```
+#              ```language:-23:https://example.com/somefile.txt```
+#
 class Gollum::Filter::RemoteCode < Gollum::Filter
   def extract(data)
     return data if @markup.format == :txt
-    data.gsub(/^[ \t]*``` ?([^:\n\r]+):((http)?[^`\n\r]+)```/) do
-      language = Regexp.last_match[1]
-      uri      = Regexp.last_match[2]
-      protocol = Regexp.last_match[3]
+    data.gsub(/^[ \t]*``` ?([^:\n\r]+):(([0-9]+)?-([0-9]+)?:)?((https?)?[^`\n\r]+)```/) do
+      language    = Regexp.last_match[1]
+      range       = Regexp.last_match[2]
+      range_start = Regexp.last_match[3]
+      range_end   = Regexp.last_match[4]
+      uri         = Regexp.last_match[5]
+      protocol    = Regexp.last_match[6]
 
-      # Detect local file
-      if protocol.nil?
-        if (file = @markup.find_file(uri, @markup.wiki.ref))
-          contents = file.raw_data
-        else
-          # How do we communicate a render error?
-          next html_error("File not found: #{CGI::escapeHTML(uri)}")
-        end
-      else
-        contents = req(uri)
+      contents = fetch(protocol, uri)
+      if (!range.nil?) then
+          lines       = contents.lines
+          range_start = range_start.nil? ? 0              : (range_start.to_i - 1)
+          range_end   = range_end.nil?   ? lines.size - 1 : (range_end.to_i   - 1)
+          range_end   = range_end   > lines.size - 1? lines.size - 1: range_end;
+          range_start = range_start > lines.size - 1? lines.size - 1: range_start;
+          range_end   = range_end   <              0?              0: range_end;
+          range_start = range_start <              0?              0: range_start;
+          contents    = lines.slice(range_start..range_end).join
       end
 
       "```#{language}\n#{contents}\n```\n"
@@ -40,6 +51,20 @@ class Gollum::Filter::RemoteCode < Gollum::Filter
   end
 
   private
+
+  def fetch(protocol, uri)
+      # Detect local file
+      if protocol.nil?
+        if (file = @markup.find_file(uri, @markup.wiki.ref))
+          file.raw_data
+        else
+          # How do we communicate a render error?
+          html_error("File not found: '#{CGI::escapeHTML(uri)}'")
+        end
+      else
+        req(uri)
+      end
+  end
 
   def req(uri, cut = 1)
     uri = URI(uri)

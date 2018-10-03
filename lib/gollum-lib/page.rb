@@ -6,6 +6,7 @@ module Gollum
     Wiki.page_class = self
     
     SUBPAGENAMES = [:header, :footer, :sidebar]
+    @@to_xml       = { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML ^ 1, :indent => 0, :encoding => 'UTF-8' }
     
     # Sets a Boolean determing whether this page is a historical version.
     #
@@ -115,13 +116,34 @@ module Gollum
       self.class.canonicalize_filename(filename)
     end
 
+    # Public: The title as defined by the content.
+    # This is usually equal to either the first h1.
+    #
+    # Returns the title extracted from the content.
+    def content_title
+        header = find_header_node(@doc)
+        header.inner_text.strip unless header.nil?
+    end
+
+    # Public: The title as defined by the page name.
+    # This is a sanitized version of the filename.
+    #
+    # Returns the title extracted from the name.
+    def title_from_name
+          Sanitize.clean(name).strip
+    end
+
     # Public: The title will be constructed from the
     # filename by stripping the extension and replacing any dashes with
     # spaces.
     #
     # Returns the fully sanitized String title.
     def title
-      Sanitize.clean(name).strip
+      if @wiki.h1_title then
+          content_title
+      else
+          title_from_name || content_title
+      end
     end
 
     # Public: Determines if this is a sub-page
@@ -151,11 +173,15 @@ module Gollum
       path
     end
 
+    def self.url_path_to_display(url)
+      url.gsub(/[-_]/, " ")
+    end
+
     # Public: The display form of the url path required to reach this page within the repo.
     #
     # Returns the String url_path
     def url_path_display
-      url_path.gsub("-", " ")
+        Gollum::Page.url_path_to_display(url_path)
     end
 
     # Public: Defines title for page.rb
@@ -226,10 +252,24 @@ module Gollum
       else
         @formatted_data = markup_class.render(historical?, encoding, include_levels) do |doc|
           @doc = doc
-          yield doc if block_given?
         end
       end
 
+      # we may need to extract the title from the content if h1_title is on.
+      #
+      # in this case @doc will be kept intact to refect the original intention,
+      # while @formatted_data is the display info won't contain the actual
+      # header.
+      if @wiki.h1_title then
+          doc = @doc.dup
+          header = find_header_node(doc)
+          if (!header.nil?) then
+              header.remove
+              @formatted_data = doc.to_xml(@@to_xml)
+          end
+      end
+
+      yield @doc if block_given?
       @formatted_data
     end
 
@@ -466,6 +506,28 @@ module Gollum
       false
     end
 
+    # Private: get the node where the header is located
+    #
+    # Extracts the header node from doc.
+    #
+    # TODO: this case is a bad encapsulation, the markup
+    # class should be able to "know" how to extract this.
+    def find_header_node(doc)
+        return nil unless (!doc.nil?)
+
+        case format
+        when :asciidoc
+            doc.css("h1:first-child")
+        when :org
+            doc.css("p.title:first-child")
+        when :pod
+            doc.css("a.dummyTopAnchor:first-child + h1")
+        when :rest
+            doc.css("div > div > h1:first-child")
+        else
+            doc.css("h1:first-child")
+        end.first
+    end
 
     # Loads sub pages. Sub page names (footers, headers, sidebars) are prefixed with
     # an underscore to distinguish them from other Pages. If there is not one within

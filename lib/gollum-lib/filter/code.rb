@@ -84,7 +84,7 @@ class Gollum::Filter::Code < Gollum::Filter
         begin
           # if `lang` was not defined then assume plaintext
           lexer = Rouge::Lexer.find_fancy(lang || 'plaintext')
-          formatter = Rouge::Formatters::HTML.new
+          formatter = Rouge::Formatters::HTML.new( { wrap: false } )
           wrap_template = '<pre class="highlight"><code>%s</code></pre>'
 
           # if `lang` is defined but cannot be found then wrap it with an error
