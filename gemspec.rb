@@ -35,7 +35,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_dependency 'twitter-text', '1.14.7'
 
     s.add_development_dependency 'org-ruby', '~> 0.9.9'
-    s.add_development_dependency 'kramdown', '~> 1.13'
+    s.add_development_dependency 'kramdown', '~> 1.17'
     s.add_development_dependency 'RedCloth', '~> 4.2.9'
     s.add_development_dependency 'mocha', '~> 1.2.0'
     s.add_development_dependency 'shoulda', '~> 3.5.0'
