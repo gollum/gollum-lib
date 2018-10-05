@@ -22,7 +22,10 @@ module Gollum
     # Returns the String url_path
     def url_path
       path = self.path
-      path = path.sub(/\/[^\/]+$/, '/') if path.include?('/')
+      if path.include?('/')
+        path = path.sub(/\/[^\/]+$/, '/')
+        path << name
+      end
       path
     end
 
