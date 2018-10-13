@@ -32,8 +32,11 @@ context "Page" do
     assert page.last_version.stats.files.map{|file| file_path = file.first}.include? page.path
   end
 
-  test "getting pages is case insensitive" do
-    assert_equal Gollum::Page, @wiki.page('bilbo-baggins').class
+  test "getting pages is case sensitive" do
+    assert_not_equal Gollum::Page, @wiki.page('bilbo-baggins').class
+    assert_not_equal Gollum::Page, @wiki.page('Bilbo-baggins').class
+    
+    assert_equal Gollum::Page, @wiki.page('Bilbo-Baggins').class
   end
 
   test "do not substitute whitespace for hyphens or underscores (regression test < 5.x)" do
