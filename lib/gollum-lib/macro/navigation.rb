@@ -6,8 +6,9 @@ module Gollum
         if @wiki.pages.size > 0
           list_items = @wiki.pages.map do |page|
             if page.url_path.start_with?(toc_root_path)
-              path_display = full_path ? page.url_path_display  : page.url_path.sub(toc_root_path,"").sub(/^\//,'')
-              "<li><a href=\"/#{page.url_path}\">#{path_display}</a></li>"
+              prepath=@wiki.base_path.sub(/\/$/, '')
+              path_display = full_path ? page.url_path  : page.url_path.sub(toc_root_path,"").sub(/^\//,'')
+              "<li><a href=\"#{prepath}/#{page.url_path_escaped}\">#{path_display}</a></li>"
             end
           end
           result = "<ul>#{list_items.join}</ul>"
