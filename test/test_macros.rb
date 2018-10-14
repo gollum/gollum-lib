@@ -44,6 +44,12 @@ context "Macros" do
     assert_match /<div class="toc">(.*)Pages in this Wiki(.*)<li><a href="\/GlobalTOCMacroPage.md">GlobalTOCMacroPage.md/, @wiki.pages[0].formatted_data
   end
 
+  test "Navigation macro displays table of contents for subpath" do
+    @wiki.write_page("NavigationMacroPage", :markdown, "<<Navigation()>>", commit_details)
+    @wiki.write_page("ZZZZ/A", :markdown, "content", commit_details)
+    assert_match /<div class="toc"><div class="toc-title">Navigate in the TOC<\/div><ul><li><a href="\/NavigationMacroPage.md">NavigationMacroPage.md<\/a><\/li><li><a href="\/ZZZZ\/A\.md">ZZZZ\/A\.md<\/a><\/li><\/ul><\/div>/, @wiki.pages[0].formatted_data
+  end
+
   test "Series macro displays series links with and without series prefix" do
     @wiki.write_page("test-series1", :markdown, "<<Series(test)>>", commit_details)
     testseries1 = @wiki.page("test-series1")
