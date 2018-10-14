@@ -4,9 +4,9 @@ module Gollum
 
       def render(title = "Navigate in the TOC", toc_root_path = ::File.dirname(@page.path), full_path = false)
         if @wiki.pages.size > 0
+          prepath=@wiki.base_path.sub(/\/$/, '')
           list_items = @wiki.pages.map do |page|
             if page.url_path.start_with?(toc_root_path)
-              prepath=@wiki.base_path.sub(/\/$/, '')
               path_display = full_path ? page.url_path  : page.url_path.sub(toc_root_path,"").sub(/^\//,'')
               "<li><a href=\"#{prepath}/#{page.url_path_escaped}\">#{path_display}</a></li>"
             end
