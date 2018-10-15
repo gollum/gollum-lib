@@ -60,6 +60,27 @@ context "Markup" do
     assert Gollum::Markup.formats.size > 1
   end
 
+  test "knows whether to skip specified filters" do
+      Gollum::Markup.stubs(:formats).returns({:markdown => {:skip_filters => [:Render], :extensions => ['md']}})
+      @wiki.write_page("Test", :markdown, "abc", commit_details)
+      page   = @wiki.page("Test")
+      markup = Gollum::Markup.new(page)
+      assert_equal false, markup.skip_filter?(:YAML)
+      assert_equal true, markup.skip_filter?(:Render)
+
+      Gollum::Markup.stubs(:formats).returns({:markdown => {:skip_filters => Proc.new {|x| x == :Render}, :extensions => ['md']}})
+      assert_equal false, markup.skip_filter?(:YAML)
+      assert_equal true, markup.skip_filter?(:Render)
+  end
+
+  test "knows whether link parts for this markup are reversed" do
+    Gollum::Markup.stubs(:formats).returns({:markdown => {:reverse_links => true, :extensions => ['md']}})
+    @wiki.write_page("Test", :markdown, "abc", commit_details)
+    page   = @wiki.page("Test")
+    markup = Gollum::Markup.new(page)
+    assert_equal true, markup.reverse_links?
+  end
+
   test "Gollum::Markup#formats is limited by Gollum::Page::FORMAT_NAMES" do
     begin
       Gollum::Page::FORMAT_NAMES = { :markdown => "Markdown" }
@@ -135,7 +156,7 @@ context "Markup" do
     page   = @wiki.page("Bilbo Baggins")
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Bilbo\+Baggins.md"/, output)
+    assert_match(/href="\/Bilbo%20Baggins.md"/, output)
     assert_match(/\>Bilbo Baggins\</, output)
   end
 
@@ -155,7 +176,7 @@ context "Markup" do
     page   = @wiki.page("Tolkien")
     output = page.formatted_data
     assert_match(/class="internal absent"/, output)
-    assert_match(/href="\/J\.\+R\.\+R\.\+Tolkien"/, output)
+    assert_match(/href="\/J\.\%20R\.\%20R\.\%20Tolkien"/, output)
     assert_match(/\>J\. R\. R\. Tolkien\</, output)
   end
 
@@ -168,7 +189,7 @@ context "Markup" do
       page   = @wiki.page(name)
       output = page.formatted_data
       assert_match(/class="internal present"/, output)
-      assert_match(/href="\/wiki\/Bilbo\+Baggins\+\d.md"/, output)
+      assert_match(/href="\/wiki\/Bilbo\%20Baggins\%20\d.md"/, output)
       assert_match(/\>Bilbo Baggins \d\</, output)
     end
   end
@@ -178,7 +199,7 @@ context "Markup" do
     page   = @wiki.page('Precious #1')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Precious\+%231.md"/, output)
+    assert_match(/href="\/Precious\%20%231.md"/, output)
   end
 
   test "page link with multiple included #" do
@@ -186,7 +207,7 @@ context "Markup" do
     page   = @wiki.page('Precious #1 #2')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Precious\+%231\+%232.md"/, output)
+    assert_match(/href="\/Precious\%20%231\%20%232.md"/, output)
   end
 
   test "page link with extra # and multiple included #{}" do
@@ -194,7 +215,7 @@ context "Markup" do
     page   = @wiki.page('Potato #1 #2')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Potato\+%231\+%232.md#anchor"/, output)
+    assert_match(/href="\/Potato\%20%231\%20%232.md#anchor"/, output)
   end
 
   test "page link with extra #" do
@@ -262,7 +283,8 @@ sed -i '' 's/[[:space:]]*$//'
 org
     @wiki.write_page("Pipe", :org, code, commit_details)
     page = @wiki.page("Pipe")
-    assert_html_equal "<pre class=\"highlight\"><code>sed -i <span class=\"s1\">''</span> <span class=\"s1\">'s/[[:space:]]*$//'</span></code></pre>", page.formatted_data
+    assert_html_equal "<pre class=\"highlight\"><code><span class=\"nb\">sed</span> <span class=\"nt\">-i</span> <span class=\"s1\">''</span> <span class=\"s1\">'s/[[:space:]]*$//'</span></code></pre>\n",
+                      page.formatted_data
   end
 
   test "regexp gsub! backref (#383)" do
@@ -430,7 +452,6 @@ org
       con:
       /dev/null
       \0
-      \ \ \ 
       \\\\\\\\
 
     ).each_with_index do |ugly, n|
@@ -440,6 +461,13 @@ org
       @wiki.write_page(name, :textile, "hello\n[[include:#{ugly}]]\n", commit_details)
       page1 = @wiki.page(name)
       assert_match("does not exist yet", page1.formatted_data)
+    end
+    %w(
+      \ \ \ 
+    ).each_with_index do |ugly, n|
+      @wiki.write_page(name, :textile, "hello\n[[include:#{ugly}]]\n", commit_details)
+      page1 = @wiki.page(name)
+      assert_match("no page name given", page1.formatted_data)
     end
   end
 
@@ -536,7 +564,7 @@ org
     %w{em px}.each do |unit|
       %w{width height}.each do |dim|
         content = "a [[alpha.jpg|#{dim}=100#{unit}]] b"
-        output  = "<p>a<img src=\"/greek/alpha.jpg\"#{dim}=\"100#{unit}\"/>b</p>"
+        output  = "<p>a<img src=\"/greek/alpha.jpg\" #{dim}=\"100#{unit}\"/>b</p>"
         relative_image(content, output)
       end
     end
@@ -553,7 +581,7 @@ org
   test "image with vertical align" do
     %w{top texttop middle absmiddle bottom absbottom baseline}.each do |align|
       content = "a [[alpha.jpg|align=#{align}]] b"
-      output  = %Q{<p>a<img src=\"/greek/alpha.jpg\"align=\"#{align}\"/>b</p>}
+      output  = %Q{<p>a<img src=\"/greek/alpha.jpg\" align=\"#{align}\"/>b</p>}
       relative_image(content, output)
     end
   end
@@ -574,7 +602,7 @@ org
 
   test "image with float and align" do
     %w{left right}.each do |align|
-      content = "a\n\n[[alpha.jpg|float|align=#{align}]]\n\nb"
+      content = "a\n\n[[alpha.jpg|float, align=#{align}]]\n\nb"
       output  = "<p>a</p><p><span class=\"float-#{align}\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
       relative_image(content, output)
     end
@@ -592,9 +620,15 @@ org
     relative_image(content, output)
   end
 
+  test "image with align and alt" do
+    content = "a [[alpha.jpg|alt=Alpha Dog, align=center]] b"
+    output  ="<p>a<span class=\"align-center\"><span><img src=\"/greek/alpha.jpg\" alt=\"Alpha Dog\"/></span></span>b</p>"
+    relative_image(content, output)
+  end
+
   test "image with frame and alt" do
-    content = "a\n\n[[alpha.jpg|frame|alt=Alpha]]\n\nb"
-    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"/greek/alpha.jpg\"alt=\"Alpha\"/><span>Alpha</span></span></span></p><p>b</p>"
+    content = "a\n\n[[alpha.jpg|frame, alt=Alpha]]\n\nb"
+    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"/greek/alpha.jpg\" alt=\"Alpha\"/><span>Alpha</span></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
@@ -603,6 +637,17 @@ org
   # File links
   #
   #########################################################################
+
+  test "file link without description" do
+    index = @wiki.repo.index
+    index.add("alpha.csv", "hi")
+    index.commit("Add alpha.csv")
+    @wiki.write_page("Bilbo Baggins", :markdown, "a [[alpha.csv]] b", commit_details)
+
+    page   = @wiki.page("Bilbo Baggins")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a href="/alpha.csv">alpha.csv</a> b</p>}, output
+  end
 
   test "file link with absolute path" do
     index = @wiki.repo.index
@@ -1055,15 +1100,11 @@ def sub_word(mo):
     compare(content, output, "txt")
   end
 
-  test 'static rendering and font awesome class' do
-    uses_wiki = false
-    markup    = Gollum::Markup.new uses_wiki
-
+  test 'font awesome class' do
+    content = "# hi\n\n[[_TOC_]]"
     # must expect <i class="fa fa-link">
-    expected = "<h1><a class=\"anchor\" id=\"hi\" href=\"#hi\"><i class=\"fa fa-link\"></i></a>hi</h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
-    actual   = markup.render_default "#hi\n[[_TOC_]]"
-
-    assert_html_equal expected, actual
+    output = "<h1><a class=\"anchor\" id=\"hi\" href=\"#hi\"><i class=\"fa fa-link\"></i></a>hi</h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
+    compare(content, output)
   end
 
   #########################################################################

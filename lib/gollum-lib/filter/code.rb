@@ -6,8 +6,6 @@
 class Gollum::Filter::Code < Gollum::Filter
   def extract(data)
     case @markup.format
-    when :txt
-      return data
     when :asciidoc
       data.gsub!(/^(\[source,([^\r\n]*)\]\n)?----\n(.+?)\n----$/m) do
         cache_codeblock(Regexp.last_match[2], Regexp.last_match[3])

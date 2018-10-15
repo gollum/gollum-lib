@@ -2,12 +2,15 @@
 
 # Emoji
 #
-# Render emoji such as :smile:
+# Render an emoji tag such as ":smile:". In some rare situations, you have
+# to escape emoji tags e.g. when your content contains something like
+# "hh:mm:ss" or "rake app:shell:install". Prefix the leading colon with a
+# backslash to disable this emoji tag e.g. "hh\:mm:ss".
 class Gollum::Filter::Emoji < Gollum::Filter
 
   EXTRACT_PATTERN = %r{
     (?<!\[{2})
-    :(?<name>[\w-]+):
+    (?<escape>\\)?:(?<name>[\w-]+):
     (?!\]{^2})
   }ix
 
@@ -19,7 +22,11 @@ class Gollum::Filter::Emoji < Gollum::Filter
 
   def extract(data)
     data.gsub! EXTRACT_PATTERN do
-      emoji_exists?($~[:name]) ? "=EEMMOOJJII=#{$~[:name]}=IIJJOOMMEE=" : $&
+      case
+        when $~[:escape] then $&[1..-1]
+        when emoji_exists?($~[:name]) then "=EEMMOOJJII=#{$~[:name]}=IIJJOOMMEE="
+        else $&
+      end
     end
     data
   end
