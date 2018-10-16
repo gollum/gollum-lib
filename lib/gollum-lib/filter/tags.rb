@@ -223,7 +223,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     presence  = :page_present if page
 
     name = pretty_name ? pretty_name : link
-    link = page ? page.escaped_url_path : CGI.escape(link)
+    link = page ? page.escaped_url_path : ERB::Util.url_encode(link)
     generate_link(link, name, extra, presence)
   end
 
@@ -302,7 +302,7 @@ class Gollum::Filter::Tags < Gollum::Filter
       %{<span class="#{classes.join(' ')}">} +
           %{<span>} +
           %{<img src="#{path}" #{attr_string}/>} +
-          (attrs[:alt] ? %{<span>#{attrs[:alt]}</span>} : '') +
+          (classes.include?('frame') && attrs[:alt] ? %{<span>#{attrs[:alt]}</span>} : '') +
           %{</span>} +
           %{</span>}
     else

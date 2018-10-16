@@ -1,6 +1,8 @@
 # ~*~ encoding: utf-8 ~*~
 require File.expand_path(File.join(File.dirname(__FILE__), "helper"))
 
+bilbo_page = "<h1><a class=\"anchor\" id=\"bilbo-baggins\" href=\"#bilbo-baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit.md\">Hobbit</a> and also makes a few<br />\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.%20R.%20R.%20Tolkien\">J. R. R. Tolkien</a>'s<br />\nfantasy writings. The story of The Hobbit featuring Bilbo is also<br />\nretold from a different perspective in the Chapter The Quest of Erebor in<br />\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are<br />\n'really' translations from the fictitious volume of The Red Book of Westmarch,<br />\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
+
 context "Page" do
   setup do
     @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"))
@@ -17,7 +19,7 @@ context "Page" do
     assert_equal Gollum::Page, page.class
     assert page.raw_data =~ /^# Bilbo Baggins\n\nBilbo Baggins/
 
-    expected = "<h1><a class=\"anchor\" id=\"bilbo-baggins\" href=\"#bilbo-baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit.md\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.+R.+R.+Tolkien\">J. R. R. Tolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
+    expected = bilbo_page #"<h1><a class=\"anchor\" id=\"bilbo-baggins\" href=\"#bilbo-baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit.md\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.%20R.%20R.%20Tolkien\">J. R. R. Tolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
     actual   = page.formatted_data
     assert_html_equal expected, actual
 
@@ -30,8 +32,11 @@ context "Page" do
     assert page.last_version.stats.files.map{|file| file_path = file.first}.include? page.path
   end
 
-  test "getting pages is case insensitive" do
-    assert_equal Gollum::Page, @wiki.page('bilbo-baggins').class
+  test "getting pages is case sensitive" do
+    assert_not_equal Gollum::Page, @wiki.page('bilbo-baggins').class
+    assert_not_equal Gollum::Page, @wiki.page('Bilbo-baggins').class
+    
+    assert_equal Gollum::Page, @wiki.page('Bilbo-Baggins').class
   end
 
   test "do not substitute whitespace for hyphens or underscores (regression test < 5.x)" do
@@ -210,7 +215,7 @@ context "with a checkout" do
     assert_equal Gollum::Page, page.class
     assert page.raw_data =~ /^# Bilbo Baggins\n\nBilbo Baggins/
 
-    expected = "<h1><a class=\"anchor\" id=\"bilbo-baggins\" href=\"#bilbo-baggins\"><i class=\"fa fa-link\"></i></a>Bilbo Baggins</h1>\n\n<p>Bilbo Baggins is the protagonist of The <a class=\"internal present\" href=\"/Hobbit.md\">Hobbit</a> and also makes a few\nappearances in The Lord of the Rings, two of the most well-known of <a class=\"internal absent\" href=\"/J.+R.+R.+Tolkien\">J. R. R. Tolkien</a>'s fantasy writings. The story of The Hobbit featuring Bilbo is also\nretold from a different perspective in the Chapter The Quest of Erebor in\nUnfinished Tales.</p>\n\n<p>In Tolkien's narrative conceit, in which all the writings of Middle-earth are\n'really' translations from the fictitious volume of The Red Book of Westmarch,\nBilbo is the author of The Hobbit and translator of The Silmarillion.</p>\n\n<p>From <a href=\"http://en.wikipedia.org/wiki/Bilbo_Baggins\">http://en.wikipedia.org/wiki/Bilbo_Baggins</a>.</p>"
+    expected = bilbo_page
     actual   = page.formatted_data
     assert_html_equal expected, actual
 

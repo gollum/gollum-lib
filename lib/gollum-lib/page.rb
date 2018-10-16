@@ -4,7 +4,7 @@ module Gollum
     include Pagination
     
     SUBPAGENAMES = [:header, :footer, :sidebar]
-    
+
     # Sets a Boolean determing whether this page is a historical version.
     #
     # Returns nothing.
@@ -133,11 +133,11 @@ module Gollum
       metadata_title || construct_path(name)
     end
 
-    # Public: The url_path, but CGI escaped.
+    # Public: The url_path, but URL encoded.
     #
     # Returns the String url_path
     def escaped_url_path
-      CGI.escape(self.url_path).gsub('%2F', '/')
+      ERB::Util.url_encode(self.url_path).gsub('%2F', '/')
     end
 
     # Public: Metadata title
@@ -365,9 +365,9 @@ module Gollum
 
       map.each do |entry|
         next if entry.name.to_s.empty? || !self.class.valid_extension?(entry.name)
-        entry_name =  ::File.extname(name).empty? ? ::Gollum::Page.strip_filename(entry.name) : entry.name
+        entry_name = ::File.extname(name).empty? ? ::Gollum::Page.strip_filename(entry.name) : entry.name
         path = checked_dir ? ::File.join(entry.dir, entry_name) : entry_name
-        next unless query.downcase == path.downcase
+        next unless query == path
         return entry.page(@wiki, @version)
       end
 
@@ -407,7 +407,7 @@ module Gollum
     def find_sub_pages(subpagenames = SUBPAGENAMES, map = nil)
       subpagenames.each{|subpagename| instance_variable_set("@#{subpagename}", nil)}
       return nil if self.filename =~ /^_/ || ! self.version
-      
+
       map ||= @wiki.tree_map_for(@wiki.ref, true)
       valid_names = subpagenames.map(&:capitalize).join("|")
       # From Ruby 2.2 onwards map.select! could be used
@@ -423,10 +423,10 @@ module Gollum
             searchpath = dir == Pathname.new('.') ? Pathname.new(filename) : dir + filename
             entrypath = ::Pathname.new(blob_entry.path)
             # Ignore extentions
-            entrypath = entrypath.dirname + entrypath.basename(entrypath.extname)      
+            entrypath = entrypath.dirname + entrypath.basename(entrypath.extname)
             entrypath == searchpath
           end
-          
+
           if subpageblob
             instance_variable_set("@#{subpagename}", subpageblob.page(@wiki, @version) )
             break
@@ -434,7 +434,7 @@ module Gollum
 
           break if dir == Pathname.new('.')
         end
-      end  
+      end
     end
 
     def inspect
@@ -449,8 +449,8 @@ module Gollum
           else
             ''
           end
-      path << name   
+      path << name
     end
-    
+
   end
 end

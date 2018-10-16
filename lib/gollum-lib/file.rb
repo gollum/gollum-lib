@@ -21,15 +21,25 @@ module Gollum
     # Returns the String url_path
     def url_path
       path = self.path
-      path = path.sub(/\/[^\/]+$/, '/') if path.include?('/')
+      if path.include?('/')
+        path = path.sub(/\/[^\/]+$/, '/')
+        path << name
+      end
       path
     end
 
-    # Public: The url_path, but CGI escaped.
+    # Public: The SHA hash identifying this file
+    #
+    # Returns the String SHA.
+    def sha
+      @blob && @blob.id
+    end
+
+    # Public: The url_path, but URL escaped.
     #
     # Returns the String url_path
     def escaped_url_path
-      CGI.escape(self.url_path).gsub('%2F', '/')
+      ERB::Util.url_encode(self.url_path).gsub('%2F', '/')
     end
 
     # Public: The on-disk filename of the file.
