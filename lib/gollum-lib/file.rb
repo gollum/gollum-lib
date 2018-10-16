@@ -2,8 +2,7 @@
 
 module Gollum
   class File
-    Wiki.file_class = self
-
+    
     # Public: Initialize a file.
     #
     # wiki - The Gollum::Wiki in question.
