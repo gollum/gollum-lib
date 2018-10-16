@@ -2,9 +2,7 @@
 module Gollum
   class Page
     include Pagination
-
-    Wiki.page_class = self
-
+    
     SUBPAGENAMES = [:header, :footer, :sidebar]
 
     # Sets a Boolean determing whether this page is a historical version.
@@ -240,7 +238,7 @@ module Gollum
     #
     # Returns a Gollum::Markup instance.
     def markup
-      @markup ||= @wiki.markup_classes[format].new(self)
+      @markup ||= ::Gollum::Markup.new(self)
     end
 
     # Public: The current version of the page.
