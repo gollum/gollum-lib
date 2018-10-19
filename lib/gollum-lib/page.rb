@@ -225,8 +225,7 @@ module Gollum
     def metadata
       unless @metadata
         formatted_data if markup.metadata == nil
-        @metadata = markup.metadata || {}
-        @metadata.merge(@wiki.metadata)
+        @metadata = (markup.metadata || {}).merge(@wiki.metadata)
       else
         @metadata
       end
