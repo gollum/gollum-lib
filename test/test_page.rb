@@ -293,5 +293,10 @@ context "with global metadata" do
     assert_equal result, page.metadata
   end
 
-
+  test "page metadata overrides global metadata" do
+    page = @wiki.page('Elrond')
+    @wiki.stubs(:metadata).returns({'race' => 'wombat'})
+    result = {'race' => 'elf'}
+    assert_equal result, page.metadata
+  end
 end
