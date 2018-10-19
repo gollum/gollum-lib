@@ -156,7 +156,7 @@ module Gollum
 
     # Public: Whether or not to display the metadata
     def display_metadata?
-      return false if metadata.empty? || (metadata.size == 1 && metadata['title'])
+      return false if (metadata.keys - ['title', 'header_enum']).empty?
       return false if metadata['display_metadata'] == false
       @wiki.display_metadata
     end
