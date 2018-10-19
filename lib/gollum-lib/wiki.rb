@@ -78,6 +78,9 @@ module Gollum
     # works, and what filter classes need to implement.
     attr_reader :filter_chain
 
+    # Global metadata to be merged into the metadata for each page
+    attr_reader :metadata
+
     # Public: Initialize a new Gollum Repo.
     #
     # path    - The String path to the Git repository that holds the Gollum
@@ -141,6 +144,7 @@ module Gollum
           options[:user_icons] : 'none'
       @allow_uploads        = options.fetch :allow_uploads, false
       @per_page_uploads     = options.fetch :per_page_uploads, false
+      @metadata             = options.fetch :metadata, {}
       @filter_chain         = options.fetch :filter_chain,
                                             [:YAML, :BibTeX, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :PlantUML, :Tags, :PandocBib, :Render]
       @filter_chain.delete(:Emoji) unless options.fetch :emoji, false
