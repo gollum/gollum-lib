@@ -39,7 +39,7 @@ module Gollum
     #
     # Returns the String url_path
     def escaped_url_path
-      ERB::Util.url_encode(self.url_path).gsub('%2F', '/')
+      ERB::Util.url_encode(self.url_path).gsub('%2F', '/').force_encoding('utf-8')
     end
 
     # Public: The on-disk filename of the file.
