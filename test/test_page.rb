@@ -197,7 +197,6 @@ context "Page" do
       })
     assert_equal false, page.display_metadata?
   end
-
 end
 
 context "with a checkout" do
@@ -274,5 +273,30 @@ context "with custom markup engines" do
     assert_equal :redacted, page.format
     assert page.raw_data.include? 'Time'
     assert page.raw_data =~ /^[\s\-]*$/
+  end
+end
+
+context "with global metadata" do
+  setup do
+    @metadata = {'header_enum' => 'true'}
+    @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"), :metadata => @metadata)
+  end
+
+  test "global metadata available on each page" do
+    page = @wiki.page('Bilbo-Baggins')
+    assert_equal @metadata, page.metadata
+  end
+
+  test "global metadata merges with page specific metadata" do
+    page = @wiki.page('Elrond')
+    result = {'race' => 'elf'}.merge(@metadata)
+    assert_equal result, page.metadata
+  end
+
+  test "page metadata overrides global metadata" do
+    page = @wiki.page('Elrond')
+    @wiki.stubs(:metadata).returns({'race' => 'wombat'})
+    result = {'race' => 'elf'}
+    assert_equal result, page.metadata
   end
 end

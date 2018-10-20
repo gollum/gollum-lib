@@ -223,8 +223,12 @@ module Gollum
     #
     # Returns Hash of metadata.
     def metadata
-      formatted_data if markup.metadata == nil
-      markup.metadata || {}
+      unless @metadata
+        formatted_data if markup.metadata == nil
+        @metadata = @wiki.metadata.merge(markup.metadata || {})
+      else
+        @metadata
+      end
     end
 
     # Public: The format of the page.
