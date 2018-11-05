@@ -30,7 +30,7 @@ class Gollum::Filter::CriticMarkup < Gollum::Filter
       elsif content == "\n\n"
         html = "\n\n<ins class='critic break'>&nbsp;</ins>\n\n"
     	# Is it added text followed by a new paragraph?
-  	  elsif content.end_with?("\n\n") && content != "\n\n"
+      elsif content.end_with?("\n\n") && content != "\n\n"
   	    html = "<ins>#{content.gsub('\n', ' ')}</ins>\n\n<ins class='critic break'>&nbsp;</ins>\n\n"
       else
         html = "<ins>#{content.gsub('\n', ' ')}</ins>"
