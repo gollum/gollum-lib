@@ -16,13 +16,13 @@ class Gollum::Filter::CriticMarkup < Gollum::Filter
   HIGHLIGHT_PATTERN     = %r|{\=\=(?<content>.*?)[ \t]*(\[(.*?)\])?[ \t]*\=\=\}{>>(?<comment>.*?)<<}|m
   COMMENT_PATTERN       = %r|{>>(?<content>.*?)<<}|m
 
-  PROCESS_PATTERN       = /(?<placeholder>CRITIC\h+)/
+  PROCESS_PATTERN       = /(?<placeholder>=CRITIC\h{40})/
 
 
   def extract(data)
     data.gsub! ADDITION_PATTERN do
       content = $~[:content]
-      placeholder = "CRITIC" + Digest::SHA1.hexdigest("#{content}#{@map.size}")
+      placeholder = "=CRITIC" + Digest::SHA1.hexdigest("#{content}#{@map.size}")
     	# Is there a new paragraph followed by new text
       if content.start_with?("\n\n") && content != "\n\n"
         html = "\n\n<ins class='critic break'>&nbsp;</ins>\n\n<ins>#{content.gsub('\n', ' ')}</ins>"
@@ -41,7 +41,7 @@ class Gollum::Filter::CriticMarkup < Gollum::Filter
     
     data.gsub! DELETION_PATTERN do
       content = $~[:content]
-      placeholder = "CRITIC" + Digest::SHA1.hexdigest("#{content}#{@map.size}")
+      placeholder = "=CRITIC" + Digest::SHA1.hexdigest("#{content}#{@map.size}")
       if content == "\n\n"
         html = "<del>&nbsp;</del>"
       else
@@ -54,7 +54,7 @@ class Gollum::Filter::CriticMarkup < Gollum::Filter
     data.gsub! SUBSTITUTION_PATTERN do
       oldcontent = $~[:oldcontent]
       newcontent = $~[:newcontent]
-      placeholder = "CRITIC" + Digest::SHA1.hexdigest("#{oldcontent}#{newcontent}#{@map.size}")
+      placeholder = "=CRITIC" + Digest::SHA1.hexdigest("#{oldcontent}#{newcontent}#{@map.size}")
       html = "<del>#{oldcontent}</del><ins>#{newcontent}</ins>"
       @map[placeholder] = html
       placeholder
@@ -63,7 +63,7 @@ class Gollum::Filter::CriticMarkup < Gollum::Filter
     data.gsub! HIGHLIGHT_PATTERN do
       content = $~[:content]
       comment = $~[:comment]
-      placeholder = "CRITIC" + Digest::SHA1.hexdigest("#{content}#{@map.size}")
+      placeholder = "=CRITIC" + Digest::SHA1.hexdigest("#{content}#{@map.size}")
       html = "<mark>#{content}</mark><span class='critic comment'>#{comment}</span>"
       @map[placeholder] = html
       placeholder
@@ -71,7 +71,7 @@ class Gollum::Filter::CriticMarkup < Gollum::Filter
     
     data.gsub! COMMENT_PATTERN do
       content = $~[:content]
-      placeholder = "CRITIC" + Digest::SHA1.hexdigest("#{content}#{@map.size}")
+      placeholder = "=CRITIC" + Digest::SHA1.hexdigest("#{content}#{@map.size}")
       html = "<span class='critic comment'>#{content}</span>"
       @map[placeholder] = html
       placeholder
