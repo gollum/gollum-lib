@@ -41,6 +41,16 @@ end
 
 include Gollum::MarkupRegisterUtils
 
+if gem_exists?('kramdown') then
+  require 'kramdown'
+  class Kramdown::Converter::HtmlSourcemap < Kramdown::Converter::Html
+    def convert_header(el, indent)
+      el.attr[:'data-sourcepos'] = el.options[:location]
+      super(el, indent)
+    end
+  end
+end
+
 module GitHub
   module Markup
     class Markdown < Implementation
@@ -56,7 +66,7 @@ end
 module Gollum
   class Markup
     GitHub::Markup::Markdown::MARKDOWN_GEMS['kramdown'] = proc { |content|
-        Kramdown::Document.new(content, :input => "GFM", :auto_ids => false, :math_engine => nil, :smart_quotes => ["'", "'", '"', '"'].map{|char| char.codepoints.first}).to_html
+      Kramdown::Document.new(content, :input => "GFM", :auto_ids => false, :math_engine => nil, :smart_quotes => ["'", "'", '"', '"'].map{|char| char.codepoints.first}).to_html_sourcemap
     }
     GitHub::Markup::Markdown::MARKDOWN_GEMS['pandoc-ruby'] = proc { |content|
         PandocRuby.convert(content, :s, :from => :markdown, :to => :html, :filter => 'pandoc-citeproc')

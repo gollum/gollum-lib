@@ -223,6 +223,12 @@ module Gollum
     # Default whitelisted attributes.
     ATTRIBUTES = ({
         'a'   => ['href'],
+        'h1'  => ['data-sourcepos'],
+        'h2'  => ['data-sourcepos'],
+        'h3'  => ['data-sourcepos'],
+        'h4'  => ['data-sourcepos'],
+        'h5'  => ['data-sourcepos'],
+        'h6'  => ['data-sourcepos'],
         'img' => ['src'],
         :all  => ['abbr', 'accept', 'accept-charset',
                   'accesskey', 'action', 'align', 'alt', 'axis',
