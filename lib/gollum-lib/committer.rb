@@ -30,7 +30,6 @@ module Gollum
       @wiki      = wiki
       @options   = options
       @callbacks = []
-      after_commit { |*args| Hook.execute(:post_commit, *args) }
     end
 
     # Public: References the Git index for this commit.
@@ -136,6 +135,7 @@ module Gollum
     #
     # Returns nothing.
     def update_working_dir(dir, name, format)
+      $stderr.puts "args to update_working_dir are: #{dir} and #{name} and #{format}"
       unless @wiki.repo.bare
         if @wiki.page_file_dir && dir !~ /^#{@wiki.page_file_dir}/
           dir = dir.size.zero? ? @wiki.page_file_dir : ::File.join(@wiki.page_file_dir, dir)
@@ -170,6 +170,7 @@ module Gollum
       @callbacks.each do |cb|
         cb.call(self, sha1)
       end
+      Hook.execute(:post_commit, self, sha1)
       sha1
     end
 
