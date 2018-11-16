@@ -30,7 +30,6 @@ module Gollum
       @wiki      = wiki
       @options   = options
       @callbacks = []
-      after_commit { |*args| Hook.execute(:post_commit, *args) }
     end
 
     # Public: References the Git index for this commit.
@@ -170,6 +169,7 @@ module Gollum
       @callbacks.each do |cb|
         cb.call(self, sha1)
       end
+      Hook.execute(:post_commit, self, sha1)
       sha1
     end
 
