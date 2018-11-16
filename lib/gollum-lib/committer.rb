@@ -135,7 +135,6 @@ module Gollum
     #
     # Returns nothing.
     def update_working_dir(dir, name, format)
-      $stderr.puts "args to update_working_dir are: #{dir} and #{name} and #{format}"
       unless @wiki.repo.bare
         if @wiki.page_file_dir && dir !~ /^#{@wiki.page_file_dir}/
           dir = dir.size.zero? ? @wiki.page_file_dir : ::File.join(@wiki.page_file_dir, dir)
