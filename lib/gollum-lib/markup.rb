@@ -152,13 +152,6 @@ module Gollum
         Gollum::Filter.const_get(filter_sym).new(self)
       end
 
-      # Since the last 'extract' action in our chain *should* be the markup
-      # to HTML converter, we now have HTML which we can parse and yield, for
-      # anyone who wants it
-      if block_given?
-        yield Nokogiri::HTML::DocumentFragment.parse(data)
-      end
-
       process_chain data, filter_chain
     end
 
