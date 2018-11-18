@@ -70,7 +70,7 @@ class Gollum::Filter::TOC < Gollum::Filter
   # Prefixes duplicate anchors with an index
   def generate_anchor_name(header)
     name = header.content
-    level = header.name.gsub(/[hH]/, '').to_i
+    level = header.name[1..-1].to_i
 
     # normalize the header name
     name.gsub!(/[^\d\w\u00C0-\u1FFF\u2C00-\uD7FF]/, "-")
@@ -79,15 +79,9 @@ class Gollum::Filter::TOC < Gollum::Filter
     name.gsub!(/-$/, "")
     name.downcase!
 
-    @current_ancestors[level - 1] = name
-    @current_ancestors = @current_ancestors.take(level)
-    anchor_name = @current_ancestors.compact.join("_")
-
     # Ensure duplicate anchors have a unique prefix or the toc will break
-    index = increment_anchor_index(anchor_name)
-    anchor_name = "#{index}-#{anchor_name}" unless index.zero? # if the index is zero this name is unique
-
-    anchor_name
+    index = increment_anchor_index(name)
+    index.zero? ? name : "#{name}-#{index}"
   end
 
   # Creates an anchor element with the given name and adds it before
