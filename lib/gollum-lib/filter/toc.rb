@@ -79,10 +79,6 @@ class Gollum::Filter::TOC < Gollum::Filter
     name.gsub!(/-$/, "")
     name.downcase!
 
-    #@current_ancestors[level - 1] = name
-    #@current_ancestors = @current_ancestors.take(level)
-    #anchor_name = @current_ancestors.compact.join("_")
-
     # Ensure duplicate anchors have a unique prefix or the toc will break
     index = increment_anchor_index(name)
     index.zero? ? name : "#{name}-#{index}"
