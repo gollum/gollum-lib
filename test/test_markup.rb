@@ -994,7 +994,7 @@ __TOC__
 # Summary
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h1><a class=\"anchor\" id=\"1-summary\" href=\"#1-summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h1><a class=\"anchor\" id=\"summary-1\" href=\"#summary-1\"><i class=\"fa fa-link\"></i></a>Summary</h1>"
     compare(content, output, :markdown)
   end
 
@@ -1007,20 +1007,24 @@ __TOC__
 # Summary !@$#%^&*() stuff
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary-stuff\" href=\"#summary-stuff\"><i class=\"fa fa-link\"></i></a>Summary '\"' stuff</h1>\n\n<h1><a class=\"anchor\" id=\"1-summary-stuff\" href=\"#1-summary-stuff\"><i class=\"fa fa-link\"></i></a>Summary !@$#%^&*() stuff</h1>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary-stuff\" href=\"#summary-stuff\"><i class=\"fa fa-link\"></i></a>Summary '\"' stuff</h1>\n\n<h1><a class=\"anchor\" id=\"summary-stuff-1\" href=\"#summary-stuff-1\"><i class=\"fa fa-link\"></i></a>Summary !@$#%^&*() stuff</h1>"
     compare(content, output, :markdown)
   end
 
-  test 'anchor names contain the ancestor' do
+  test 'anchor names are unique' do
     content = <<-MARKDOWN
 __TOC__
 
 # Summary
 
 ## Horse
+
+# Summary
+
+### Horse
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h2><a class=\"anchor\" id=\"summary_horse\" href=\"#summary_horse\"><i class=\"fa fa-link\"></i></a>Horse</h1>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h2><a class=\"anchor\" id=\"horse\" href=\"#horse\"><i class=\"fa fa-link\"></i></a>Horse</h2>\n<h1><a class=\"anchor\" id=\"summary-1\" href=\"#summary-1\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h3><a class=\"anchor\" id=\"horse-1\" href=\"#horse-1\"><i class=\"fa fa-link\"></i></a>Horse</h3>"
     compare(content, output, :markdown)
   end
 

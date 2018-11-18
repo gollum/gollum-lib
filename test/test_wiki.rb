@@ -145,6 +145,8 @@ context "Wiki TOC" do
 
 ## Denethor
 
+### Ecthelion
+
 ### Boromir
 
 ### Faramir
@@ -152,9 +154,10 @@ context "Wiki TOC" do
 
     formatted = <<-HTML
 <h1><a class="anchor" id="ecthelion" href="#ecthelion"><i class="fa fa-link"></i></a>Ecthelion</h1>
-<h2><a class="anchor" id="ecthelion_denethor" href="#ecthelion_denethor"><i class="fa fa-link"></i></a>Denethor</h2>
-<h3><a class="anchor" id="ecthelion_denethor_boromir" href="#ecthelion_denethor_boromir"><i class="fa fa-link"></i></a>Boromir</h3>
-<h3><a class="anchor" id="ecthelion_denethor_faramir" href="#ecthelion_denethor_faramir"><i class="fa fa-link"></i></a>Faramir</h3>
+<h2><a class="anchor" id="denethor" href="#denethor"><i class="fa fa-link"></i></a>Denethor</h2>
+<h3><a class="anchor" id="ecthelion-1" href="#ecthelion-1"><i class="fa fa-link"></i></a>Ecthelion</h3>
+<h3><a class="anchor" id="boromir" href="#boromir"><i class="fa fa-link"></i></a>Boromir</h3>
+<h3><a class="anchor" id="faramir" href="#faramir"><i class="fa fa-link"></i></a>Faramir</h3>
     HTML
 
     page_level0 = @wiki.preview_page("Test", "[[_TOC_ | levels=0]] \n\n" + content, :markdown)
@@ -177,7 +180,7 @@ context "Wiki TOC" do
 <p><div class="toc">
 <div class="toc-title">Table of Contents</div>
 <ul><li><a href="#ecthelion">Ecthelion</a>
-<ul><li><a href="#ecthelion_denethor">Denethor</a></li></ul>
+<ul><li><a href="#denethor">Denethor</a></li></ul>
 </li></ul>
 </div></p>
     HTML
@@ -193,10 +196,11 @@ context "Wiki TOC" do
   <li>
     <a href="#ecthelion">Ecthelion</a>
     <ul>
-      <li><a href="#ecthelion_denethor">Denethor</a>
+      <li><a href="#denethor">Denethor</a>
     <ul>
-      <li><a href="#ecthelion_denethor_boromir">Boromir</a></li>
-      <li><a href="#ecthelion_denethor_faramir">Faramir</a></li>
+      <li><a href="#ecthelion-1">Ecthelion</a></li>
+      <li><a href="#boromir">Boromir</a></li>
+      <li><a href="#faramir">Faramir</a></li>
     </ul>
   </li></ul>
 </li></ul>
