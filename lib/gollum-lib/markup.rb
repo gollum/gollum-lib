@@ -123,6 +123,11 @@ module Gollum
         data = filter.extract(data)
       end
 
+      # Since the last 'extract' action in our chain *should* be the markup
+      # to HTML converter, we now have HTML which we can parse and yield, for
+      # anyone who wants it
+      yield Nokogiri::HTML::DocumentFragment.parse(data) if block_given?
+
       # Then we process the data through the chain *backwards*
       filter_chain.reverse.each do |filter|
         data = filter.process(data)
@@ -132,14 +137,15 @@ module Gollum
     end
 
     # Render the content with Gollum wiki syntax on top of the file's own
-    # markup language.
+    # markup language. Takes an optional block that will be executed after
+    # the markup rendering step in the filter chain.
     #
     # no_follow - Boolean that determines if rel="nofollow" is added to all
     #             <a> tags.
     # encoding  - Encoding Constant or String.
     #
     # Returns the formatted String content.
-    def render(no_follow = false, encoding = nil, include_levels = 10)
+    def render(no_follow = false, encoding = nil, include_levels = 10, &block)
       @sanitize = no_follow ? @wiki.history_sanitizer : @wiki.sanitizer
 
       @encoding       = encoding
@@ -152,7 +158,7 @@ module Gollum
         Gollum::Filter.const_get(filter_sym).new(self)
       end
 
-      process_chain data, filter_chain
+      process_chain(data, filter_chain, &block)
     end
 
     # Find the given file in the repo.
