@@ -82,7 +82,7 @@ module Gollum
     # This way, pages are not inadvertently overwritten.
     #
     # Returns nothing (modifies the Index in place).
-    def add_to_index(dir, name, format, data)
+    def add_to_index(dir, name, format, data, options = {})
       path = @wiki.page_file_name(name, format)
 
       dir  = '/' if dir.strip.empty?
@@ -116,11 +116,13 @@ module Gollum
         fullpath = fullpath.force_encoding('ascii-8bit') if fullpath.respond_to?(:force_encoding)
       end
 
-      begin
-        data = @wiki.normalize(data)
-      rescue ArgumentError => err
-        # Swallow errors that arise from data being binary
-        raise err unless err.message.include?('invalid byte sequence')
+      unless options[:normalize] == false
+        begin
+          data = @wiki.normalize(data)
+        rescue ArgumentError => err
+          # Swallow errors that arise from data being binary
+          raise err unless err.message.include?('invalid byte sequence')
+        end
       end
       index.add(fullpath, data)
     end
