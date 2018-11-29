@@ -215,12 +215,21 @@ class Gollum::Filter::Tags < Gollum::Filter
     page      = find_page_from_path(link)
 
     # If no match yet, try finding page with anchor removed
-    if (page.nil? && pos = link.rindex('#'))
-      extra     = link[pos..-1]
-      link      = link[0...pos]
-      page      = find_page_from_path(link)
+    unless page
+      if pos = link.rindex('#')
+        extra = link[pos..-1]
+        link  = link[0...pos]
+      else
+        extra = nil
+      end
+
+      if link.empty? && !extra.nil? # Internal anchor link, don't search for the page but return immediately
+        return generate_link(nil, pretty_name, extra, :internal_anchor)
+      end
+
+      page  = find_page_from_path(link)
     end
-    presence  = :page_present if page
+    presence = :page_present if page
 
     name = pretty_name ? pretty_name : link
     link = page ? page.escaped_url_path : ERB::Util.url_encode(link).force_encoding('utf-8')
@@ -264,7 +273,11 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns a String href.
   def generate_href_for_path(path, extra = nil)
-   "#{trim_leading_slash(::File.join(@markup.wiki.base_path, path))}#{extra}"
+    if path.nil? && !extra.nil? # Internal anchor link
+      extra
+    else
+      "#{trim_leading_slash(::File.join(@markup.wiki.base_path, path))}#{extra}"
+    end
   end
 
   # Construct a CSS class and attribute string for different kinds of links: internal Pages (absent or present) and Files, and External links.
@@ -278,6 +291,8 @@ class Gollum::Filter::Tags < Gollum::Filter
       'class="internal absent"'
     when :page_present
       'class="internal present"'
+    when :internal_anchor
+      'class="internal-anchor"'
     when :file
       nil
     when :external

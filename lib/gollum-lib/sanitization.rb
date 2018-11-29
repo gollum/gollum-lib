@@ -283,11 +283,12 @@ module Gollum
         end,
         lambda do |env|
           node = env[:node]
-          return unless (value = node['href'])
-          prefix       = env[:config][:id_prefix]
-          node['href'] = value.gsub(/\A\#(#{prefix})?/, '#'+prefix)
-          ADD_ATTRIBUTES.call(env, node)
-          {}
+          if (value = node['href']) && !(node[:class] == 'internal-anchor') # make an exception for pure anchor links
+            prefix       = env[:config][:id_prefix]
+            node['href'] = value.gsub(/\A\#(#{prefix})?/, '#'+prefix)
+            ADD_ATTRIBUTES.call(env, node)
+            {}
+          end
         end
     ].freeze
 
