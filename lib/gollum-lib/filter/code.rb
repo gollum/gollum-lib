@@ -14,10 +14,10 @@ class Gollum::Filter::Code < Gollum::Filter
       org_headers = %r{([ \t]*#\+HEADER[S]?:[^\r\n]*\n)*}
       org_name = %r{([ \t]*#\+NAME:[^\r\n]*\n)?}
       org_lang = %r{[ ]*([^\n \r]*)[ ]*[^\r\n]*}
-      org_begin = %r{[ \t]*#\+BEGIN_SRC#{org_lang}\n}
-      org_end = %r{\n[ \t]*#\+END_SRC[ \t]*}
+      org_begin = %r{([ \t]*)#\+BEGIN_SRC#{org_lang}\r?\n}
+      org_end = %r{\r?\n[ \t]*#\+END_SRC[ \t\r]*}
       data.gsub!(/^#{org_headers}#{org_name}#{org_begin}(.+?)#{org_end}$/mi) do
-        cache_codeblock(Regexp.last_match[3], Regexp.last_match[4])
+        "#{Regexp.last_match[3]}#{cache_codeblock(Regexp.last_match[4], Regexp.last_match[5])}"
       end
     when :markdown
       data.gsub!(/^([ \t]*)(~~~+) ?([^\r\n]+)?\r?\n(.+?)\r?\n\1(~~~+)[ \t\r]*$/m) do
