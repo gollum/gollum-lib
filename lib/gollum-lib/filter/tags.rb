@@ -34,7 +34,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     doc.traverse do |node|
       if node.text? then
         content = node.content
-        content.gsub!(/TAG[a-f0-9]+TAG/) do |id|
+        content.gsub!(%r{#{open_pattern}[a-f0-9]+#{close_pattern}}) do |id|
           if (tag = @map[id]) then
             if is_preformatted?(node) then
               "[[#{tag}]]"
@@ -56,7 +56,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   INCLUDE_TAG = 'include:'
 
   def register_tag(tag)
-    id       = "TAG#{Digest::SHA1.hexdigest(tag)}TAG"
+    id       = "#{open_pattern}#{Digest::SHA1.hexdigest(tag)}#{close_pattern}"
     @map[id] = tag
     id
   end

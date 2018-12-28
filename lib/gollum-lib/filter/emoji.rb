@@ -14,17 +14,11 @@ class Gollum::Filter::Emoji < Gollum::Filter
     (?!\]{^2})
   }ix
 
-  PROCESS_PATTERN = %r{
-    =EEMMOOJJII=
-    (?<name>[\w-]+)
-    =IIJJOOMMEE=
-  }ix
-
   def extract(data)
     data.gsub! EXTRACT_PATTERN do
       case
         when $~[:escape] then $&[1..-1]
-        when emoji_exists?($~[:name]) then "=EEMMOOJJII=#{$~[:name]}=IIJJOOMMEE="
+        when emoji_exists?($~[:name]) then "#{open_pattern}#{$~[:name]}#{close_pattern}"
         else $&
       end
     end
@@ -32,11 +26,19 @@ class Gollum::Filter::Emoji < Gollum::Filter
   end
 
   def process(data)
-    data.gsub! PROCESS_PATTERN, %q(<img src="/emoji/\k<name>" alt="\k<name>" class="emoji">)
+    data.gsub! process_pattern, %q(<img src="/emoji/\k<name>" alt="\k<name>" class="emoji">)
     data
   end
 
   private
+
+  def process_pattern
+    %r{
+    #{open_pattern}
+    (?<name>[\w-]+)
+    #{close_pattern}
+  }ix
+  end
 
   def emoji_exists?(name)
     @index ||= Gemojione::Index.new

@@ -47,6 +47,8 @@ module Gollum
   class Filter
     include Gollum::Helpers
 
+    PLACEHOLDER_PATTERN = /%(\S+)%.+=\1=/
+
     # Setup the object.  Sets `@markup` to be the instance of Gollum::Markup that
     # is running this filter chain, and sets `@map` to be an empty hash (for use
     # in your extract/process operations).
@@ -63,6 +65,14 @@ module Gollum
     def process(data)
       raise RuntimeError,
             "#{self.class} has not implemented ##process!"
+    end
+
+    def open_pattern
+      @open_pattern ||= "%#{self.class.to_s.split('::').last}%"
+    end
+
+    def close_pattern
+      @close_pattern ||= "=#{self.class.to_s.split('::').last}="
     end
 
     protected
