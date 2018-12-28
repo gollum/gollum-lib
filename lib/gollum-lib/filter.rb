@@ -55,7 +55,11 @@ module Gollum
     def initialize(markup)
       @markup = markup
       @map    = {}
+      @open_pattern = "%#{self.class.to_s.split('::').last}%"
+      @close_pattern = "=#{self.class.to_s.split('::').last}="
     end
+
+    attr_reader :open_pattern, :close_pattern
 
     def extract(data)
       raise RuntimeError,
@@ -65,14 +69,6 @@ module Gollum
     def process(data)
       raise RuntimeError,
             "#{self.class} has not implemented ##process!"
-    end
-
-    def open_pattern
-      @open_pattern ||= "%#{self.class.to_s.split('::').last}%"
-    end
-
-    def close_pattern
-      @close_pattern ||= "=#{self.class.to_s.split('::').last}="
     end
 
     protected
