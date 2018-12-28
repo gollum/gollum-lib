@@ -26,7 +26,7 @@ class Gollum::Filter::Emoji < Gollum::Filter
   end
 
   def process(data)
-    data.gsub! process_pattern, %q(<img src="/emoji/\k<name>" alt="\k<name>" class="emoji">)
+    data.gsub! process_pattern, %q(<img src="/gollum/emoji/\k<name>" alt="\k<name>" class="emoji">)
     data
   end
 
