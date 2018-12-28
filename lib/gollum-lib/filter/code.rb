@@ -133,7 +133,7 @@ class Gollum::Filter::Code < Gollum::Filter
 
   def cache_codeblock(language, code, indent = "")
     language = language.to_s.empty? ? nil : language
-    id = Digest::SHA1.hexdigest("#{language}.#{code}")
+    id = "#{open_pattern}#{Digest::SHA1.hexdigest("#{language}.#{code}")}#{close_pattern}"
     cached = @markup.check_cache(:code, id)
     @map[id] = cached ?
       { :output => cached } :

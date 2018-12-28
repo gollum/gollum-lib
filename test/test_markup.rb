@@ -957,13 +957,13 @@ np.array([[2,2],[1,3]],np.float)
 
   test "id with prefix ok" do
     content = "h2(example#wiki-foo). xxxx"
-    output  = "<h2 class=\"example\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"><i class=\"fa fa-link\"></i></a>xxxx</h2>"
+    output  = "<h2 class=\"example editable\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"><i class=\"fa fa-link\"></i></a>xxxx</h2>"
     compare(content, output, :textile)
   end
 
   test "id prefix added" do
     content = "h2(#foo). xxxx[1]\n\nfn1.footnote"
-    output  = "<h2 id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx1\" href=\"#xxxx1\"><i class=\"fa fa-link\"></i></a>xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup>\n</h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
+    output  = "<h2 class=\"editable\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx1\" href=\"#xxxx1\"><i class=\"fa fa-link\"></i></a>xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup>\n</h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
     compare(content, output, :textile)
   end
 
@@ -975,6 +975,18 @@ np.array([[2,2],[1,3]],np.float)
         /id="wiki-Header"/,
         /name="wiki-Header"/
     ]
+  end
+
+  test "adds editable class to headers in the source document" do
+    content = '# Test'
+    output = '<h1 class="editable"><a class="anchor" id="test" href="#test"><i class="fa fa-link"></i></a>Test</h1>'
+    compare(content, output, :markdown)
+  end
+
+  test "does not add editable class to headers in the source document when it contains placeholder" do
+    content = '# Test %SomeFilter%BLA=SomeFilter='
+    output = '<h1><a class="anchor" id="test-somefilter-bla-somefilter" href="#test-somefilter-bla-somefilter"><i class="fa fa-link"></i></a>Test %SomeFilter%BLA=SomeFilter=</h1'
+    compare(content, output, :markdown)
   end
   
   test "toc with h1_title does not include page title" do
@@ -994,7 +1006,7 @@ __TOC__
 # Summary
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h1><a class=\"anchor\" id=\"summary-1\" href=\"#summary-1\"><i class=\"fa fa-link\"></i></a>Summary</h1>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary-1\" href=\"#summary-1\"><i class=\"fa fa-link\"></i></a>Summary</h1>"
     compare(content, output, :markdown)
   end
 
@@ -1007,7 +1019,7 @@ __TOC__
 # Summary !@$#%^&*() stuff
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary-stuff\" href=\"#summary-stuff\"><i class=\"fa fa-link\"></i></a>Summary '\"' stuff</h1>\n\n<h1><a class=\"anchor\" id=\"summary-stuff-1\" href=\"#summary-stuff-1\"><i class=\"fa fa-link\"></i></a>Summary !@$#%^&*() stuff</h1>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary-stuff\" href=\"#summary-stuff\"><i class=\"fa fa-link\"></i></a>Summary '\"' stuff</h1>\n\n<h1  class=\"editable\"><a class=\"anchor\" id=\"summary-stuff-1\" href=\"#summary-stuff-1\"><i class=\"fa fa-link\"></i></a>Summary !@$#%^&*() stuff</h1>"
     compare(content, output, :markdown)
   end
 
@@ -1024,7 +1036,7 @@ __TOC__
 ### Horse
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h2><a class=\"anchor\" id=\"horse\" href=\"#horse\"><i class=\"fa fa-link\"></i></a>Horse</h2>\n<h1><a class=\"anchor\" id=\"summary-1\" href=\"#summary-1\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h3><a class=\"anchor\" id=\"horse-1\" href=\"#horse-1\"><i class=\"fa fa-link\"></i></a>Horse</h3>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h2 class=\"editable\"><a class=\"anchor\" id=\"horse\" href=\"#horse\"><i class=\"fa fa-link\"></i></a>Horse</h2>\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary-1\" href=\"#summary-1\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h3 class=\"editable\"><a class=\"anchor\" id=\"horse-1\" href=\"#horse-1\"><i class=\"fa fa-link\"></i></a>Horse</h3>"
     compare(content, output, :markdown)
   end
 
@@ -1106,7 +1118,7 @@ def sub_word(mo):
   test 'font awesome class' do
     content = "# hi\n\n[[_TOC_]]"
     # must expect <i class="fa fa-link">
-    output = "<h1><a class=\"anchor\" id=\"hi\" href=\"#hi\"><i class=\"fa fa-link\"></i></a>hi</h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
+    output = "<h1 class=\"editable\"><a class=\"anchor\" id=\"hi\" href=\"#hi\"><i class=\"fa fa-link\"></i></a>hi</h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
     compare(content, output)
   end
 
