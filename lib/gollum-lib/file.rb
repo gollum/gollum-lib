@@ -145,11 +145,10 @@ module Gollum
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
     def find(name, version, try_on_disk = false)
-      checked = name.downcase
       map     = @wiki.tree_map_for(version)
       commit  = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
 
-      if (result = map.detect { |entry| entry.path.downcase == checked })
+      if (result = map.detect { |entry| entry.path == name })
         @path    = name
         @version = commit
 
