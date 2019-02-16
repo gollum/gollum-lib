@@ -147,7 +147,7 @@ module Gollum
     def find(name, version, try_on_disk = false)
       map     = @wiki.tree_map_for(version)
       if @wiki.page_file_dir
-       path = ::File.join(@wiki.page_file_dir, path)
+       path = ::File.join(@wiki.page_file_dir, name)
       else
        path = name
       end
