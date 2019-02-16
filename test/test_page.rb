@@ -46,7 +46,9 @@ context "Page" do
   end
 
   test "get nested page" do
-    page = @wiki.page('Eye-Of-Sauron')
+    page = @wiki.page('Mordor/Eye-Of-Sauron')
+    assert_equal 'Mordor/Eye-Of-Sauron.md', page.path
+    page = @wiki.page('/Mordor/Eye-Of-Sauron')
     assert_equal 'Mordor/Eye-Of-Sauron.md', page.path
   end
 
@@ -56,7 +58,7 @@ context "Page" do
   end
 
   test "nested url_path" do
-    page = @wiki.page('Eye-Of-Sauron')
+    page = @wiki.page('/Mordor/Eye-Of-Sauron')
     assert_equal 'Mordor/Eye-Of-Sauron.md', page.url_path
   end
 
@@ -114,7 +116,7 @@ context "Page" do
   end
 
   test "nested header" do
-    header = @wiki.page('Eye-Of-Sauron').header
+    header = @wiki.page('Mordor/Eye-Of-Sauron').header
     assert_equal "Sauron\n", header.raw_data
     assert_equal "Mordor/_Header.md", header.path
   end
@@ -133,7 +135,7 @@ context "Page" do
   end
 
   test "nested footer" do
-    footer = @wiki.page('Eye-Of-Sauron').footer
+    footer = @wiki.page('Mordor/Eye-Of-Sauron').footer
     assert_equal "Ones does not simply **walk** into Mordor!\n", footer.raw_data
     assert_equal "Mordor/_Footer.md", footer.path
   end
@@ -152,7 +154,7 @@ context "Page" do
   end
 
   test "nested sidebar" do
-    sidebar = @wiki.page('Eye-Of-Sauron').sidebar
+    sidebar = @wiki.page('Mordor/Eye-Of-Sauron').sidebar
     assert_equal "Ones does not simply **walk** into Mordor!\n", sidebar.raw_data
     assert_equal "Mordor/_Sidebar.md", sidebar.path
   end
@@ -288,13 +290,13 @@ context "with global metadata" do
   end
 
   test "global metadata merges with page specific metadata" do
-    page = @wiki.page('Elrond')
+    page = @wiki.page('Rivendell/Elrond')
     result = {'race' => 'elf'}.merge(@metadata)
     assert_equal result, page.metadata
   end
 
   test "page metadata overrides global metadata" do
-    page = @wiki.page('Elrond')
+    page = @wiki.page('Rivendell/Elrond')
     @wiki.stubs(:metadata).returns({'race' => 'wombat'})
     result = {'race' => 'elf'}
     assert_equal result, page.metadata

@@ -528,7 +528,7 @@ org
     index.add("greek/Bilbo-Baggins.md", "a [[alpha.jpg]] [[a | alpha.jpg]] b")
     index.commit("Add alpha.jpg")
 
-    page   = @wiki.page("Bilbo-Baggins")
+    page   = @wiki.page("greek/Bilbo-Baggins")
     output = page.formatted_data
     assert_html_equal %{<p>a <img src=\"/wiki/greek/alpha.jpg\" /><a href=\"/wiki/greek/alpha.jpg\">a</a> b</p>}, output
   end
@@ -666,7 +666,7 @@ org
     index.add("greek/Bilbo-Baggins.md", "a [[Alpha|alpha.jpg]] b")
     index.commit("Add alpha.jpg")
 
-    page   = @wiki.page("Bilbo-Baggins")
+    page   = @wiki.page("greek/Bilbo-Baggins")
     output = Gollum::Markup.new(page).render
     assert_html_equal %{<p>a <a href="/greek/alpha.jpg">Alpha</a> b</p>}, output
   end
@@ -676,7 +676,7 @@ org
     index.add("greek/Bilbo-Baggins.md", "a [[Alpha|http://example.com/alpha.jpg]] b")
     index.commit("Add alpha.jpg")
 
-    page = @wiki.page("Bilbo-Baggins")
+    page = @wiki.page("greek/Bilbo-Baggins")
     assert_html_equal %{<p>a <a href="http://example.com/alpha.jpg">Alpha</a> b</p>}, page.formatted_data
   end
 
@@ -1155,7 +1155,7 @@ def sub_word(mo):
     index.commit("Add alpha.jpg")
 
     @wiki.clear_cache
-    page     = @wiki.page("Bilbo-Baggins")
+    page     = @wiki.page("greek/Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
     assert_html_equal output, rendered
   end

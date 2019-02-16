@@ -335,15 +335,15 @@ module Gollum
     # Returns nothing.
     attr_writer :version
 
-    # Find a page in the given Gollum repo.
+    # Find a page in the given Gollum wiki.
     #
     # name    - The human or canonical String page name to find.
     # version - The String version ID to find.
     #
     # Returns a Gollum::Page or nil if the page could not be found.
-    def find(name, version, dir = nil, exact = false)
+    def find(path, version)
       map = @wiki.tree_map_for(version.to_s)
-      if (page = find_page_in_tree(map, name, dir, exact))
+      if (page = find_page_in_tree(map, path))
         page.version    = version.is_a?(Gollum::Git::Commit) ?
             version : @wiki.commit_for(version)
         page.historical = page.version.to_s == version.to_s
@@ -355,27 +355,24 @@ module Gollum
     # Find a page in a given tree.
     #
     # map         - The Array tree map from Wiki#tree_map.
-    # name        - The canonical String page name.
-    # checked_dir - Optional String of the directory a matching page needs
-    #               to be in.  The string should
+    # path        - The String path to search for.
     #
     # Returns a Gollum::Page or nil if the page could not be found.
-    def find_page_in_tree(map, name, checked_dir = nil, exact = false)
-      return nil if !map || name.to_s.empty?
-
-      checked_dir = BlobEntry.normalize_dir(checked_dir)
-      checked_dir = '' if exact && checked_dir.nil?
-      query       = checked_dir ? ::File.join(checked_dir, name) : name
+    def find_page_in_tree(map, path)
+      return nil if !map || path.to_s.empty?
+      if @wiki.page_file_dir
+       query = ::File.join('/', @wiki.page_file_dir, path)
+      else
+       query = ::File.join('/', path)
+      end
 
       map.each do |entry|
         next if entry.name.to_s.empty? || !self.class.valid_extension?(entry.name)
-        entry_name = ::File.extname(name).empty? ? ::Gollum::Page.strip_filename(entry.name) : entry.name
-        path = checked_dir ? ::File.join(entry.dir, entry_name) : entry_name
-        next unless query == path
+        entry_name = self.class.valid_extension?(query) ? entry.name : ::Gollum::Page.strip_filename(entry.name)
+        next unless query == ::File.join('/', entry.dir, entry_name)
         return entry.page(@wiki, @version)
       end
-
-      return nil # nothing was found
+      return nil
     end
 
     # Populate the Page with information from the Blob.

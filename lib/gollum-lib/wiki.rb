@@ -162,25 +162,13 @@ module Gollum
 
     # Public: Get the formatted page for a given page name, version, and dir.
     #
-    # name    - The human or canonical String page name of the wiki page.
+    # path    - The String path to the the wiki page (may or may not include file extension).
     # version - The String version ID to find (default: @ref).
-    # dir     - The directory String relative to the repo.
     #
     # Returns a Gollum::Page or nil if no matching page was found.
-    def page(name, version = @ref, dir = nil, exact = false)
+    def page(path, version = @ref)
       version = @ref if version.nil?
-      ::Gollum::Page.new(self).find(name, version, dir, exact)
-    end
-
-    # Public: Convenience method instead of calling page(name, nil, dir).
-    #
-    # name    - The human or canonical String page name of the wiki page.
-    # version - The String version ID to find (default: @ref).
-    # dir     - The directory String relative to the repo.
-    #
-    # Returns a Gollum::Page or nil if no matching page was found.
-    def paged(name, dir = nil, exact = false, version = @ref)
-      page(name, version, dir, exact)
+      ::Gollum::Page.new(self).find(path, version)
     end
 
     # Public: Get the static file for a given name.
@@ -768,7 +756,7 @@ module Gollum
     # ignore_page_file_dir - Boolean, if true, searches all files within the git repo, regardless of dir/subdir
     #
     # Returns an Array of BlobEntry instances.
-    def tree_map_for(ref, ignore_page_file_dir=false)
+    def tree_map_for(ref, ignore_page_file_dir = false)
       if ignore_page_file_dir && !@page_file_dir.nil?
         @root_access ||= GitAccess.new(path, nil, @repo_is_bare)
         @root_access.tree(ref)
