@@ -215,7 +215,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     page      = find_page_from_path(link)
 
     # If no match yet, try finding page with anchor removed
-    unless page
+    if page.nil?
       if pos = link.rindex('#')
         extra = link[pos..-1]
         link  = link[0...pos]
@@ -223,7 +223,7 @@ class Gollum::Filter::Tags < Gollum::Filter
         extra = nil
       end
 
-      if link.empty? && !extra.nil? # Internal anchor link, don't search for the page but return immediately
+      if link.empty? && extra # Internal anchor link, don't search for the page but return immediately
         return generate_link(nil, pretty_name, extra, :internal_anchor)
       end
 
@@ -273,11 +273,8 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns a String href.
   def generate_href_for_path(path, extra = nil)
-    if path.nil? && !extra.nil? # Internal anchor link
-      extra
-    else
-      "#{trim_leading_slash(::File.join(@markup.wiki.base_path, path))}#{extra}"
-    end
+    return extra if !path && extra # Internal anchor link
+    "#{trim_leading_slash(::File.join(@markup.wiki.base_path, path))}#{extra}"
   end
 
   # Construct a CSS class and attribute string for different kinds of links: internal Pages (absent or present) and Files, and External links.
@@ -292,7 +289,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     when :page_present
       'class="internal present"'
     when :internal_anchor
-      'class="internal-anchor"'
+      'class="internal anchorlink"'
     when :file
       nil
     when :external
