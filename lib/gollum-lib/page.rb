@@ -450,6 +450,7 @@ module Gollum
           else
             ''
           end
+      path = path[@wiki.page_file_dir.length+1..-1] if @wiki.page_file_dir # Chop off the page file dir plus the first slash if necessary 
       path << name
     end
 

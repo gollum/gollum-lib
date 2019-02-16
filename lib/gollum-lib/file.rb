@@ -19,13 +19,15 @@ module Gollum
     # Public: The url path required to reach this page within the repo.
     #
     # Returns the String url_path
+
     def url_path
-      path = self.path
-      if path.include?('/')
-        path = path.sub(/\/[^\/]+$/, '/')
-        path << name
-      end
-      path
+      path = if self.path.include?('/')
+        self.path.sub(/\/[^\/]+$/, '/')
+          else
+            ''
+          end
+      path = path[@wiki.page_file_dir.length+1..-1] if @wiki.page_file_dir # Chop off the page file dir plus the first slash if necessary 
+      path << name
     end
 
     # Public: The SHA hash identifying this file

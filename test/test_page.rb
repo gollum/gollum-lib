@@ -24,6 +24,7 @@ context "Page" do
     assert_html_equal expected, actual
 
     assert_equal 'Bilbo-Baggins.md', page.path
+    assert_equal 'Bilbo-Baggins.md', page.escaped_url_path
     assert_equal :markdown, page.format
     assert_equal @wiki.repo.commits.first.id, page.version.id
 
@@ -50,6 +51,7 @@ context "Page" do
     assert_equal 'Mordor/Eye-Of-Sauron.md', page.path
     page = @wiki.page('/Mordor/Eye-Of-Sauron')
     assert_equal 'Mordor/Eye-Of-Sauron.md', page.path
+    assert_equal 'Mordor/Eye-Of-Sauron.md', page.escaped_url_path
   end
 
   test "url_path" do
@@ -225,7 +227,7 @@ context "with a checkout" do
   end
 end
 
-context "within a sub-directory" do
+context "with a page-file-dir enabled" do
   setup do
     @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"), { :page_file_dir => 'Rivendell' })
   end
@@ -235,6 +237,7 @@ context "within a sub-directory" do
     assert_equal Gollum::Page, page.class
     assert page.raw_data =~ /^# Elrond\n\nElrond/
     assert_equal 'Rivendell/Elrond.md', page.path
+    assert_equal 'Elrond.md', page.escaped_url_path
     assert_equal :markdown, page.format
     assert_equal @wiki.repo.commits.first.id, page.version.id
   end
