@@ -146,13 +146,20 @@ module Gollum
     # for which on_disk? is actually true.
     def find(name, version, try_on_disk = false)
       map     = @wiki.tree_map_for(version)
+      if @wiki.page_file_dir
+       path = ::File.join(@wiki.page_file_dir, path)
+      else
+       path = name
+      end
+      query = ::File.join('/', path)
+
       commit  = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
 
-      if (result = map.detect { |entry| entry.path == name })
-        @path    = name
+      if (result = map.detect { |entry| ::File.join('/', entry.path) == query })
+        @path    = path
         @version = commit
 
-        if try_on_disk && get_disk_reference(name, commit)
+        if try_on_disk && get_disk_reference(query, commit)
           @on_disk = true
         else
           @blob = result.blob(@wiki.repo)
