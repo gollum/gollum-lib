@@ -52,10 +52,31 @@ context "Wiki" do
   end
 
   test "list pages" do
-    pages = @wiki.pages
-    assert_equal \
-      ['Bilbo-Baggins.md', 'Boromir.md', 'Elrond.md', 'Eye-Of-Sauron.md', 'Hobbit.md', 'Home.textile', 'My-Precious.md', 'RingBearers.md', 'Samwise Gamgee.mediawiki', 'todo.txt'],
-      pages.map(&:filename).sort
+    pages = [
+      'Bilbo-Baggins.md', 'Gondor/Boromir.md', 'Hobbit.md', 'Home.textile', 'Mordor/Eye-Of-Sauron.md',
+      'Mordor/todo.txt', 'My-Precious.md', 'RingBearers.md', 'Rivendell/Elrond.md', 'Samwise Gamgee.mediawiki'
+    ]
+
+    assert_equal pages, @wiki.pages.map(&:path)
+    assert_equal pages.reverse, @wiki.pages(direction_desc: true).map(&:path)
+  end
+
+  test "list pages sorted by date with limit" do
+    first_pages = ["Bilbo Baggins", "Eye Of Sauron", "todo", "Home", "My Precious", "Samwise Gamgee"]
+    last_pages = ["RingBearers", "Hobbit", "Elrond", "Boromir", "Samwise Gamgee", "My Precious"]
+
+    assert_equal first_pages, @wiki.pages(limit: 6, sort: "created_at").map(&:name)
+    assert_equal last_pages, @wiki.pages(limit: 6, sort: "created_at", direction_desc: true).map(&:name)
+  end
+
+  test "list pages sorted by date with limit from a particular reference" do
+    sha = '0ed8cbe0a25235bd867e65193c7d837c66b328ef'
+
+    first_pages = ["Bilbo Baggins", "Eye Of Sauron", "todo", "Home", "My <b>Precious"]
+    last_pages = ["My <b>Precious", "Home", "todo", "Eye Of Sauron", "Bilbo Baggins"]
+
+    assert_equal first_pages, @wiki.pages(sha, limit: 6, sort: "created_at").map(&:name)
+    assert_equal last_pages, @wiki.pages(sha, limit: 6, sort: "created_at", direction_desc: true).map(&:name)
   end
 
   test "list files" do

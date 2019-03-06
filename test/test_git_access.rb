@@ -61,4 +61,14 @@ context "GitAccess" do
     assert_not_nil symlink
     assert_equal 0120000, symlink.mode
   end
+
+  test "#files_sorted_by_created_at" do
+    files = [
+      "Mordor/_Footer.md", "My-Precious.md", "Mordor/eye.jpg", "Home.textile",
+      "Mordor/todo.txt", "Mordor/Eye-Of-Sauron.md", "Data.csv", "Bilbo-Baggins.md", "_Footer.md"
+    ]
+
+    sha = '60f12f4254f58801b9ee7db7bca5fa8aeefaa56b'
+    assert_equal files, @access.files_sorted_by_created_at(sha)
+  end
 end

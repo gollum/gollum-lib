@@ -608,8 +608,17 @@ module Gollum
     # treeish - The String commit ID or ref to find  (default:  @ref)
     #
     # Returns an Array of Gollum::Page instances.
-    def pages(treeish = nil)
-      tree_list(treeish || @ref)
+    def pages(treeish = nil, limit: nil, sort: nil, direction_desc: false)
+      sha = @access.ref_to_sha(treeish || ref)
+      return [] unless sha
+      commit = @access.commit(sha)
+
+      blobs = tree_map_for(sha).select do |entry|
+        @page_class.valid_page_name?(entry.name)
+      end
+
+      sorter = Gollum::Sorters::WikiSorter.new(sort, direction_desc, limit)
+      sorter.call(sha, @access, blobs).map { |blob| blob.page(self, commit) }
     end
 
     # Public: Lists all non-page files for this wiki.

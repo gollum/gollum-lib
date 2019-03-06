@@ -172,6 +172,10 @@ module Gollum
       end
     end
 
+    def files_sorted_by_created_at(ref)
+      @repo.files_sorted_by_created_at(ref)
+    end
+
     # Reads the content from the Git db at the given SHA.
     #
     # sha - The String SHA.
