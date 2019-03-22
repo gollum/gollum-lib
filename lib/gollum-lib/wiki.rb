@@ -434,7 +434,6 @@ module Gollum
     #          :name    - The String author full name.
     #          :email   - The String email address.
     #          :parent  - Optional Gollum::Git::Commit parent to this update.
-    #
     # Returns a String SHA1 of the new commit, or nil if the reverse diff does
     # not apply.
     def revert_page(page, sha1, sha2 = nil, commit = {})
@@ -442,36 +441,25 @@ module Gollum
         commit = sha2
         sha2   = nil
       end
+      sha1, sha2 = "#{sha1}^", sha1 if sha2.nil?
 
-      patch     = full_reverse_diff_for(page, sha1, sha2)
       committer = Committer.new(self, commit)
       parent    = committer.parents[0]
-      committer.options[:tree] = @repo.git.apply_patch(parent.sha, patch)
+      path      = page.nil? ? nil : page.path
+
+      committer.options[:tree], file_list = @repo.git.revert(path, sha1, sha2)
       return false unless committer.options[:tree]
+
       committer.after_commit do |index, _sha|
         @access.refresh
 
-        files = []
-        if page
-          files << [page.path, page.filename_stripped, page.format]
-        else
-          # Grit::Diff can't parse reverse diffs.... yet
-          patch.each_line do |line|
-            if line =~ %r(^diff --git b/.+? a/(.+)$)
-              path = Regexp.last_match[1]
-              ext  = ::File.extname(path)
-              name = ::File.basename(path, ext)
-              if (format = ::Gollum::Page.format_for(ext))
-                files << [path, name, format]
-              end
-            end
-          end
-        end
+        file_list = [page.path] if page
 
-        files.each do |(path, name, format)|
+        file_list.each do |path|
           dir = ::File.dirname(path)
           dir = '' if dir == '.'
-          index.update_working_dir(dir, name, format)
+          name = ::File.basename(path, ::File.extname(path))
+          index.update_working_dir(dir, name, ::Gollum::Page.format_for(path))
         end
       end
 
@@ -704,34 +692,6 @@ module Gollum
       else
         []
       end
-    end
-
-    # Creates a reverse diff for the given SHAs on the given Gollum::Page.
-    #
-    # page   - The Gollum::Page to scope the patch to, or a String Path.
-    # sha1   - String SHA1 of the earlier parent if two SHAs are given,
-    #          or the child.
-    # sha2   - Optional String SHA1 of the child.
-    #
-    # Returns a String of the reverse Diff to apply.
-    def full_reverse_diff_for(page, sha1, sha2 = nil)
-      sha1, sha2 = "#{sha1}^", sha1 if sha2.nil?
-      if page
-        path = (page.respond_to?(:path) ? page.path : page.to_s)
-        return repo.diff(sha2, sha1, path).first.diff
-      end
-      repo.diff(sha2, sha1).map { |d| d.diff }.join("\n")
-    end
-
-    # Creates a reverse diff for the given SHAs.
-    #
-    # sha1   - String SHA1 of the earlier parent if two SHAs are given,
-    #          or the child.
-    # sha2   - Optional String SHA1 of the child.
-    #
-    # Returns a String of the reverse Diff to apply.
-    def full_reverse_diff(sha1, sha2 = nil)
-      full_reverse_diff_for(nil, sha1, sha2)
     end
 
     # Gets the default name for commits.

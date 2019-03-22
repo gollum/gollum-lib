@@ -11,8 +11,6 @@ context "Page Reverting" do
     FileUtils.rm_rf(@path)
   end
 
-=begin
-  # Grit is broken and this test fails often. See gollum/gollum#363.
   test "reverts single commit" do
     page1 = @wiki.page("B")
     sha   = @wiki.revert_commit('7c45b5f16ff3bae2a0063191ef832701214d4df5')
@@ -48,7 +46,6 @@ context "Page Reverting" do
     assert_equal "INITIAL", body=page2.raw_data.strip
     assert_equal body, File.read(File.join(@path, "A.md")).strip
   end
-=end
 
   test "cannot revert conflicting commit" do
     page1 = @wiki.page('A')
