@@ -462,37 +462,6 @@ module Gollum
       commit_and_update_paths(tree, files, options)
     end
 
-    def parse_revert_options(sha1, sha2, commit = {})
-      if sha2.is_a?(Hash)
-        return "#{sha1}^", sha1, sha2
-      elsif sha2.nil?
-        return "#{sha1}^", sha1, commit
-      else
-        return sha1, sha2, commit
-      end
-    end
-
-    def commit_and_update_paths(tree, paths, options)
-      return false unless tree
-      committer = Committer.new(self, options)
-      parent    = committer.parents[0]
-
-      committer.options[:tree] = tree
-
-      committer.after_commit do |index, _sha|
-        @access.refresh
-
-        paths.each do |path|
-          dir = ::File.dirname(path)
-          dir = '' if dir == '.'
-          name = ::File.basename(path, ::File.extname(path))
-          index.update_working_dir(dir, name, ::Gollum::Page.format_for(path))
-        end
-      end
-
-      committer.commit
-    end
-
     # Public: Lists all pages for this wiki.
     #
     # treeish - The String commit ID or ref to find  (default:  @ref)
@@ -750,6 +719,39 @@ module Gollum
 
     def inspect
       %(#<#{self.class.name}:#{object_id} #{@repo.path}>)
+    end
+
+    private
+
+    def parse_revert_options(sha1, sha2, commit = {})
+      if sha2.is_a?(Hash)
+        return "#{sha1}^", sha1, sha2
+      elsif sha2.nil?
+        return "#{sha1}^", sha1, commit
+      else
+        return sha1, sha2, commit
+      end
+    end
+
+    def commit_and_update_paths(tree, paths, options)
+      return false unless tree
+      committer = Committer.new(self, options)
+      parent    = committer.parents[0]
+
+      committer.options[:tree] = tree
+
+      committer.after_commit do |index, _sha|
+        @access.refresh
+
+        paths.each do |path|
+          dir = ::File.dirname(path)
+          dir = '' if dir == '.'
+          name = ::File.basename(path, ::File.extname(path))
+          index.update_working_dir(dir, name, ::Gollum::Page.format_for(path))
+        end
+      end
+
+      committer.commit
     end
   end
 end
