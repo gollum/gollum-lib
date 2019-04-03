@@ -437,33 +437,9 @@ module Gollum
     # Returns a String SHA1 of the new commit, or nil if the reverse diff does
     # not apply.
     def revert_page(page, sha1, sha2 = nil, commit = {})
-      if sha2.is_a?(Hash)
-        commit = sha2
-        sha2   = nil
-      end
-      sha1, sha2 = "#{sha1}^", sha1 if sha2.nil?
-
-      committer = Committer.new(self, commit)
-      parent    = committer.parents[0]
-      path      = page.nil? ? nil : page.path
-
-      committer.options[:tree], file_list = @repo.git.revert(path, sha1, sha2)
-      return false unless committer.options[:tree]
-
-      committer.after_commit do |index, _sha|
-        @access.refresh
-
-        file_list = [page.path] if page
-
-        file_list.each do |path|
-          dir = ::File.dirname(path)
-          dir = '' if dir == '.'
-          name = ::File.basename(path, ::File.extname(path))
-          index.update_working_dir(dir, name, ::Gollum::Page.format_for(path))
-        end
-      end
-
-      committer.commit
+      return false unless page
+      left, right, options = parse_revert_options(sha1, sha2, commit)
+      commit_and_update_paths(@repo.git.revert_path(page.path, left, right), [page.path], options)
     end
 
     # Public: Applies a reverse diff to the repo.  If only 1 SHA is given,
@@ -481,7 +457,40 @@ module Gollum
     # Returns a String SHA1 of the new commit, or nil if the reverse diff does
     # not apply.
     def revert_commit(sha1, sha2 = nil, commit = {})
-      revert_page(nil, sha1, sha2, commit)
+      left, right, options = parse_revert_options(sha1, sha2, commit)
+      tree, files = repo.git.revert_commit(left, right)
+      commit_and_update_paths(tree, files, options)
+    end
+
+    def parse_revert_options(sha1, sha2, commit = {})
+      if sha2.is_a?(Hash)
+        return "#{sha1}^", sha1, sha2
+      elsif sha2.nil?
+        return "#{sha1}^", sha1, commit
+      else
+        return sha1, sha2, commit
+      end
+    end
+
+    def commit_and_update_paths(tree, paths, options)
+      return false unless tree
+      committer = Committer.new(self, options)
+      parent    = committer.parents[0]
+
+      committer.options[:tree] = tree
+
+      committer.after_commit do |index, _sha|
+        @access.refresh
+
+        paths.each do |path|
+          dir = ::File.dirname(path)
+          dir = '' if dir == '.'
+          name = ::File.basename(path, ::File.extname(path))
+          index.update_working_dir(dir, name, ::Gollum::Page.format_for(path))
+        end
+      end
+
+      committer.commit
     end
 
     # Public: Lists all pages for this wiki.
