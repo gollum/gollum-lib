@@ -16,43 +16,45 @@ module Gollum
       @on_disk_path = nil
     end
 
-    # Public: The url path required to reach this page within the repo.
+    # Public: The path of the page within the repo.
     #
-    # Returns the String url_path
+    # Returns the String path.
+    attr_reader :path
 
-    def url_path
-      path = if self.path.include?('/')
-        self.path.sub(/\/[^\/]+$/, '/')
-          else
-            ''
-          end
-      path = path[@wiki.page_file_dir.length+1..-1] if @wiki.page_file_dir # Chop off the page file dir plus the first slash if necessary 
-      path << name
-    end
+    # Public: The Gollum::Git::Commit version of the file.
+    attr_accessor :version
 
-    # Public: The SHA hash identifying this file
+    # Public: Whether the file can be read from disk.
+    attr_accessor :on_disk
+
+    # Public: The SHA hash identifying this page
     #
     # Returns the String SHA.
     def sha
       @blob && @blob.id
     end
 
-    # Public: The url_path, but URL escaped.
+    # Public: The on-disk filename of the page including extension.
+    #
+    # Returns the String name.
+    def filename
+      @blob && @blob.name
+    end
+    alias :name :filename
+
+    # Public: The url path required to reach this page within the repo.
+    #
+    # Returns the String url_path
+    def url_path
+      construct_path(filename)
+    end
+
+    # Public: The url_path, but URL encoded.
     #
     # Returns the String url_path
     def escaped_url_path
       ERB::Util.url_encode(self.url_path).gsub('%2F', '/').force_encoding('utf-8')
     end
-
-    # Public: The on-disk filename of the file.
-    #
-    # Returns the String name.
-    def name
-      return @path if on_disk?
-      @blob && @blob.name
-    end
-
-    alias filename name
 
     # Public: The raw contents of the page.
     #
@@ -69,6 +71,20 @@ module Gollum
       @blob.data
     end
 
+    # Populate the File with information from the Blob.
+    #
+    # blob - The Gollum::Git::Blob that contains the info.
+    # path - The String directory path of the file.
+    #
+    # Returns the populated Gollum::File.
+    def populate(blob, path = nil)
+      @blob         = blob
+      @path         = "#{path}#{::File::SEPARATOR}#{blob.name}"[1..-1]
+      @on_disk      = false
+      @on_disk_path = nil
+      self
+    end
+
     # Public: Is this an on-disk file reference?
     #
     # Returns true if this is a pointer to an on-disk file
@@ -83,29 +99,9 @@ module Gollum
       @on_disk_path
     end
 
-    # Public: The Gollum::Git::Commit version of the file.
-    attr_accessor :version
-
-    # Public: The String path of the file.
-    attr_reader :path
-
     # Public: The String mime type of the file.
     def mime_type
       @blob && @blob.mime_type
-    end
-
-    # Populate the File with information from the Blob.
-    #
-    # blob - The Gollum::Git::Blob that contains the info.
-    # path - The String directory path of the file.
-    #
-    # Returns the populated Gollum::File.
-    def populate(blob, path = nil)
-      @blob         = blob
-      @path         = "#{path}/#{blob.name}"[1..-1]
-      @on_disk      = false
-      @on_disk_path = nil
-      self
     end
 
     #########################################################################
@@ -146,29 +142,54 @@ module Gollum
     # Returns a Gollum::File or nil if the file could not be found. Note
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
-    def find(name, version, try_on_disk = false)
-      map     = @wiki.tree_map_for(version)
+
+    def find(path, version, try_on_disk = false)
+      map = @wiki.tree_map_for(version.to_s)
+
       if @wiki.page_file_dir
-       path = ::File.join(@wiki.page_file_dir, name)
+       query_path = ::File.join(@wiki.page_file_dir, path)
       else
-       path = name
+       query_path = path
       end
-      query = ::File.join('/', path)
 
-      commit  = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
-
-      if (result = map.detect { |entry| ::File.join('/', entry.path) == query })
-        @path    = path
-        @version = commit
-
-        if try_on_disk && get_disk_reference(query, commit)
-          @on_disk = true
-        else
-          @blob = result.blob(@wiki.repo)
+      begin
+        entry = map.detect do |entry|
+          path_match(::File.join('/', query_path), entry)
         end
-
-        self
+      rescue Gollum::Git::NoSuchShaFound
+        return nil
       end
+
+      commit = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
+
+      if entry
+        populate(entry.blob(@wiki.repo), entry.dir)
+        @version = commit
+        if try_on_disk && get_disk_reference(query_path, commit)
+          @on_disk = true
+        end
+      else
+        return nil
+      end
+
+      self
     end
+
+    private
+
+    def construct_path(name)
+      path = if self.path.include?(::File::SEPARATOR)
+        self.path.sub(/\/[^\/]+$/, ::File::SEPARATOR)
+          else
+            ''
+          end
+      path = path[@wiki.page_file_dir.length+1..-1] if @wiki.page_file_dir # Chop off the page file dir plus the first slash if necessary 
+      path << name
+    end
+
+    def path_match(query, entry)
+      query == ::File.join(::File::SEPARATOR, entry.path)
+    end
+
   end
 end
