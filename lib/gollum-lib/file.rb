@@ -160,12 +160,10 @@ module Gollum
         return nil
       end
 
-      commit = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
-
       if entry
         populate(entry.blob(@wiki.repo), entry.dir)
-        @version = commit
-        if try_on_disk && get_disk_reference(query_path, commit)
+        @version = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
+        if try_on_disk && get_disk_reference(query_path, @version)
           @on_disk = true
         end
       else
