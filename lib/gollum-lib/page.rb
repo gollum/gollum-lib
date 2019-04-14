@@ -5,23 +5,6 @@ module Gollum
     
     SUBPAGENAMES = [:header, :footer, :sidebar]
 
-    # Find a page in the given Gollum wiki.
-    #
-    # wiki    - The wiki.
-    # path    - The full String path.
-    # version - The String version ID to find.
-    # try_on_disk - If true, try to return just a reference to a file
-    #               that exists on the disk.
-    #
-    # Returns a Gollum::Page or nil if the file could not be found. Note
-    # that if you specify try_on_disk=true, you may or may not get a file
-    # for which on_disk? is actually true.
-    def self.find(wiki, path, version, try_on_disk = false)
-      result = super
-      result.historical = (version.to_s == result.version.to_s) if result
-      result
-    end
-
     # Returns true if the given query corresponds to the in-repo path of the BlobEntry.
     #
     # query     - The string path to match.
@@ -32,7 +15,7 @@ module Gollum
       entry_name = ::Gollum::Page.valid_extension?(query) ? entry.name : ::Gollum::Page.strip_filename(entry.name)
       query == ::File.join('/', entry.dir, entry_name)
     end
-    
+
     # Checks if a filename has a valid, registered extension
     #
     # filename - String filename, like "Home.md".
@@ -75,25 +58,27 @@ module Gollum
       ::File.basename(filename.to_s, ::File.extname(filename.to_s))
     end
 
-    # Public: Initialize a page.
+    # Public: Initialize a Page.
     #
-    # wiki - The Gollum::Wiki in question.
+    # wiki - The Gollum::Wiki
+    # blob - The Gollum::Git::Blob
+    # path - The String path
+    # version - The String SHA or Gollum::Git::Commit version
+    # try_on_disk - If true, try to get an on disk reference for this page.
     #
     # Returns a newly initialized Gollum::Page.
-    def initialize(wiki)
-      @wiki           = wiki
-      @blob           = nil
+    def initialize(wiki, blob, path, version, try_on_disk = false)
+      super
       @formatted_data = nil
       @doc            = nil
       @parent_page    = nil
+      @historical     = @version.to_s == version.to_s
     end
 
     # Parent page if this is a sub page
     #
     # Returns a Page
     attr_accessor :parent_page
-
-    attr_writer :historical
 
     # Public: The on-disk filename of the page with extension stripped.
     #
@@ -292,12 +277,6 @@ module Gollum
       format == :markdown ? "md" : format.to_s
     end
 
-    #########################################################################
-    #
-    # Internal Methods
-    #
-    #########################################################################
-
     # The underlying wiki repo.
     #
     # Returns the Gollum::Wiki containing the page.
@@ -359,4 +338,20 @@ module Gollum
     end
 
   end
+
+  class PreviewPage < Gollum::Page
+    include Pagination
+    
+    def initialize(wiki, name, data, version)
+      @wiki           = wiki 
+      @path           = name
+      @blob           = OpenStruct.new(:name => name, :data => data, :is_symlink => false)
+      @version        = version
+      @formatted_data = nil
+      @doc            = nil
+      @parent_page    = nil
+      @historical     = false
+    end
+  end
+
 end

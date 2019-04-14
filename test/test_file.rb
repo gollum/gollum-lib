@@ -7,11 +7,6 @@ context "File" do
     @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"))
   end
 
-  test "new file" do
-    file = Gollum::File.new(@wiki)
-    assert_nil file.raw_data
-  end
-
   test "existing file" do
     commit = @wiki.repo.commits.first
     file   = @wiki.file("Mordor/todo.txt")

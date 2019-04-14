@@ -27,17 +27,8 @@ module Gollum
         entry = map.detect do |entry|
           path_match(::File.join('/', query_path), entry)
         end
+        entry ? self.new(wiki, entry.blob(wiki.repo), entry.dir, version, try_on_disk) : nil
       rescue Gollum::Git::NoSuchShaFound
-        return nil
-      end
-
-      if entry
-        result = self.new(wiki)
-        result.populate(entry.blob(wiki.repo), entry.dir)
-        result.version = version.is_a?(Gollum::Git::Commit) ? version : wiki.commit_for(version)
-        result.get_disk_reference(query_path, result.version) if try_on_disk
-        result
-      else
         nil
       end
     end
@@ -52,15 +43,19 @@ module Gollum
     
     # Public: Initialize a file.
     #
-    # wiki - The Gollum::Wiki in question.
+    # wiki - The Gollum::Wiki
+    # blob - The Gollum::Git::Blob
+    # path - The String path
+    # version - The String SHA or Gollum::Git::Commit version
+    # try_on_disk - If true, try to get an on disk reference for this file.
     #
     # Returns a newly initialized Gollum::File.
-    def initialize(wiki)
+    def initialize(wiki, blob, path, version, try_on_disk = false)
       @wiki         = wiki
-      @blob         = nil
-      @path         = nil
-      @on_disk      = false
-      @on_disk_path = nil
+      @blob         = blob
+      @path         = "#{path}/#{blob.name}"[1..-1]
+      @version      = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
+      get_disk_reference if try_on_disk
     end
 
     # Public: The path of the page within the repo.
@@ -118,25 +113,11 @@ module Gollum
       @blob.data
     end
 
-    # Populate the File with information from the Blob.
-    #
-    # blob - The Gollum::Git::Blob that contains the info.
-    # path - The String directory path of the file.
-    #
-    # Returns the populated Gollum::File.
-    def populate(blob, path = nil)
-      @blob         = blob
-      @path         = "#{path}#{::File::SEPARATOR}#{blob.name}"[1..-1]
-      @on_disk      = false
-      @on_disk_path = nil
-      self
-    end
-
     # Public: Is this an on-disk file reference?
     #
     # Returns true if this is a pointer to an on-disk file
     def on_disk?
-      @on_disk
+      !!@on_disk
     end
 
     # Public: The path to this file on disk
@@ -151,23 +132,19 @@ module Gollum
       @blob && @blob.mime_type
     end
 
-    #########################################################################
-    #
-    # Internal Methods
-    #
-    #########################################################################
+    private
 
     # Return the file path to this file on disk, if available.
     #
     # Returns nil if the file isn't available on disk. This can occur if the
     # repo is bare, if the commit isn't the HEAD, or if there are problems
     # resolving symbolic links.
-    def get_disk_reference(name, commit)
+    def get_disk_reference
       return false if @wiki.repo.bare
-      return false if commit.sha != @wiki.repo.head.commit.sha
+      return false if @version.sha != @wiki.repo.head.commit.sha
 
       # This will try to resolve symbolic links, as well
-      pathname = Pathname.new(::File.expand_path(::File.join(@wiki.repo.path, '..', name)))
+      pathname = Pathname.new(::File.expand_path(::File.join(@wiki.repo.path, '..', @path)))
       if pathname.symlink?
         source   = ::File.readlink(pathname.to_path)
         realpath = ::File.join(::File.dirname(pathname.to_path), source)
@@ -178,8 +155,6 @@ module Gollum
       end
       @on_disk = true
     end
-
-    private
 
     def construct_path(name)
       path = if self.path.include?('/')

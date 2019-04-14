@@ -195,13 +195,7 @@ module Gollum
     #
     # Returns the in-memory Gollum::Page.
     def preview_page(name, data, format)
-      page = ::Gollum::Page.new(self)
-      ext  = ::Gollum::Page.format_to_ext(format.to_sym)
-      filename = "#{name}.#{ext}"
-      blob = OpenStruct.new(:name => filename, :data => data, :is_symlink => false)
-      page.populate(blob)
-      page.version = @access.commit(@ref)
-      page
+      ::Gollum::PreviewPage.new(self, "#{name}.#{::Gollum::Page.format_to_ext(format.to_sym)}", data, @access.commit(@ref))
     end
 
     # Public: Write a new version of a page to the Gollum repo root.
