@@ -3,6 +3,16 @@
 module Gollum
   class File
 
+    class << self
+      # For use with self.find: returns true if the given query corresponds to the in-repo path of the BlobEntry. 
+      #
+      # query     - The string path to match.
+      # entry     - The BlobEntry to check against.
+      def path_match(query, entry)
+        query == ::File.join('/', entry.path)
+      end
+    end
+
     # Find a file in the given Gollum wiki.
     #
     # wiki    - The wiki.
@@ -31,14 +41,6 @@ module Gollum
       rescue Gollum::Git::NoSuchShaFound
         nil
       end
-    end
-
-    # Returns true if the given query corresponds to the in-repo path of the BlobEntry.
-    #
-    # query     - The string path to match.
-    # entry     - The BlobEntry to check against.
-    def self.path_match(query, entry)
-      query == ::File.join('/', entry.path)
     end
     
     # Public: Initialize a file.

@@ -5,15 +5,17 @@ module Gollum
     
     SUBPAGENAMES = [:header, :footer, :sidebar]
 
-    # Returns true if the given query corresponds to the in-repo path of the BlobEntry.
-    #
-    # query     - The string path to match.
-    # entry     - The BlobEntry to check against.
-    def self.path_match(query, entry)
-      return false if "#{entry.name}".empty?
-      return false unless ::Gollum::Page.valid_extension?(entry.name)
-      entry_name = ::Gollum::Page.valid_extension?(query) ? entry.name : ::Gollum::Page.strip_filename(entry.name)
-      query == ::File.join('/', entry.dir, entry_name)
+    class << self
+      # For use with self.find: returns true if the given query corresponds to the in-repo path of the BlobEntry. 
+      #
+      # query     - The string path to match.
+      # entry     - The BlobEntry to check against.
+      def path_match(query, entry)
+        return false if "#{entry.name}".empty?
+        return false unless valid_extension?(entry.name)
+        entry_name = valid_extension?(query) ? entry.name : strip_filename(entry.name)
+        query == ::File.join('/', entry.dir, entry_name)
+      end
     end
 
     # Checks if a filename has a valid, registered extension
@@ -341,7 +343,7 @@ module Gollum
 
   class PreviewPage < Gollum::Page
     include Pagination
-    
+
     def initialize(wiki, name, data, version)
       @wiki           = wiki 
       @path           = name
