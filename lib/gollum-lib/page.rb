@@ -5,6 +5,34 @@ module Gollum
     
     SUBPAGENAMES = [:header, :footer, :sidebar]
 
+    # Find a page in the given Gollum wiki.
+    #
+    # wiki    - The wiki.
+    # path    - The full String path.
+    # version - The String version ID to find.
+    # try_on_disk - If true, try to return just a reference to a file
+    #               that exists on the disk.
+    #
+    # Returns a Gollum::Page or nil if the file could not be found. Note
+    # that if you specify try_on_disk=true, you may or may not get a file
+    # for which on_disk? is actually true.
+    def self.find(wiki, path, version, try_on_disk = false)
+      result = super
+      result.historical = (version.to_s == result.version.to_s) if result
+      result
+    end
+
+    # Returns true if the given query corresponds to the in-repo path of the BlobEntry.
+    #
+    # query     - The string path to match.
+    # entry     - The BlobEntry to check against.
+    def self.path_match(query, entry)
+      return false if "#{entry.name}".empty?
+      return false unless ::Gollum::Page.valid_extension?(entry.name)
+      entry_name = ::Gollum::Page.valid_extension?(query) ? entry.name : ::Gollum::Page.strip_filename(entry.name)
+      query == ::File.join('/', entry.dir, entry_name)
+    end
+    
     # Checks if a filename has a valid, registered extension
     #
     # filename - String filename, like "Home.md".
@@ -64,6 +92,8 @@ module Gollum
     #
     # Returns a Page
     attr_accessor :parent_page
+
+    attr_writer :historical
 
     # Public: The on-disk filename of the page with extension stripped.
     #
@@ -273,22 +303,6 @@ module Gollum
     # Returns the Gollum::Wiki containing the page.
     attr_reader :wiki
 
-    # Find a page in the given Gollum wiki.
-    #
-    # name    - The human or canonical String page name to find.
-    # version - The String version ID to find.
-    #
-    # Returns a Gollum::Page or nil if the page could not be found.
-    def find(path, version, try_on_disk = false)
-      super
-      if @blob
-        @historical = version.to_s == @version.to_s
-        self
-      else
-        nil
-      end
-    end
-
     # The full directory path for the given tree.
     #
     # treemap - The Hash treemap containing parentage information.
@@ -342,15 +356,6 @@ module Gollum
 
     def inspect
       %(#<#{self.class.name}:#{object_id} #{name} (#{format}) @wiki=#{@wiki.repo.path.inspect}>)
-    end
-
-    private
-
-    def path_match(query, entry)
-      return false if entry.name.to_s.empty? || !self.class.valid_extension?(entry.name)
-      entry_name = self.class.valid_extension?(query) ? entry.name : ::Gollum::Page.strip_filename(entry.name)
-      return true if query == ::File.join(::File::SEPARATOR, entry.dir, entry_name)
-      false
     end
 
   end

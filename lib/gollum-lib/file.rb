@@ -2,6 +2,53 @@
 
 module Gollum
   class File
+
+    # Find a file in the given Gollum wiki.
+    #
+    # wiki    - The wiki.
+    # path    - The full String path.
+    # version - The String version ID to find.
+    # try_on_disk - If true, try to return just a reference to a file
+    #               that exists on the disk.
+    #
+    # Returns a Gollum::File or nil if the file could not be found. Note
+    # that if you specify try_on_disk=true, you may or may not get a file
+    # for which on_disk? is actually true.
+    def self.find(wiki, path, version, try_on_disk = false)
+      map = wiki.tree_map_for(version.to_s)
+
+      if wiki.page_file_dir
+       query_path = ::File.join(wiki.page_file_dir, path)
+      else
+       query_path = path
+      end
+
+      begin
+        entry = map.detect do |entry|
+          path_match(::File.join('/', query_path), entry)
+        end
+      rescue Gollum::Git::NoSuchShaFound
+        return nil
+      end
+
+      if entry
+        result = self.new(wiki)
+        result.populate(entry.blob(wiki.repo), entry.dir)
+        result.version = version.is_a?(Gollum::Git::Commit) ? version : wiki.commit_for(version)
+        result.get_disk_reference(query_path, result.version) if try_on_disk
+        result
+      else
+        nil
+      end
+    end
+
+    # Returns true if the given query corresponds to the in-repo path of the BlobEntry.
+    #
+    # query     - The string path to match.
+    # entry     - The BlobEntry to check against.
+    def self.path_match(query, entry)
+      query == ::File.join('/', entry.path)
+    end
     
     # Public: Initialize a file.
     #
@@ -129,64 +176,19 @@ module Gollum
       else
         @on_disk_path = pathname.to_path
       end
-      true
-    end
-
-    # Find a file in the given Gollum repo.
-    #
-    # name    - The full String path.
-    # version - The String version ID to find.
-    # try_on_disk - If true, try to return just a reference to a file
-    #               that exists on the disk.
-    #
-    # Returns a Gollum::File or nil if the file could not be found. Note
-    # that if you specify try_on_disk=true, you may or may not get a file
-    # for which on_disk? is actually true.
-
-    def find(path, version, try_on_disk = false)
-      map = @wiki.tree_map_for(version.to_s)
-
-      if @wiki.page_file_dir
-       query_path = ::File.join(@wiki.page_file_dir, path)
-      else
-       query_path = path
-      end
-
-      begin
-        entry = map.detect do |entry|
-          path_match(::File.join('/', query_path), entry)
-        end
-      rescue Gollum::Git::NoSuchShaFound
-        return nil
-      end
-
-      if entry
-        populate(entry.blob(@wiki.repo), entry.dir)
-        @version = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
-        if try_on_disk && get_disk_reference(query_path, @version)
-          @on_disk = true
-        end
-      else
-        return nil
-      end
-
-      self
+      @on_disk = true
     end
 
     private
 
     def construct_path(name)
-      path = if self.path.include?(::File::SEPARATOR)
-        self.path.sub(/\/[^\/]+$/, ::File::SEPARATOR)
+      path = if self.path.include?('/')
+        self.path.sub(/\/[^\/]+$/, '/')
           else
             ''
           end
       path = path[@wiki.page_file_dir.length+1..-1] if @wiki.page_file_dir # Chop off the page file dir plus the first slash if necessary 
       path << name
-    end
-
-    def path_match(query, entry)
-      query == ::File.join(::File::SEPARATOR, entry.path)
     end
 
   end

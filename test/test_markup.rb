@@ -660,7 +660,7 @@ org
     assert_html_equal %{<p>a <a href="/alpha.jpg">Alpha</a> b</p>}, output
   end
 
-  test "file link with relative path" do
+  test "file link with relative path is relative to root" do
     index = @wiki.repo.index
     index.add("greek/alpha.jpg", "hi")
     index.add("greek/Bilbo-Baggins.md", "a [[Alpha|alpha.jpg]] b")
