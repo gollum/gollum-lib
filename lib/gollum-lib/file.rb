@@ -6,7 +6,7 @@ module Gollum
     class << self
       # For use with self.find: returns true if the given query corresponds to the in-repo path of the BlobEntry. 
       #
-      # query     - The string path to match.
+      # query     - The String path to match.
       # entry     - The BlobEntry to check against.
       def path_match(query, entry)
         query == ::File.join('/', entry.path)
