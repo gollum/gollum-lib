@@ -647,6 +647,12 @@ context "page_file_dir option" do
     assert_equal "docs/foo", results[0][:name]
   end
 
+  test "can't write files in root" do
+    assert_raises Gollum::IllegalDirectoryPath do
+      @wiki.write_page("Malicious", :markdown, "Hi", {}, "../")
+    end
+  end
+
   teardown do
     FileUtils.rm_r(@path)
   end
