@@ -80,21 +80,9 @@ module Gollum
     #
     # Returns nothing (modifies the Index in place).
     def add_to_index(path, data, options = {})
-      if index.current_tree && (tree = index.current_tree / (@wiki.page_file_dir || '/'))
-        downpath = path.downcase.sub(/\.\w+$/, '')
-
-        tree.blobs.each do |blob|
-          next if page_path_scheduled_for_deletion?(index.tree, path)
-
-          existing_file     = blob.name.downcase.sub(/\.\w+$/, '')
-          existing_file_ext = ::File.extname(blob.name).sub(/^\./, '')
-
-          new_file_ext = ::File.extname(path).sub(/^\./, '')
-
-          if downpath == existing_file && (new_file_ext == existing_file_ext)
-            raise DuplicatePageError.new(path, blob.name)
-          end
-        end
+      if index.current_tree
+        tree = @wiki.page_file_dir ? index.current_tree / @wiki.page_file_dir : index.current_tree
+        raise DuplicatePageError.new(path) if !page_path_scheduled_for_deletion?(index.tree, path) && tree.blobs.find {|blob| blob.name == path}
       end
 
       # TODO Remove once grit is deprecated
@@ -176,8 +164,7 @@ module Gollum
       parts = path.split('/')
       if parts.size == 1
         deletions = map.keys.select { |k| !map[k] }
-        downfile  = parts.first.downcase.sub(/\.\w+$/, '')
-        deletions.any? { |d| d.downcase.sub(/\.\w+$/, '') == downfile }
+        deletions.any? { |d| d == parts.first }
       else
         part = parts.shift
         if (rest = map[part])

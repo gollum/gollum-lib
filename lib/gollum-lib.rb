@@ -41,13 +41,11 @@ module Gollum
   class Error < StandardError; end
 
   class DuplicatePageError < Error
-    attr_accessor :existing_path
     attr_accessor :attempted_path
 
-    def initialize(existing, attempted, message = nil)
-      @existing_path  = existing
+    def initialize(attempted, message = nil)
       @attempted_path = attempted
-      super(message || "Cannot write #{@attempted_path}, found #{@existing_path}.")
+      super(message || "Cannot write #{@attempted_path}: path already exists.")
     end
   end
 
