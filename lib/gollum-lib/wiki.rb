@@ -236,7 +236,7 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
     def write_page(name, format, data, commit = {}, dir = '')
-      write_page_or_file(merge_page_elements(dir, name, format), data, commit)
+      write_page_or_file(merge_path_elements(dir, name, format), data, commit)
     end
 
     # Public: Write a new version of a file to the Gollum repo root.
@@ -258,8 +258,7 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update
     def write_file(name, data, commit = {}, dir = '')
-      fullpath = ::File.join(*[sanitized_dir(dir), name])
-      write_page_or_file(fullpath, data, commit)
+      write_page_or_file(merge_path_elements(dir, name, nil), data, commit)
     end
 
     def write_page_or_file(path, data, commit)
@@ -315,12 +314,12 @@ module Gollum
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       committer.delete(page.path)
-      committer.add_to_index(merge_page_elements(target_dir, target_name, page.format), page.raw_data)
+      committer.add_to_index(merge_path_elements(target_dir, target_name, page.format), page.raw_data)
 
       committer.after_commit do |index, _sha|
         @access.refresh
-        index.update_working_dir(merge_page_elements(source_dir, source_name, page.format))
-        index.update_working_dir(merge_page_elements(target_dir, target_name, page.format))
+        index.update_working_dir(merge_path_elements(source_dir, source_name, page.format))
+        index.update_working_dir(merge_path_elements(target_dir, target_name, page.format))
       end
 
       multi_commit ? committer : committer.commit
@@ -403,7 +402,7 @@ module Gollum
         dir = '' if dir == '.'
 
         @access.refresh
-        index.update_working_dir(merge_page_elements(dir, page.filename_stripped, page.format))
+        index.update_working_dir(merge_path_elements(dir, page.filename_stripped, page.format))
       end
 
       multi_commit ? committer : committer.commit
@@ -440,7 +439,7 @@ module Gollum
         dir = '' if dir == '.'
 
         @access.refresh
-        index.update_working_dir(merge_page_elements(dir, filename, format))
+        index.update_working_dir(merge_path_elements(dir, filename, format))
       end
 
       multi_commit ? committer : committer.commit
@@ -496,7 +495,7 @@ module Gollum
         files.each do |(path, name, format)|
           dir = ::File.dirname(path)
           dir = '' if dir == '.'
-          index.update_working_dir(merge_page_elements(dir, name, format))
+          index.update_working_dir(merge_path_elements(dir, name, format))
         end
       end
 
@@ -693,7 +692,7 @@ module Gollum
     #
     # Returns the String filename.
     def page_file_name(name, format)
-      "#{name}.#{::Gollum::Page.format_to_ext(format)}"
+      format.nil? ? name : "#{name}.#{::Gollum::Page.format_to_ext(format)}"
     end
 
     # Fill an array with a list of pages.
@@ -810,19 +809,18 @@ module Gollum
 
     private
 
-    # Prefixes page_file_dir to the given directory
+    # Conjoins elements of a page or file path and prefixes the page_file_dir.
+    # Throws Gollum::IllegalDirectoryPath if page_file_dir is set, and the resulting
+    # path is not below it (e.g. if the dir or name contained '../')
     #
-    # dir - The String directory path to be sanitized
+    # dir    - The String directory path
+    # name   - The String name of the Page or File
+    # format - The Symbol format of the page. Should be nil for Files.
     #
-    # Returns a String path
-    def sanitized_dir(dir)
-      sanitized  = ::File.join([@page_file_dir, '/', dir].compact)
-      raise Gollum::IllegalDirectoryPath if @page_file_dir && !Pathname.new(sanitized).cleanpath.to_s.start_with?(@page_file_dir)
-      sanitized
-    end
-
-    def merge_page_elements(dir, name, format)
-      result = ::File.join(*[sanitized_dir(dir), self.page_file_name(name, format)])
+    # Returns a String path.  .
+    def merge_path_elements(dir, name, format)
+      result = ::File.join([@page_file_dir, '/', dir, self.page_file_name(name, format)].compact)
+      raise Gollum::IllegalDirectoryPath if @page_file_dir && !Pathname.new(result).cleanpath.to_s.start_with?(@page_file_dir)
       result[0] == '/' ? result[1..-1] : result
     end
 
