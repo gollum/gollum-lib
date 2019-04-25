@@ -27,12 +27,8 @@ module Gollum
     def self.find(wiki, path, version, try_on_disk = false)
       map = wiki.tree_map_for(version.to_s)
 
-      if wiki.page_file_dir
-       query_path = ::File.join(wiki.page_file_dir, path)
-      else
-       query_path = path
-      end
-
+      query_path = wiki.page_file_dir ? ::File.join(wiki.page_file_dir, path) : path
+      
       begin
         entry = map.detect do |entry|
           path_match(::File.join('/', query_path), entry)
@@ -159,12 +155,9 @@ module Gollum
     end
 
     def construct_path(name)
-      path = if self.path.include?('/')
-        self.path.sub(/\/[^\/]+$/, '/')
-          else
-            ''
-          end
-      path = path[@wiki.page_file_dir.length+1..-1] if @wiki.page_file_dir # Chop off the page file dir plus the first slash if necessary 
+      path = self.path.include?('/') ? self.path.sub(/\/[^\/]+$/, '/') : ''
+      # Chop off the page file dir plus the first slash if necessary
+      path = path[@wiki.page_file_dir.length+1..-1] if @wiki.page_file_dir 
       path << name
     end
 
