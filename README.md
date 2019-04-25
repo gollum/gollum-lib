@@ -92,7 +92,10 @@ Note that `base_path` just modifies the links.
 Get the latest version of the given human or canonical page name:
 
 ```ruby
-page = wiki.page('page name') # Finds pages in the root directory of the wiki that are named 'page name' with a valid extension. Same as wiki.page('/page name')
+page = wiki.page('/page name') # Finds pages in the root directory of the wiki that are named 'page name' with a valid extension. 
+# => <Gollum::Page>
+
+page = wiki.page('page name') # For convenience, you can leave out the '/' in front. Paths are assumed to be relative to '/'.
 # => <Gollum::Page>
 
 page = wiki.page('page name.md') # You can also specifiy the extension explicitly to disambiguate between pages with the same name, but different formats.
