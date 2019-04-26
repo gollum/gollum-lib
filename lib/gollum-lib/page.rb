@@ -25,14 +25,14 @@ module Gollum
     end
 
     # Checks if a filename has a valid extension understood by GitHub::Markup.
-    # Also, checks if the filename has no "_" in the front (such as
-    # _Footer.md).
+    # Also, checks if the filename is subpages (such as _Footer.md).
     #
     # filename - String filename, like "Home.md".
     #
     # Returns true or false.
     def self.valid_page_name?(filename)
-      !(filename =~ /^_/) && self.valid_extension?(filename)
+      subpage_names = SUBPAGENAMES.map(&:capitalize).join("|")
+      filename =~ /^_(#{subpage_names})/ ? false : self.valid_extension?(filename)
     end
 
     # Public: The format of a given filename.
