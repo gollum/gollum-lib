@@ -236,7 +236,7 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
     def write_page(name, format, data, commit = {}, dir = '')
-      write_page_or_file(merge_path_elements(dir, name, format), data, commit)
+     write(merge_path_elements(dir, name, format), data, commit)
     end
 
     # Public: Write a new version of a file to the Gollum repo root.
@@ -258,20 +258,7 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update
     def write_file(name, data, commit = {}, dir = '')
-      write_page_or_file(merge_path_elements(dir, name, nil), data, commit)
-    end
-
-    def write_page_or_file(path, data, commit)
-      multi_commit = !!commit[:committer]
-      committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
-      committer.add_to_index(path, data)
-
-      committer.after_commit do |index, _sha|
-        @access.refresh
-        index.update_working_dir(path)
-      end
-
-      multi_commit ? committer : committer.commit
+      write(merge_path_elements(dir, name, nil), data, commit)
     end
 
     # Public: Rename an existing page without altering content.
@@ -822,6 +809,19 @@ module Gollum
       result = ::File.join([@page_file_dir, '/', dir, self.page_file_name(name, format)].compact)
       raise Gollum::IllegalDirectoryPath if @page_file_dir && !Pathname.new(result).cleanpath.to_s.start_with?(@page_file_dir)
       result[0] == '/' ? result[1..-1] : result
+    end
+
+    def write(path, data, commit = {})
+      multi_commit = !!commit[:committer]
+      committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
+      committer.add_to_index(path, data)
+
+      committer.after_commit do |index, _sha|
+        @access.refresh
+        index.update_working_dir(path)
+      end
+
+      multi_commit ? committer : committer.commit
     end
 
   end
