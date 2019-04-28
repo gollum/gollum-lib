@@ -34,6 +34,10 @@ context "Page" do
     assert_equal Gollum::Page, @wiki.page('Bilbo-Baggins').class
   end
 
+  test "requested path is sanitized" do
+    assert_not_nil @wiki.page('//Bilbo-Baggins')
+  end
+
   test "do not substitute whitespace for hyphens or underscores (regression test < 5.x)" do
     assert_not_nil @wiki.page('Bilbo-Baggins').path
     assert_nil @wiki.page('Bilbo_Baggins')

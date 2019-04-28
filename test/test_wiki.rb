@@ -637,6 +637,13 @@ context "page_file_dir option" do
     assert @wiki.page("foo")
   end
 
+  test "a file in page file dir should have the correct url path" do
+    assert_equal 'docs/foo.md', @wiki.page("foo").path
+    assert_equal 'foo.md', @wiki.page("/foo").url_path
+    @wiki.write_page("baz/Test", :markdown, "Hi", commit_details)
+    assert_equal 'baz/Test.md', @wiki.page('baz/Test').url_path
+  end
+
   test "a file out of page file dir should not be found" do
     assert !@wiki.page("bar")
   end

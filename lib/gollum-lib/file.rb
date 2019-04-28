@@ -27,11 +27,11 @@ module Gollum
     def self.find(wiki, path, version, try_on_disk = false)
       map = wiki.tree_map_for(version.to_s)
 
-      query_path = wiki.page_file_dir ? ::File.join(wiki.page_file_dir, path) : path
-      
+      query_path = Pathname.new(::File.join(['/', wiki.page_file_dir, path].compact)).cleanpath.to_s
+
       begin
         entry = map.detect do |entry|
-          path_match(::File.join('/', query_path), entry)
+          path_match(query_path, entry)
         end
         entry ? self.new(wiki, entry.blob(wiki.repo), entry.dir, version, try_on_disk) : nil
       rescue Gollum::Git::NoSuchShaFound
