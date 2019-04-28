@@ -1,4 +1,6 @@
 # ~*~ encoding: utf-8 ~*~
+require 'pathname'
+
 module Gollum
   class Wiki
     include Pagination
@@ -125,6 +127,7 @@ module Gollum
       @path                 = path
       @repo_is_bare         = options.fetch :repo_is_bare, nil
       @page_file_dir        = options.fetch :page_file_dir, nil
+      @page_file_dir        = Pathname.new("/#{@page_file_dir}").cleanpath.to_s[1..-1] if @page_file_dir
       @access               = options.fetch :access, GitAccess.new(path, @page_file_dir, @repo_is_bare)
       @base_path            = options.fetch :base_path, "/"
       @repo                 = @access.repo
@@ -167,7 +170,6 @@ module Gollum
     #
     # Returns a Gollum::Page or nil if no matching page was found.
     def page(path, version = @ref)
-      version = @ref if version.nil?
       ::Gollum::Page.find(self, path, version)
     end
 

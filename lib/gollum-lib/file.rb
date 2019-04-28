@@ -82,11 +82,12 @@ module Gollum
     end
     alias :name :filename
 
-    # Public: The url path required to reach this page within the repo.
+    # Public: The url path required to reach this file within the repo.
     #
     # Returns the String url_path
     def url_path
-      construct_path(filename)
+      # Chop off the page_file_dir and first slash if necessary
+      @wiki.page_file_dir ? self.path[@wiki.page_file_dir.length+1..-1] : self.path
     end
 
     # Public: The url_path, but URL encoded.
@@ -152,13 +153,6 @@ module Gollum
         @on_disk_path = pathname.to_path
       end
       @on_disk = true
-    end
-
-    def construct_path(name)
-      path = self.path.include?('/') ? self.path.sub(/\/[^\/]+$/, '/') : ''
-      # Chop off the page file dir plus the first slash if necessary
-      path = path[@wiki.page_file_dir.length+1..-1] if @wiki.page_file_dir 
-      path << name
     end
 
   end
