@@ -116,7 +116,7 @@ module Gollum
     #
     # Returns the String title
     def url_path_title
-      metadata_title || construct_path(name)
+      metadata_title || url_path
     end
 
     # Public: Metadata title
@@ -125,12 +125,7 @@ module Gollum
     #
     # Returns the String title or nil if not defined
     def metadata_title
-      if metadata
-        title = metadata['title']
-        return title unless title.nil?
-      end
-
-      nil
+      metadata ? metadata['title'] : nil
     end
 
     # Public: Whether or not to display the metadata
