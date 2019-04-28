@@ -1,4 +1,6 @@
 # ~*~ encoding: utf-8 ~*~
+require 'pathname'
+
 module Gollum
   class Wiki
     include Pagination
@@ -125,6 +127,7 @@ module Gollum
       @path                 = path
       @repo_is_bare         = options.fetch :repo_is_bare, nil
       @page_file_dir        = options.fetch :page_file_dir, nil
+      @page_file_dir        = Pathname.new("/#{@page_file_dir}").cleanpath.to_s[1..-1] if @page_file_dir
       @access               = options.fetch :access, GitAccess.new(path, @page_file_dir, @repo_is_bare)
       @base_path            = options.fetch :base_path, "/"
       @repo                 = @access.repo
@@ -802,9 +805,14 @@ module Gollum
     #
     # Returns a String path.  .
     def merge_path_elements(dir, name, format)
-      result = ::File.join([@page_file_dir, '/', dir, self.page_file_name(name, format)].compact)
-      raise Gollum::IllegalDirectoryPath if @page_file_dir && !Pathname.new(result).cleanpath.to_s.start_with?(@page_file_dir)
-      result[0] == '/' ? result[1..-1] : result
+      result = ::File.join([@page_file_dir, dir, self.page_file_name(name, format)].compact)
+      result = Pathname.new(result).cleanpath.to_s
+      if @page_file_dir
+        raise Gollum::IllegalDirectoryPath unless result.start_with?("#{@page_file_dir}/")
+        result
+      else
+        result[0] == '/' ? result[1..-1] : result
+      end
     end
 
     def write(path, data, commit = {})
