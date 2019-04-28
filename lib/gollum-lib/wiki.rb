@@ -1,4 +1,6 @@
 # ~*~ encoding: utf-8 ~*~
+require 'pathname'
+
 module Gollum
   class Wiki
     include Pagination
@@ -125,6 +127,7 @@ module Gollum
       @path                 = path
       @repo_is_bare         = options.fetch :repo_is_bare, nil
       @page_file_dir        = options.fetch :page_file_dir, nil
+      @page_file_dir        = Pathname.new("/#{@page_file_dir}").cleanpath.to_s[1..-1] if @page_file_dir
       @access               = options.fetch :access, GitAccess.new(path, @page_file_dir, @repo_is_bare)
       @base_path            = options.fetch :base_path, "/"
       @repo                 = @access.repo
@@ -162,25 +165,12 @@ module Gollum
 
     # Public: Get the formatted page for a given page name, version, and dir.
     #
-    # name    - The human or canonical String page name of the wiki page.
+    # path    - The String path to the the wiki page (may or may not include file extension).
     # version - The String version ID to find (default: @ref).
-    # dir     - The directory String relative to the repo.
     #
     # Returns a Gollum::Page or nil if no matching page was found.
-    def page(name, version = @ref, dir = nil, exact = false)
-      version = @ref if version.nil?
-      ::Gollum::Page.new(self).find(name, version, dir, exact)
-    end
-
-    # Public: Convenience method instead of calling page(name, nil, dir).
-    #
-    # name    - The human or canonical String page name of the wiki page.
-    # version - The String version ID to find (default: @ref).
-    # dir     - The directory String relative to the repo.
-    #
-    # Returns a Gollum::Page or nil if no matching page was found.
-    def paged(name, dir = nil, exact = false, version = @ref)
-      page(name, version, dir, exact)
+    def page(path, version = @ref)
+      ::Gollum::Page.find(self, path, version)
     end
 
     # Public: Get the static file for a given name.
@@ -194,7 +184,7 @@ module Gollum
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
     def file(name, version = @ref, try_on_disk = false)
-      ::Gollum::File.new(self).find(name, version, try_on_disk)
+      ::Gollum::File.find(self, name, version, try_on_disk)
     end
 
     # Public: Create an in-memory Page with the given data and format. This
@@ -207,13 +197,7 @@ module Gollum
     #
     # Returns the in-memory Gollum::Page.
     def preview_page(name, data, format)
-      page = ::Gollum::Page.new(self)
-      ext  = ::Gollum::Page.format_to_ext(format.to_sym)
-      filename = "#{name}.#{ext}"
-      blob = OpenStruct.new(:name => filename, :data => data, :is_symlink => false)
-      page.populate(blob)
-      page.version = @access.commit(@ref)
-      page
+      ::Gollum::PreviewPage.new(self, "#{name}.#{::Gollum::Page.format_to_ext(format.to_sym)}", data, @access.commit(@ref))
     end
 
     # Public: Write a new version of a page to the Gollum repo root.
@@ -768,7 +752,7 @@ module Gollum
     # ignore_page_file_dir - Boolean, if true, searches all files within the git repo, regardless of dir/subdir
     #
     # Returns an Array of BlobEntry instances.
-    def tree_map_for(ref, ignore_page_file_dir=false)
+    def tree_map_for(ref, ignore_page_file_dir = false)
       if ignore_page_file_dir && !@page_file_dir.nil?
         @root_access ||= GitAccess.new(path, nil, @repo_is_bare)
         @root_access.tree(ref)
