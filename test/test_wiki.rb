@@ -278,6 +278,9 @@ context "Wiki page writing" do
     assert_equal cd2[:email], first_commit.author.email
     assert @wiki.page("Bilbo")
     assert @wiki.page("Gollum")
+
+    @wiki.write_page("//Saruman", :markdown, "# Saruman", cd2)
+    assert @wiki.page("Saruman")
   end
 
   test "write page is not allowed to overwrite file" do
