@@ -63,4 +63,12 @@ context "File with checkout" do
 
     assert_match(/^FirstName,LastName\n/, file.raw_data)
   end
+
+  test "create new file" do
+    file = @wiki.file('bla/NewFile.myblob')
+    assert_nil file
+    @wiki.write_file('/bla/NewFile.myblob', 'MY NEW FILE', {})
+    file = @wiki.file('bla/NewFile.myblob')
+    assert_equal file.raw_data, 'MY NEW FILE'
+  end
 end

@@ -278,15 +278,21 @@ context "Wiki page writing" do
     assert_equal cd2[:email], first_commit.author.email
     assert @wiki.page("Bilbo")
     assert @wiki.page("Gollum")
+
+    @wiki.write_page("//Saruman", :markdown, "# Saruman", cd2)
+    assert @wiki.page("Saruman")
   end
 
   test "write page is not allowed to overwrite file" do
     @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
     assert_raises Gollum::DuplicatePageError do
-      @wiki.write_page("aBC-dEF", :markdown, "# Gollum", commit_details)
+      @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
     end
     assert_nothing_raised Gollum::DuplicatePageError do
       @wiki.write_page("Abc-Def", :textile, "# Gollum", commit_details)
+    end
+    assert_nothing_raised Gollum::DuplicatePageError do
+      @wiki.write_page("abc-def", :markdown, "# Gollum", commit_details)
     end
   end
 
@@ -525,7 +531,7 @@ context "Wiki sync with working directory" do
   end
 
   test "write a page in subdirectory" do
-    @wiki.write_page("New Page", :markdown, "Hi", commit_details, "Subdirectory")
+    @wiki.write_page("Subdirectory/New Page", :markdown, "Hi", commit_details)
     assert_equal "Hi", File.read(File.join(@path, "Subdirectory", "New Page.md"))
   end
 
@@ -652,6 +658,12 @@ context "page_file_dir option" do
     results = @wiki.search("foo")
     assert_equal 1, results.size
     assert_equal "docs/foo", results[0][:name]
+  end
+
+  test "can't write files in root" do
+    assert_raises Gollum::IllegalDirectoryPath do
+      @wiki.write_page("../Malicious", :markdown, "Hi", {})
+    end
   end
 
   teardown do

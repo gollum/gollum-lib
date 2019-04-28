@@ -41,19 +41,16 @@ module Gollum
   class Error < StandardError; end
 
   class DuplicatePageError < Error
-    attr_accessor :dir
-    attr_accessor :existing_path
     attr_accessor :attempted_path
 
-    def initialize(dir, existing, attempted, message = nil)
-      @dir            = dir
-      @existing_path  = existing
+    def initialize(attempted, message = nil)
       @attempted_path = attempted
-      super(message || "Cannot write #{@dir}/#{@attempted_path}, found #{@dir}/#{@existing_path}.")
+      super(message || "Cannot write #{@attempted_path}: path already exists.")
     end
   end
 
   class InvalidGitRepositoryError < StandardError; end
   class NoSuchPathError < StandardError; end
+  class IllegalDirectoryPath < StandardError; end
 
 end
