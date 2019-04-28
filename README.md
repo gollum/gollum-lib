@@ -182,10 +182,10 @@ commit = { :message => 'commit message',
 ```
 
 Write a new version of a page (the file will be created if it does not already
-exist) and commit the change. The file will be written at the repo root.
+exist) and commit the change. The file will be written at the repo root if no subdirectory is specified.
 
 ```ruby
-wiki.write_page('Page Name', :markdown, 'Page contents', commit)
+wiki.write_page('Subdirectory/Page Name', :markdown, 'Page contents', commit)
 ```
 
 Update an existing page. If the format is different than the page's current
