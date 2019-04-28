@@ -72,7 +72,7 @@ context "File with checkout" do
   test "create new file" do
     file = @wiki.file('bla/NewFile.myblob')
     assert_nil file
-    @wiki.write_file('NewFile.myblob', 'MY NEW FILE', {}, 'bla')
+    @wiki.write_file('/bla/NewFile.myblob', 'MY NEW FILE', {})
     file = @wiki.file('bla/NewFile.myblob')
     assert_equal file.raw_data, 'MY NEW FILE'
   end

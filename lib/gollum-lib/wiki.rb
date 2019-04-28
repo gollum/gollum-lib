@@ -235,8 +235,8 @@ module Gollum
     #          prefix or suffix slashes (e.g. "foo/bar").
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
-    def write_page(name, format, data, commit = {}, dir = '')
-     write(merge_path_elements(dir, name, format), data, commit)
+    def write_page(name, format, data, commit = {})
+     write(merge_path_elements(nil, name, format), data, commit)
     end
 
     # Public: Write a new version of a file to the Gollum repo root.
@@ -257,8 +257,8 @@ module Gollum
     #          prefix or suffix slashes (e.g. "foo/bar").
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update
-    def write_file(name, data, commit = {}, dir = '')
-      write(merge_path_elements(dir, name, nil), data, commit)
+    def write_file(name, data, commit = {})
+      write(merge_path_elements(nil, name, nil), data, commit)
     end
 
     # Public: Rename an existing page without altering content.

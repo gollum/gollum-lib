@@ -528,7 +528,7 @@ context "Wiki sync with working directory" do
   end
 
   test "write a page in subdirectory" do
-    @wiki.write_page("New Page", :markdown, "Hi", commit_details, "Subdirectory")
+    @wiki.write_page("Subdirectory/New Page", :markdown, "Hi", commit_details)
     assert_equal "Hi", File.read(File.join(@path, "Subdirectory", "New Page.md"))
   end
 
@@ -652,7 +652,7 @@ context "page_file_dir option" do
 
   test "can't write files in root" do
     assert_raises Gollum::IllegalDirectoryPath do
-      @wiki.write_page("Malicious", :markdown, "Hi", {}, "../")
+      @wiki.write_page("../Malicious", :markdown, "Hi", {})
     end
   end
 

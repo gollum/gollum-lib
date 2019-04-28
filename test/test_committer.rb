@@ -112,7 +112,7 @@ context "Wiki" do
     Gollum::Git::Index.any_instance.stubs(:commit).returns(true)
 
     @wiki.repo.git.expects(:checkout).with("#{page_file_dir}#{dir}/#{name}.md", "HEAD")
-    @wiki.write_page(name, format, "foo bar baz", commit_details, dir)
+    @wiki.write_page(File.join(dir, name), format, "foo bar baz", commit_details)
   end
 
   test "update working directory with page file directory and subdirectory for an existing page" do
