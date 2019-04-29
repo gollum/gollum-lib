@@ -116,7 +116,7 @@ module Gollum
     #
     # Returns the String title
     def url_path_title
-      metadata_title || ::File.join(::File.dirname(url_title), name)
+      metadata_title || name
     end
 
     # Public: Metadata title
