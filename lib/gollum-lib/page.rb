@@ -116,7 +116,7 @@ module Gollum
     #
     # Returns the String title
     def url_path_title
-      metadata_title || url_path
+      metadata_title || name
     end
 
     # Public: Metadata title
