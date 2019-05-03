@@ -651,6 +651,14 @@ context "page_file_dir option" do
     @wiki.update_page(page, page.name, page.format, 'new contents', commit_details)
   end
 
+  test 'delete a page' do
+    @wiki.write_page("New Page", :markdown, "Hi", commit_details)
+    result = @wiki.page("New Page")
+    assert_not_nil result
+    @wiki.delete_page(result, commit_details)
+    assert_nil @wiki.page("New Page")
+  end
+
   test "a file in page file dir should be found" do
     assert @wiki.page("foo")
   end
