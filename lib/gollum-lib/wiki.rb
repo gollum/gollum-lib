@@ -358,7 +358,7 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
     def delete_page(page, commit)
-      delete_file(page_file_dir ? page.url_path : page.path, commit)
+      delete_file(page.url_path, commit)
     end
 
     # Public: Delete a file.
