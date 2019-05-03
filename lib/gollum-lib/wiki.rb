@@ -358,21 +358,7 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
     def delete_page(page, commit)
-
-      multi_commit = !!commit[:committer]
-      committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
-
-      committer.delete(page.path)
-
-      committer.after_commit do |index, _sha|
-        dir = ::File.dirname(page.path)
-        dir = '' if dir == '.'
-
-        @access.refresh
-        index.update_working_dir(merge_path_elements(dir, page.filename_stripped, page.format))
-      end
-
-      multi_commit ? committer : committer.commit
+      delete_file(page_file_dir ? page.url_path : page.path, commit)
     end
 
     # Public: Delete a file.
@@ -392,21 +378,16 @@ module Gollum
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
     def delete_file(path, commit)
-      dir      = ::File.dirname(path)
-      ext      = ::File.extname(path)
-      format   = ext.split('.').last || 'txt'
-      filename = ::File.basename(path, ext)
-
+      fullpath     = ::File.join([page_file_dir, path].compact)
       multi_commit = !!commit[:committer]
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
-      committer.delete(path)
+      committer.delete(fullpath)
 
       committer.after_commit do |index, _sha|
         dir = '' if dir == '.'
-
         @access.refresh
-        index.update_working_dir(merge_path_elements(dir, filename, format))
+        index.update_working_dir(fullpath)
       end
 
       multi_commit ? committer : committer.commit
