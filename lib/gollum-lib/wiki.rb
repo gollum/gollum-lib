@@ -169,8 +169,8 @@ module Gollum
     # version - The String version ID to find (default: @ref).
     #
     # Returns a Gollum::Page or nil if no matching page was found.
-    def page(path, version = @ref)
-      ::Gollum::Page.find(self, path, version)
+    def page(path, version = nil)
+      ::Gollum::Page.find(self, path, version.nil? ? @ref : version)
     end
 
     # Public: Get the static file for a given name.
@@ -183,8 +183,8 @@ module Gollum
     # Returns a Gollum::File or nil if no matching file was found. Note
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
-    def file(name, version = @ref, try_on_disk = false)
-      ::Gollum::File.find(self, name, version, try_on_disk)
+    def file(name, version = nil, try_on_disk = false)
+      ::Gollum::File.find(self, name, version.nil? ? @ref : version, try_on_disk)
     end
 
     # Public: Create an in-memory Page with the given data and format. This
