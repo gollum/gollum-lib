@@ -33,6 +33,18 @@ context "Wiki" do
     assert_equal commits, @wiki.log(:page => 2).map(&:id)
   end
 
+  test "list files and pages" do
+    contents = @wiki.tree_list
+    pages = contents.select {|x| x.is_a?(::Gollum::Page)}
+    assert_equal \
+      ['Bilbo-Baggins.md', 'Boromir.md', 'Elrond.md', 'Eye-Of-Sauron.md', 'Hobbit.md', 'Home.textile', 'My-Precious.md', 'RingBearers.md', 'Samwise Gamgee.mediawiki', 'todo.txt'],
+      pages.map(&:filename).sort
+    files = contents.select {|x| x.class.to_s == 'Gollum::File'}
+    assert_equal \
+      ['Data-Two.csv', 'Data.csv', 'Riddles.rd', 'eye.jpg'],
+      files.map(&:filename).sort
+  end
+
   test "list pages" do
     pages = @wiki.pages
     assert_equal \

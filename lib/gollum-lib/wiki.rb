@@ -493,7 +493,7 @@ module Gollum
     #
     # Returns an Array of Gollum::Page instances.
     def pages(treeish = nil)
-      tree_list(treeish || @ref)
+      tree_list(treeish || @ref, true, false)
     end
 
     # Public: Lists all non-page files for this wiki.
@@ -502,7 +502,7 @@ module Gollum
     #
     # Returns an Array of Gollum::File instances.
     def files(treeish = nil)
-      file_list(treeish || @ref)
+      tree_list(treeish || @ref, false, true)
     end
 
     # Public: Returns the number of pages accessible from a commit
@@ -662,35 +662,21 @@ module Gollum
       format.nil? ? name : "#{name}.#{::Gollum::Page.format_to_ext(format)}"
     end
 
-    # Fill an array with a list of pages.
+    # Fill an array with a list of pages and files in the wiki.
     #
     # ref - A String ref that is either a commit SHA or references one.
     #
     # Returns a flat Array of Gollum::Page instances.
-    def tree_list(ref)
+    def tree_list(ref = @ref, pages=true, files=true)
       if (sha = @access.ref_to_sha(ref))
         commit = @access.commit(sha)
         tree_map_for(sha).inject([]) do |list, entry|
-          next list unless ::Gollum::Page.valid_page_name?(entry.name)
-          list << entry.page(self, commit)
-        end
-      else
-        []
-      end
-    end
-
-    # Fill an array with a list of files.
-    #
-    # ref - A String ref that is either a commit SHA or references one.
-    #
-    # Returns a flat Array of Gollum::File instances.
-    def file_list(ref)
-      if (sha = @access.ref_to_sha(ref))
-        commit = @access.commit(sha)
-        tree_map_for(sha).inject([]) do |list, entry|
-          next list if entry.name.start_with?('_')
-          next list if ::Gollum::Page.valid_page_name?(entry.name)
-          list << entry.file(self, commit)
+          if ::Gollum::Page.valid_page_name?(entry.name)
+            list << entry.page(self, commit) if pages
+          elsif files && !entry.name.start_with?('_')
+            list << entry.file(self, commit)
+          end
+          list
         end
       else
         []
