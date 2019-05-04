@@ -277,7 +277,19 @@ context "Markup" do
     @wiki.write_page("Potato", :mediawiki, "= Test =\nWaa\n[[#test|Link Text]] ", commit_details)
     page   = @wiki.page("Potato")
     output = page.formatted_data
-    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"test\" href=\"#test\"><i class=\"fa fa-link\"></i></a><a name=\"wiki-Test\" id=\"wiki-Test\"></a><span class=\"mw-headline\" id=\"wiki-Test\">Test</span>\n</h1><p>Waa<a class=\"internal anchorlink\" href=\"#test\">Link Text</a></p>", output
+
+    # Workaround for testing HTML equality: nokogiri on jruby reverses the order of the ID and HREF attributes
+    expected = "<h1 class=\"editable\"><a class=\"anchor\" "
+    id = "id=\"test\""
+    href = "href=\"#test\""
+    if RUBY_PLATFORM == 'java'
+      expected = expected << href << " " << id
+    else
+      expected = expected << id << " " << href
+    end
+    expected = expected << " ><i class=\"fa fa-link\"></i></a><a name=\"wiki-Test\" id=\"wiki-Test\"></a><span class=\"mw-headline\" id=\"wiki-Test\">Test</span>\n</h1><p>Waa<a class=\"internal anchorlink\" href=\"#test\">Link Text</a></p>"
+
+    assert_html_equal expected, output
   end
 
 
