@@ -278,7 +278,7 @@ context "Markup" do
     page   = @wiki.page("Potato")
     output = page.formatted_data
 
-    # Workaround for testing HTML equality: nokogiri on jruby reverses the order of the ID and HREF attributes
+    # Workaround for testing HTML equality, needed because of differences in nokogiri output on JRuby and MRI
     expected = "<h1 class=\"editable\"><a class=\"anchor\" "
     id = "id=\"test\""
     href = "href=\"#test\""
@@ -287,7 +287,9 @@ context "Markup" do
     else
       expected = expected << id << " " << href
     end
-    expected = expected << " ><i class=\"fa fa-link\"></i></a><a name=\"wiki-Test\" id=\"wiki-Test\"></a><span class=\"mw-headline\" id=\"wiki-Test\">Test</span>\n</h1><p>Waa<a class=\"internal anchorlink\" href=\"#test\">Link Text</a></p>"
+    expected = expected << " ><i class=\"fa fa-link\"></i></a><a name=\"wiki-Test\""
+    expected = expected << " id=\"wiki-Test\"" unless RUBY_PLATFORM == 'java'
+    expected = expected << "></a><span class=\"mw-headline\" id=\"wiki-Test\">Test</span>\n</h1><p>Waa<a class=\"internal anchorlink\" href=\"#test\">Link Text</a></p>"
 
     assert_html_equal expected, output
   end
