@@ -3,7 +3,9 @@
 class Gollum::Filter::Render < Gollum::Filter
   def extract(data)
     begin
-      data = GitHub::Markup.render(@markup.name, data)
+      Dir.chdir(@markup.dir) do
+        data = GitHub::Markup.render(@markup.name, data)
+      end
       if data.nil?
         raise "There was an error converting #{@markup.name} to HTML."
       end
