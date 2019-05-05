@@ -4,7 +4,7 @@ class Gollum::Filter::Render < Gollum::Filter
   def extract(data)
     begin
       working_dir = ::File.join(@markup.wiki.path, @markup.dir)
-      working_dir = '.' if @markup.wiki.repo_is_bare || ::File.exists?(working_dir)
+      working_dir = '.' if @markup.wiki.repo_is_bare || !::File.exists?(working_dir)
       Dir.chdir(working_dir) do
         data = GitHub::Markup.render(@markup.name, data)
       end
