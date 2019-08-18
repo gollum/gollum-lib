@@ -339,6 +339,15 @@ module Gollum
   class PreviewPage < Gollum::Page
     include Pagination
 
+    SUBPAGENAMES.each do |subpage|
+      define_method(subpage) do
+        instance_variable_get("@#{subpage}")
+      end
+      define_method("set_#{subpage}") do |val|
+        instance_variable_set("@#{subpage}", PreviewPage.new(@wiki, "_#{subpage.to_s.capitalize}.md", val, @version))
+      end
+    end
+
     def initialize(wiki, name, data, version)
       @wiki           = wiki 
       @path           = name

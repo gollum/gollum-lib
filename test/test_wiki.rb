@@ -125,6 +125,10 @@ context "Wiki page previewing" do
     assert_equal "Test.md", page.filename
     assert_equal "Test", page.name
 
+    # Getting and setting subpage contents
+    assert page.set_sidebar("*Waa*\n")
+    assert_equal "<p><em>Waa</em></p>\n", page.sidebar.formatted_data
+
     assert_equal @wiki.repo.commit(@wiki.ref).id, page.version.id
     assert_nil page.last_version
     assert page.versions.empty?
