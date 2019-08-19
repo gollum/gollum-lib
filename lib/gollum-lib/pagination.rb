@@ -16,8 +16,8 @@ module Gollum
       # page - Integer page number.
       #
       # Returns an Integer.
-      def page_to_skip(page)
-        ([1, page.to_i].max - 1) * per_page
+      def page_to_skip(page, count = per_page)
+        ([1, page.to_i].max - 1) * count
       end
 
       # Fills in git-specific options for the log command using simple
@@ -30,8 +30,9 @@ module Gollum
       #
       # Returns Hash with :max_count and :skip keys.
       def log_pagination_options(options = {})
-        skip                = page_to_skip(options.delete(:page))
-        options[:max_count] = [options.delete(:per_page).to_i, per_page].max
+        options[:max_count] = options.fetch(:per_page, per_page)
+        options.delete(:per_page)
+        skip                = page_to_skip(options.delete(:page), options[:max_count])
         options[:skip]      = skip if skip > 0
         options
       end
