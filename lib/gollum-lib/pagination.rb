@@ -34,7 +34,6 @@ module Gollum
         options.delete(:per_page)
         skip                = page_to_skip(options.delete(:page), options[:max_count])
         options[:skip]      = skip if skip > 0
-        puts options.inspect
         options
       end
     end
