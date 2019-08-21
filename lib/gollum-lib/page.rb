@@ -208,9 +208,9 @@ module Gollum
     # Public: All of the versions that have touched the Page.
     #
     # options - The options Hash:
-    #           :page     - The Integer page number (default: 1).
-    #           :per_page - The Integer max count of items to return.
-    #           :follow   - Follow's a file across renames, slower.  (default: false)
+    #           :page_num  - The Integer page number (default: 1).
+    #           :per_page  - The Integer max count of items to return.
+    #           :follow    - Follow's a file across renames, slower.  (default: false)
     #
     # Returns an Array of Gollum::Git::Commit.
     def versions(options = {})
