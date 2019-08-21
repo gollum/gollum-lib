@@ -24,7 +24,7 @@ module Gollum
       # pagination options.
       #
       # options - Hash of options:
-      #           :page_number - Optional Integer page number (default: 1)
+      #           :page_num - Optional Integer page number (default: 1)
       #           :per_page - Optional Integer max count of items to return.
       #                      Defaults to #per_class class method.
       #
