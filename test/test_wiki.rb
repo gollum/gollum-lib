@@ -24,13 +24,13 @@ context "Wiki" do
   test "shows paginated log with 1st page" do
     Gollum::Wiki.per_page = 3
     commits               = @wiki.repo.commits[0..2].map(&:id)
-    assert_equal commits, @wiki.log(:page => 1).map(&:id)
+    assert_equal commits, @wiki.log(:page_num => 1).map(&:id)
   end
 
   test "shows paginated log with next page" do
     Gollum::Wiki.per_page = 3
     commits               = @wiki.repo.commits[3..5].map(&:id)
-    assert_equal commits, @wiki.log(:page => 2).map(&:id)
+    assert_equal commits, @wiki.log(:page_num => 2).map(&:id)
   end
 
   test "list files and pages" do
