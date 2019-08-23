@@ -196,7 +196,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   #   if it is not.
   def process_file_link_tag(link_part, pretty_name)
     if file = @markup.find_file(link_part)
-      generate_link(file.path, pretty_name, nil, :file)
+      generate_link(file.url_path, pretty_name, nil, :file)
     else
       nil
     end
