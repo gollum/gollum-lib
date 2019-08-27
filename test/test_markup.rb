@@ -91,6 +91,22 @@ context "Markup" do
     end
   end
 
+  test 'github-markup knows about gollum markups' do
+    markups_with_render_filter = Gollum::Markup.formats.select do |k, v|
+      case v[:skip_filters]
+      when Array
+        !v[:skip_filters].include?(:Render)
+      when Proc
+        !v[:skip_filters].call(:Render)
+      else
+        true
+      end
+    end
+    markups_with_render_filter.each do |name, info|
+      assert ::GitHub::Markup.markups.key?(name), "GitHub::Markup does not know about format #{name}"
+    end
+  end
+
   #########################################################################
   #
   # Links
