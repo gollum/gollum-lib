@@ -87,7 +87,7 @@ class Gollum::Filter::TOC < Gollum::Filter
   # Creates an anchor element with the given name and adds it before
   # the given header element.
   def add_anchor_to_header(header, name)
-    anchor_element = %Q(<a class="anchor" id="#{name}" href="##{name}"><i class="fa fa-link"></i></a>)
+    anchor_element = %Q(<a class="anchor" id="#{name}" href="##{name}"></a>)
     header.children.before anchor_element # Add anchor element before the header
   end
 

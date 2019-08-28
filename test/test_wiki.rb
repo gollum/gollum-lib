@@ -121,7 +121,7 @@ context "Wiki page previewing" do
   test "preview_page" do
     page = @wiki.preview_page("Test", "# Bilbo", :markdown)
     assert_equal "# Bilbo", page.raw_data
-    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
+    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"></a>Bilbo</h1>", page.formatted_data
     assert_equal "Test.md", page.filename
     assert_equal "Test", page.name
 
@@ -151,7 +151,7 @@ context "Wiki TOC" do
   test "toc_generation" do
     page = @wiki.preview_page("Test", "# Bilbo", :markdown)
     assert_equal "# Bilbo", page.raw_data
-    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
+    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"></a>Bilbo</h1>", page.formatted_data
     assert_html_equal %{<div class="toc"><div class="toc-title">Table of Contents</div><ul><li><a href="#bilbo">Bilbo</a></li></ul></div>}, page.toc_data
   end
 
@@ -169,11 +169,11 @@ context "Wiki TOC" do
     MARKDOWN
 
     formatted = <<-HTML
-<h1 class=\"editable\"><a class="anchor" id="ecthelion" href="#ecthelion"><i class="fa fa-link"></i></a>Ecthelion</h1>
-<h2 class=\"editable\"><a class="anchor" id="denethor" href="#denethor"><i class="fa fa-link"></i></a>Denethor</h2>
-<h3 class=\"editable\"><a class="anchor" id="ecthelion-1" href="#ecthelion-1"><i class="fa fa-link"></i></a>Ecthelion</h3>
-<h3 class=\"editable\"><a class="anchor" id="boromir" href="#boromir"><i class="fa fa-link"></i></a>Boromir</h3>
-<h3 class=\"editable\"><a class="anchor" id="faramir" href="#faramir"><i class="fa fa-link"></i></a>Faramir</h3>
+<h1 class=\"editable\"><a class="anchor" id="ecthelion" href="#ecthelion"></a>Ecthelion</h1>
+<h2 class=\"editable\"><a class="anchor" id="denethor" href="#denethor"></a>Denethor</h2>
+<h3 class=\"editable\"><a class="anchor" id="ecthelion-1" href="#ecthelion-1"></a>Ecthelion</h3>
+<h3 class=\"editable\"><a class="anchor" id="boromir" href="#boromir"></a>Boromir</h3>
+<h3 class=\"editable\"><a class="anchor" id="faramir" href="#faramir"></a>Faramir</h3>
     HTML
 
     page_level0 = @wiki.preview_page("Test", "[[_TOC_ | levels=0]] \n\n" + content, :markdown)
@@ -234,7 +234,7 @@ context "Wiki TOC" do
   test "' in link" do
     page = @wiki.preview_page("Test", "# a'b", :markdown)
     assert_equal "# a'b", page.raw_data
-    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"a-b\" href=\"#a-b\"><i class=\"fa fa-link\"></i></a>a'b</h1>", page.formatted_data
+    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"a-b\" href=\"#a-b\"></a>a'b</h1>", page.formatted_data
     assert_html_equal %{<div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#a-b\">a'b</a></li></ul></div>}, page.toc_data
   end
 end
