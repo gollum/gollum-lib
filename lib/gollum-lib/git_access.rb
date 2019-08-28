@@ -218,30 +218,5 @@ module Gollum
       cache      = instance_variable_get("@#{name}_map")
       cache[key] = value || :_nil
     end
-
-    # Parses a line of output from the `ls-tree` command.
-    #
-    # line - A String line of output:
-    #          "100644 blob 839c2291b30495b9a882c17d08254d3c90d8fb53  Home.md"
-    #
-    # Returns an Array of BlobEntry instances.
-    def parse_tree_line(line)
-      mode, _type, sha, size, *name = line.split(/\s+/)
-      BlobEntry.new(sha, name.join(' '), size.to_i, mode.to_i(8))
-    end
-
-    # Decode octal sequences (\NNN) in tree path names.
-    #
-    # path - String path name.
-    #
-    # Returns a decoded String.
-    def decode_git_path(path)
-      if path[0] == ?" && path[-1] == ?"
-        path = path[1...-1]
-        path.gsub!(/\\\d{3}/) { |m| m[1..-1].to_i(8).chr }
-      end
-      path.gsub!(/\\[rn"\\]/) { |m| eval(%("#{m}")) }
-      path
-    end
   end
 end
