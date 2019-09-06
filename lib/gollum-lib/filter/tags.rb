@@ -147,7 +147,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     if path =~ /^https?:\/\/.+$/i
       generate_image(path, opts)
     elsif file = @markup.find_file(path)
-      generate_image(generate_href_for_path(file.path), opts)
+      generate_image(generate_href_for_path(file.url_path), opts)
     else
       generate_image('', opts)
     end
