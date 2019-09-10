@@ -38,7 +38,7 @@ class Gollum::Filter::Code < Gollum::Filter
     end
     
 
-    data.gsub!(/^([ \t]*)``` ?([^\r\n]+)?\r?\n(.+?)\r?\n\1```[ \t]*\r?$/m) do
+    data.gsub!(/^([ ]{0,3})``` ?([^\r\n]+)?\r?\n(.+?)\r?\n[ ]{0,3}```[ \t]*\r?$/m) do
       "#{Regexp.last_match[1]}#{cache_codeblock(Regexp.last_match[2].to_s.strip, Regexp.last_match[3], Regexp.last_match[1])}" # print the SHA1 ID with the proper indentation
     end
     data
