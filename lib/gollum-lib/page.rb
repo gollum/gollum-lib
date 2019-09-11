@@ -67,14 +67,13 @@ module Gollum
     # path - The String path
     # version - The String SHA or Gollum::Git::Commit version
     # try_on_disk - If true, try to get an on disk reference for this page.
-    # parent_page - Another page that is the parent (set for subpages)
     #
     # Returns a newly initialized Gollum::Page.
     def initialize(wiki, blob, path, version, try_on_disk = false)
       super
       @formatted_data = nil
       @doc            = nil
-      @parent_page    = parent_page
+      @parent_page    = nil
       @historical     = @version.to_s == version.to_s
     end
 
