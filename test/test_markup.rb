@@ -338,13 +338,25 @@ org
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
         (<<-'DATA'
-          ```
-          rot13='tr '\''A-Za-z'\'' '\''N-ZA-Mn-za-m'\'
-          ```
+  ```
+  rot13='tr '\''A-Za-z'\'' '\''N-ZA-Mn-za-m'\'
+  ```
         DATA
         ), commit_details)
     output   = @wiki.page(page).formatted_data
-    expected = %Q{<pre><code>      <pre class=\"highlight\"><code>rot13='tr '\\''A-Za-z'\\'' '\\''N-ZA-Mn-za-m'\\'</code></pre>\n</code></pre>}
+    expected = %Q{<pre class=\"highlight\"><code>rot13='tr '\\''A-Za-z'\\'' '\\''N-ZA-Mn-za-m'\\'</code></pre>}
+    assert_html_equal expected, output
+  end
+
+  test "backtick code blocks must have no more than three space indents" do
+    page = 'test_rgx'
+    @wiki.write_page(page, :markdown,
+                     %Q(    ```ruby
+'hi'
+```
+      ), commit_details)
+    output   = @wiki.page(page).formatted_data
+    expected = %Q{<pre><code>```ruby 'hi' ```\n</code></pre>}
     assert_html_equal expected, output
   end
 
@@ -365,7 +377,7 @@ org
   test "tilde code blocks #537" do
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
-                     %Q(~~~ {.ruby}
+                     %Q(~~~ruby
 'hi'
 ~~~
       ), commit_details)
@@ -374,11 +386,34 @@ org
     assert_html_equal expected, output
   end
 
-  # Issue #537
-  test "tilde code blocks with more than one class" do
+  test "tilde code blocks must have no more than three space indents" do
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
-                     %Q(~~~ {#hi .ruby .sauce}
+                     %Q(    ~~~ruby
+'hi'
+~~~
+      ), commit_details)
+    output   = @wiki.page(page).formatted_data
+    expected = %Q{<pre><code>~~~ruby 'hi' ~~~\n</code></pre>}
+    assert_html_equal expected, output
+  end
+
+  test "tilde code blocks must have longer end tag than opening tag" do
+    page = 'test_rgx'
+    @wiki.write_page(page, :markdown,
+                     %Q(~~~~ruby
+'hi'
+~~~
+      ), commit_details)
+    output   = @wiki.page(page).formatted_data
+    expected = %Q{\n}
+    assert_html_equal expected, output
+  end
+
+  test "tilde code blocks with more than one word in info string" do
+    page = 'test_rgx'
+    @wiki.write_page(page, :markdown,
+                     %Q(~~~ ruby bla
 'hi'
 ~~~
       ), commit_details)
@@ -392,7 +427,7 @@ org
   test "tilde code blocks with lots of tildes" do
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
-                     %Q(~~~~~~ {#hi .ruby .sauce}
+                     %Q(~~~~~~ruby
 ~~
 'hi'~
 ~~~~~~
