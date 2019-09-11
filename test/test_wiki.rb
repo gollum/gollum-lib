@@ -253,9 +253,8 @@ context "Wiki TOC in _Sidebar.md" do
     @wiki.write_page("Gollum", :markdown, "# Gollum", cd)
     page = @wiki.page("Gollum")
     @wiki.write_page("_Sidebar", :markdown, "[[_TOC_]]", cd)
-    sidebar = @wiki.page("_Sidebar")
-    sidebar.parent_page = page
-    assert_not_equal "\n", sidebar.formatted_data
+    sidebar = page.sidebar
+    assert_not_equal '', sidebar.toc_data
     assert_html_equal "<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#gollum\">Gollum</a></li></ul></div></p>\n", sidebar.formatted_data
   end
   

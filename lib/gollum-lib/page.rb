@@ -322,6 +322,7 @@ module Gollum
 
           if subpageblob
             instance_variable_set("@#{subpagename}", subpageblob.page(@wiki, @version) )
+            instance_variable_get("@#{subpagename}").parent_page = self
             break
           end
 
@@ -344,18 +345,18 @@ module Gollum
         instance_variable_get("@#{subpage}")
       end
       define_method("set_#{subpage}") do |val|
-        instance_variable_set("@#{subpage}", PreviewPage.new(@wiki, "_#{subpage.to_s.capitalize}.md", val, @version))
+        instance_variable_set("@#{subpage}", PreviewPage.new(@wiki, "_#{subpage.to_s.capitalize}.md", val, @version, self))
       end
     end
 
-    def initialize(wiki, name, data, version)
+    def initialize(wiki, name, data, version, parent_page = nil)
       @wiki           = wiki 
       @path           = name
       @blob           = OpenStruct.new(:name => name, :data => data, :is_symlink => false)
       @version        = version
       @formatted_data = nil
       @doc            = nil
-      @parent_page    = nil
+      @parent_page    = parent_page
       @historical     = false
     end
   end
