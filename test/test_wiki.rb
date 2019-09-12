@@ -126,8 +126,13 @@ context "Wiki page previewing" do
     assert_equal "Test", page.name
 
     # Getting and setting subpage contents
-    assert page.set_sidebar("*Waa*\n")
-    assert_equal "<p><em>Waa</em></p>\n", page.sidebar.formatted_data
+    assert page.set_sidebar("*Hobbit*\n")
+    assert_html_equal page.sidebar.formatted_data, "<p><em>Hobbit</em></p>\n"
+
+    # Sidebar uses TOC data from parent page.
+    assert page.set_sidebar('[[_TOC_]]')
+    assert_html_equal page.sidebar.formatted_data, "<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#bilbo\">Bilbo</a></li></ul></div></p>"
+
 
     assert_equal @wiki.repo.commit(@wiki.ref).id, page.version.id
     assert_nil page.last_version
