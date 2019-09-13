@@ -47,7 +47,7 @@ context "File with checkout" do
     path = file.on_disk_path
 
     assert ::File.exist?(path)
-    assert_match(/^# Bilbo Baggins\n\nBilbo Baggins/, IO.read(path))
+    assert_match(/^# Bilbo Baggins[\n\r]+Bilbo Baggins/, IO.read(path))
   end
 
   test "symbolic link, with on-disk" do
