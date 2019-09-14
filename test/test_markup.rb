@@ -1,4 +1,4 @@
-# Encoding: utf-8
+# ~*~ encoding: utf-8 ~*~
 require File.expand_path("../helper", __FILE__)
 require File.expand_path("../wiki_factory", __FILE__)
 
@@ -255,7 +255,7 @@ context "Markup" do
     page = @wiki.page("Bilbo Baggins")
     assert_html_equal "<p>a <a href=\"http://example.com\">http://example.com</a> b</p>", page.formatted_data
   end
-
+  
   test "external page link with different text" do
     @wiki.write_page("Bilbo Baggins", :markdown, "a [[Words|http://example.com]] b", commit_details)
     page = @wiki.page("Bilbo Baggins")
@@ -543,7 +543,7 @@ org
       assert_match("does not exist yet", page1.formatted_data)
     end
     %w(
-      \ \ \
+      \ \ \ 
     ).each_with_index do |ugly, n|
       @wiki.write_page(name, :textile, "hello\n[[include:#{ugly}]]\n", commit_details)
       page1 = @wiki.page(name)
@@ -900,7 +900,7 @@ np.array([[2,2],[1,3]],np.float)
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
+    index.commit("Add metadata")    
 
     page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
@@ -916,7 +916,7 @@ np.array([[2,2],[1,3]],np.float)
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
+    index.commit("Add metadata")    
 
     page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
@@ -930,7 +930,7 @@ np.array([[2,2],[1,3]],np.float)
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
+    index.commit("Add metadata")    
 
     page     = @wiki.page("Bilbo-Baggins")
     assert_equal result, page.metadata
@@ -942,7 +942,7 @@ np.array([[2,2],[1,3]],np.float)
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
+    index.commit("Add metadata")    
 
     page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
@@ -958,7 +958,7 @@ np.array([[2,2],[1,3]],np.float)
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
+    index.commit("Add metadata")    
 
     page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
@@ -1068,7 +1068,7 @@ np.array([[2,2],[1,3]],np.float)
     output = '<h1><a class="anchor" id="test-somefilter-bla-somefilter" href="#test-somefilter-bla-somefilter"></a>Test %SomeFilter%BLA=SomeFilter=</h1'
     compare(content, output, :markdown)
   end
-
+  
   test "toc with h1_title does not include page title" do
     @wiki.instance_variable_set(:@h1_title, true)
     @wiki.write_page("H1Test", :markdown, "# This is the page title\n\n# Testing\n\nTest", commit_details)
