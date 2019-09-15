@@ -3,7 +3,11 @@
 module Gollum
   class File
 
+    # Does the filesystem support reading symlinks?
+    FS_SUPPORT_SYMLINKS = !Gem.win_platform?
+
     class << self
+
       # For use with self.find: returns true if the given query corresponds to the in-repo path of the BlobEntry. 
       #
       # query     - The String path to match.
@@ -145,6 +149,7 @@ module Gollum
       # This will try to resolve symbolic links, as well
       pathname = Pathname.new(::File.expand_path(::File.join(@wiki.repo.path, '..', @path)))
       if pathname.symlink?
+        return false unless FS_SUPPORT_SYMLINKS
         source   = ::File.readlink(pathname.to_path)
         realpath = ::File.join(::File.dirname(pathname.to_path), source)
         return false unless realpath && ::File.exist?(realpath)

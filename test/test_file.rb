@@ -53,14 +53,13 @@ context "File with checkout" do
   test "symbolic link, with on-disk" do
     file = @wiki.file("Data-Two.csv", 'master', true)
 
-    assert file.on_disk?
-    assert_match(/Data\.csv$/, file.on_disk_path)
-    assert_match(/^FirstName,LastName\n/, IO.read(file.on_disk_path))
-  end
-
-  test "on disk file, with symlink, raw_data" do
-    file = @wiki.file("Data-Two.csv")
-
+    if ::Gollum::File::FS_SUPPORT_SYMLINKS
+      assert file.on_disk?
+      assert_match(/Data\.csv$/, file.on_disk_path)
+      assert_match(/^FirstName,LastName\n/, IO.read(file.on_disk_path))
+    else
+      assert !file.on_disk?
+    end
     assert_match(/^FirstName,LastName\n/, file.raw_data)
   end
 
