@@ -8,7 +8,7 @@ module Gollum
 
     class << self
 
-      # For use with self.find: returns true if the given query corresponds to the in-repo path of the BlobEntry. 
+      # For use with self.find: returns true if the given query corresponds to the in-repo path of the BlobEntry.
       #
       # query     - The String path to match.
       # entry     - The BlobEntry to check against.
@@ -43,7 +43,7 @@ module Gollum
         nil
       end
     end
-    
+
     # Public: Initialize a file.
     #
     # wiki - The Gollum::Wiki
@@ -146,11 +146,11 @@ module Gollum
     def get_disk_reference
       return false if @wiki.repo.bare
       return false if @version.sha != @wiki.repo.head.commit.sha
+      return false if @blob.is_symlink && !FS_SUPPORT_SYMLINKS
 
       # This will try to resolve symbolic links, as well
       pathname = Pathname.new(::File.expand_path(::File.join(@wiki.repo.path, '..', @path)))
       if pathname.symlink?
-        return false unless FS_SUPPORT_SYMLINKS
         source   = ::File.readlink(pathname.to_path)
         realpath = ::File.join(::File.dirname(pathname.to_path), source)
         return false unless realpath && ::File.exist?(realpath)
