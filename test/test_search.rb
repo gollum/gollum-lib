@@ -30,6 +30,12 @@ EOF
     assert_equal 2, result[:count]
   end
 
+  test 'search finds utf8' do
+    results = @wiki.search('ᚠ').first
+    assert_equal 1, results.count
+    assert_equal 'Hobbit Info.md', results.first[:name]
+  end
+
   test 'search results should make the content/filename search additive' do
     # There is a file that contains the word 'foo' and is called 'foo', so it should
     # have a count of 2, not 1...
@@ -82,6 +88,13 @@ EOF
     assert context.include?(SEARCH_TEST_LINES[1])
     assert context.include?(SEARCH_TEST_LINES[2])
     assert !context.include?(SEARCH_TEST_LINES[3])
+  end
+
+  test 'search results do not include context when only filename matches' do
+    results = @wiki.search('Info').first
+    assert_equal 1, results.length
+    assert_equal 'Hobbit Info.md', results.first[:name]
+    assert_equal [], results.first[:context]
   end
 
   test 'search returns escaped search terms on demand' do

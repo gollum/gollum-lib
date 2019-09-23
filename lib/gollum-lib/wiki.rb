@@ -507,9 +507,21 @@ module Gollum
     def search(query, return_terms = false)
       options = {:path => page_file_dir, :ref => ref}
       search_terms = query.scan(/"([^"]+)"|(\S+)/).flatten.compact.map {|term| Regexp.escape(term)}
-      results = @repo.git.grep(search_terms, options).map do |result|
-        result[:name] = extract_page_file_dir(result[:name])
-        result
+      search_terms_regex = search_terms.join('|')
+      query = /^(.*(?:#{search_terms_regex}).*)$/i
+      results = @repo.git.grep(search_terms, options) do |name, data|
+        result = {:count => 0}
+        result[:name] = extract_page_file_dir(name)
+        result[:count] += 1 if result[:name] =~ /#{search_terms_regex}/i
+        found_in_blob = []
+        if data
+          data.scan(query) do |match|
+            found_in_blob << match.first
+            result[:count] += match.first.scan(/#{search_terms_regex}/i).size
+          end
+        end
+        result[:context] = found_in_blob
+        result[:count] == 0 ? nil : result
       end
       [results, return_terms ? search_terms : nil]
     end
