@@ -19,6 +19,7 @@ EOF
     @wiki.write_page('bar', :markdown, 'bar', commit_details)
     @wiki.write_page('filename:with:colons', :markdown, '# Filename with colons', commit_details)
     @wiki.write_page('foo', :markdown, "# File with query in contents and filename\nfoo", commit_details)
+    @wiki.write_page('dir/nested', :markdown, "Nested file", commit_details)
     @wiki.write_page('Hobbit Info', :markdown, SEARCH_TEST_PAGE, commit_details)
   end
   
@@ -47,6 +48,11 @@ EOF
     assert_equal 1, results.size
     assert_not_equal 'bar.md', results.first[:name]
     assert_equal 'foo.md', results.first[:name]
+  end
+
+  test 'search should find results in nested directories' do
+    results = @wiki.search('nested').first
+    assert_equal 'dir/nested', results.first[:name]
   end
 
   test 'search should support multiple search terms ' do
