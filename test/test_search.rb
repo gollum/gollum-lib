@@ -109,6 +109,16 @@ EOF
     assert_equal 1, results.length
     assert !results.first[:name].include?('Rivendell')
   end
+
+  test 'search matches binary file name' do
+    wiki = Gollum::Wiki.new(@path, :page_file_dir => 'Mordor')
+    results = wiki.search('eye').first
+    img_result = results.last
+    assert_equal 'eye.jpg', img_result[:name]
+    assert_equal 0, img_result[:count]
+    assert_equal 1, img_result[:filename_count]
+    assert_equal [], img_result[:context]
+  end
   
   teardown do
     FileUtils.rm_rf(@path)
