@@ -27,7 +27,8 @@ EOF
     assert_not_nil results
     result = results.first
     assert_equal 'filename:with:colons.md', result[:name]
-    assert_equal 2, result[:count]
+    assert_equal 1, result[:count]
+    assert_equal 1, result[:filename_count]
   end
 
   test 'search finds utf8' do
@@ -36,11 +37,9 @@ EOF
     assert_equal 'Hobbit Info.md', results.first[:name]
   end
 
-  test 'search results should make the content/filename search additive' do
-    # There is a file that contains the word 'foo' and is called 'foo', so it should
-    # have a count of 2, not 1...
-    results = @wiki.search('foo').first
-    assert_equal 2, results.first[:count]
+  test 'search results should include filename hits' do
+    results = @wiki.search('Hobbit Info').first
+    assert_equal 2, results.first[:filename_count]
   end
 
   test 'search results should not include files that do not match the query' do
@@ -90,7 +89,7 @@ EOF
     assert !context.include?(SEARCH_TEST_LINES[3])
   end
 
-  test 'search results do not include context when only filename matches' do
+  test 'search results when only filename matches' do
     results = @wiki.search('Info').first
     assert_equal 1, results.length
     assert_equal 'Hobbit Info.md', results.first[:name]

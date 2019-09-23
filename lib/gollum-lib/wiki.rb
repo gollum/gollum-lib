@@ -512,7 +512,7 @@ module Gollum
       results = @repo.git.grep(search_terms, options) do |name, data|
         result = {:count => 0}
         result[:name] = extract_page_file_dir(name)
-        result[:count] += 1 if result[:name] =~ /#{search_terms_regex}/i
+        result[:filename_count] = result[:name].scan(/#{search_terms_regex}/i).size
         found_in_blob = []
         if data
           data.scan(query) do |match|
@@ -521,7 +521,7 @@ module Gollum
           end
         end
         result[:context] = found_in_blob
-        result[:count] == 0 ? nil : result
+        ((result[:count] + result[:filename_count]) == 0) ? nil : result
       end
       [results, return_terms ? search_terms : nil]
     end
