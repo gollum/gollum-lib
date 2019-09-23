@@ -511,7 +511,7 @@ module Gollum
         result[:name] = extract_page_file_dir(result[:name])
         result
       end
-      return_terms ? [results, search_terms] : results
+      [results, return_terms ? search_terms : nil]
     end
 
     # Public: All of the versions that have touched the Page.
