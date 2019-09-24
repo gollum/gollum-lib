@@ -303,10 +303,14 @@ context "Wiki page writing" do
     assert @wiki.page("Saruman")
   end
 
-  test "write page is not allowed to overwrite file" do
+  test "write page is not allowed to overwrite pages by default" do
     @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
     assert_raises Gollum::DuplicatePageError do
       @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
+    end
+    @wiki.write_page("subdir/Abc-Def", :markdown, "# Gollum", commit_details)
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.write_page("subdir/Abc-Def", :markdown, "# Gollum", commit_details)
     end
     assert_nothing_raised Gollum::DuplicatePageError do
       @wiki.write_page("Abc-Def", :textile, "# Gollum", commit_details)
@@ -314,6 +318,25 @@ context "Wiki page writing" do
     assert_nothing_raised Gollum::DuplicatePageError do
       @wiki.write_page("abc-def", :markdown, "# Gollum", commit_details)
     end
+  end
+  
+  test "write file is not allowed to overwrite files by default" do
+    @wiki.write_file("Abc-Def.file", "# Gollum", commit_details)
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.write_file("Abc-Def.file", "# Gollum", commit_details)
+    end
+    @wiki.write_file("subdir/Abc-Def.file", "# Gollum", commit_details)
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.write_file("subdir/Abc-Def.file", "# Gollum", commit_details)
+    end
+  end
+
+  test "write page can overwrite pages if overwrite option is enabled" do
+    omit('Not yet implemented.')
+  end
+  
+  test "write file can overwrite files if overwrite option is enabled" do
+    omit('Not yet implemented.')
   end
 
   test "write_page does not mutate input parameters" do
