@@ -80,11 +80,9 @@ module Gollum
     #
     # Returns nothing (modifies the Index in place).
     def add_to_index(path, data, options = {}, force_overwrite = false)
-      if index.current_tree
-        tree = index.current_tree
-        unless force_overwrite
-          tree = tree / path
-          raise DuplicatePageError.new(path) unless tree.nil? || page_path_scheduled_for_deletion?(index.tree, path)
+      if tree = index.current_tree
+        unless page_path_scheduled_for_deletion?(index.tree, path) || force_overwrite
+          raise DuplicatePageError.new(path) if tree / path
         end
       end
 
