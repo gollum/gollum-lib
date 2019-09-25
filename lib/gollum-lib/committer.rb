@@ -75,14 +75,15 @@ module Gollum
     # path   - The String path to be added
     # data   - The String wiki data to store in the tree map.
     #
-    # Raises Gollum::DuplicatePageError if a matching filename already exists.
+    # Raises Gollum::DuplicatePageError if a matching filename already exists, unless force_overwrite is explicitly enabled.
     # This way, pages are not inadvertently overwritten.
     #
     # Returns nothing (modifies the Index in place).
-    def add_to_index(path, data, options = {})
-      if index.current_tree
-        tree = @wiki.page_file_dir ? index.current_tree / @wiki.page_file_dir : index.current_tree
-        raise DuplicatePageError.new(path) if !page_path_scheduled_for_deletion?(index.tree, path) && tree.blobs.find {|blob| blob.name == path}
+    def add_to_index(path, data, options = {}, force_overwrite = false)
+      if tree = index.current_tree
+        unless page_path_scheduled_for_deletion?(index.tree, path) || force_overwrite
+          raise DuplicatePageError.new(path) if tree / path
+        end
       end
 
       # TODO Remove once grit is deprecated

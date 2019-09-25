@@ -303,16 +303,31 @@ context "Wiki page writing" do
     assert @wiki.page("Saruman")
   end
 
-  test "write page is not allowed to overwrite file" do
+  test "write page is not allowed to overwrite pages" do
     @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
     assert_raises Gollum::DuplicatePageError do
       @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
+    end
+    @wiki.write_page("subdir/Abc-Def", :markdown, "# Gollum", commit_details)
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.write_page("subdir/Abc-Def", :markdown, "# Gollum", commit_details)
     end
     assert_nothing_raised Gollum::DuplicatePageError do
       @wiki.write_page("Abc-Def", :textile, "# Gollum", commit_details)
     end
     assert_nothing_raised Gollum::DuplicatePageError do
       @wiki.write_page("abc-def", :markdown, "# Gollum", commit_details)
+    end
+  end
+  
+  test "write file is not allowed to overwrite files" do
+    @wiki.write_file("Abc-Def.file", "# Gollum", commit_details)
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.write_file("Abc-Def.file", "# Gollum", commit_details)
+    end
+    @wiki.write_file("subdir/Abc-Def.file", "# Gollum", commit_details)
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.write_file("subdir/Abc-Def.file", "# Gollum", commit_details)
     end
   end
 
