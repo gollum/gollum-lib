@@ -504,7 +504,7 @@ module Gollum
     # query - The string to search for
     #
     # Returns an Array with Objects of page name and count of matches
-    def search(query, return_terms = false)
+    def search(query)
       options = {:path => page_file_dir, :ref => ref}
       search_terms = query.scan(/"([^"]+)"|(\S+)/).flatten.compact.map {|term| Regexp.escape(term)}
       search_terms_regex = search_terms.join('|')
@@ -513,17 +513,16 @@ module Gollum
         result = {:count => 0}
         result[:name] = extract_page_file_dir(name)
         result[:filename_count] = result[:name].scan(/#{search_terms_regex}/i).size
-        found_in_blob = []
+        result[:context] = []
         if data
           data.scan(query) do |match|
-            found_in_blob << match.first
+            result[:context] << match.first
             result[:count] += match.first.scan(/#{search_terms_regex}/i).size
           end
         end
-        result[:context] = found_in_blob
         ((result[:count] + result[:filename_count]) == 0) ? nil : result
       end
-      [results, return_terms ? search_terms : nil]
+      [results, search_terms]
     end
 
     # Public: All of the versions that have touched the Page.

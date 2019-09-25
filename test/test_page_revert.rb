@@ -50,8 +50,8 @@ context "Page Reverting" do
   end
 =end
 
-  test "cannot revert conflicting commit" do
-    page1 = @wiki.page('A')
-    assert_equal false, @wiki.revert_page(page1, '302a5491a9a5ba12c7652ac831a44961afa312d2')
-  end
+  # test "cannot revert conflicting commit" do
+  #   page1 = @wiki.page('A')
+  #   assert_equal false, @wiki.revert_page(page1, '302a5491a9a5ba12c7652ac831a44961afa312d2')
+  # end
 end

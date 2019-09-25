@@ -52,7 +52,7 @@ EOF
 
   test 'search should find results in nested directories' do
     results = @wiki.search('nested').first
-    assert_equal 'dir/nested', results.first[:name]
+    assert_equal 'dir/nested.md', results.first[:name]
   end
 
   test 'search should support multiple search terms ' do
@@ -102,11 +102,10 @@ EOF
     assert_equal [], results.first[:context]
   end
 
-  test 'search returns escaped search terms on demand' do
+  test 'search returns escaped search terms' do
     result, search_terms = @wiki.search('foo|bar')
-    assert_nil search_terms
-    result, search_terms = @wiki.search('foo|bar', true)
     assert_equal 'foo\|bar', search_terms.first
+    assert_equal 1, search_terms.size
   end
 
   test 'search should respect page_file_dir' do
