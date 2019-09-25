@@ -506,29 +506,23 @@ module Gollum
     # Returns an Array with Objects of page name and count of matches
     def search(query)
       options = {:path => page_file_dir, :ref => ref}
-      results = {}
-      @repo.git.grep(query, options).each do |hit|
-        name = hit[:name]
-        count = hit[:count]
-        # Remove ext only from known extensions.
-        # test.pdf => test.pdf, test.md => test
-        file_name = Page::valid_page_name?(name) ? name.chomp(::File.extname(name)) : name
-        results[file_name] = count.to_i
+      search_terms = query.scan(/"([^"]+)"|(\S+)/).flatten.compact.map {|term| Regexp.escape(term)}
+      search_terms_regex = search_terms.join('|')
+      query = /^(.*(?:#{search_terms_regex}).*)$/i
+      results = @repo.git.grep(search_terms, options) do |name, data|
+        result = {:count => 0}
+        result[:name] = extract_page_file_dir(name)
+        result[:filename_count] = result[:name].scan(/#{search_terms_regex}/i).size
+        result[:context] = []
+        if data
+          data.scan(query) do |match|
+            result[:context] << match.first
+            result[:count] += match.first.scan(/#{search_terms_regex}/i).size
+          end
+        end
+        ((result[:count] + result[:filename_count]) == 0) ? nil : result
       end
-
-      # Use ls_files '*query*' to search for file names. Grep only searches file content.
-      # Spaces are converted to dashes when saving pages to disk.
-      @repo.git.ls_files(query, options).each do |path|
-        # Remove ext only from known extensions.
-        file_name          = Page::valid_page_name?(path) ? path.chomp(::File.extname(path)) : path
-        # If there's not already a result for file_name then
-        # the value is nil and nil.to_i is 0.
-        results[file_name] = results[file_name].to_i + 1;
-      end
-
-      results.map do |key, val|
-        { :count => val, :name => key }
-      end
+      [results, search_terms]
     end
 
     # Public: All of the versions that have touched the Page.
@@ -761,6 +755,10 @@ module Gollum
       else
         result[0] == '/' ? result[1..-1] : result
       end
+    end
+
+    def extract_page_file_dir(path)
+      @page_file_dir ? path[@page_file_dir.length+1..-1] : path
     end
 
     def write(path, data, commit = {})

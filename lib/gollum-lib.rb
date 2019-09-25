@@ -5,7 +5,7 @@ require 'digest/sha1'
 require 'ostruct'
 require 'pathname'
 
-DEFAULT_ADAPTER = RUBY_PLATFORM == 'java' ? 'rjgit' : 'grit'
+DEFAULT_ADAPTER = RUBY_PLATFORM == 'java' ? 'rjgit' : 'rugged'
 
 Gollum::GIT_ADAPTER = DEFAULT_ADAPTER if !defined?(Gollum::GIT_ADAPTER)
 require "#{Gollum::GIT_ADAPTER.downcase}_adapter"
