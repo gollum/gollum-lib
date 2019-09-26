@@ -147,7 +147,9 @@ context "Macros" do
 
   test "Octicon macro given a symbol and dimensions displays octicon" do
     @wiki.write_page("OcticonMacroPage", :markdown, '<<Octicon("globe", 64, 64)>>', commit_details)
-    assert_match /<div><svg.*class=\"octicon octicon-globe\".*height=\"64\".*width=\"64\".*/, @wiki.pages[0].formatted_data
+    assert_match /<div><svg.*class=\"octicon octicon-globe\".*/, @wiki.pages[0].formatted_data
+    assert_match /<div><svg.*height=\"64\"/, @wiki.pages[0].formatted_data
+    assert_match /<div><svg.*width=\"64\"/, @wiki.pages[0].formatted_data
   end
 
   test "Note macro given a string displays a regular flash message box" do
