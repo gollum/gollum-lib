@@ -1,4 +1,5 @@
 # ~*~ encoding: utf-8 ~*~
+require 'octicons'
 
 # Replace specified tokens with dynamically generated content.
 class Gollum::Filter::Macro < Gollum::Filter
@@ -47,7 +48,9 @@ class Gollum::Filter::Macro < Gollum::Filter
         begin
           Gollum::Macro.instance(macro, @markup.wiki, @markup.page).render(*args)
         rescue StandardError => e
-          "!!!Macro Error: #{e.message}!!!"
+          icon = Octicons::Octicon.new('zap', {width: 24, height: 24})
+          icon.options[:class] << ' mr-2'
+          "<div class='flash flash-error'>#{icon.to_svg}!!!Macro Error for #{macro}: #{e.message}!!!</div>"
         end
       end
     end
