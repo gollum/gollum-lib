@@ -164,7 +164,7 @@ context "Macros" do
 
   test "Macro errors are reported in place in a flash-error message box" do
     @wiki.write_page("OcticonMacroPage", :markdown, '<<Octicon("foobar", 64, 64)>>', commit_details)
-    assert_match /<div class=\"flash flash-error\"><svg.*class=\"octicon octicon-zap mr-2\".*!!!Macro Error for Octicon: Couldn't find octicon symbol for "foobar"!!!.*/, @wiki.pages[0].formatted_data
+    assert_match /<div class=\"flash flash-error\"><svg.*class=\"octicon octicon-zap mr-2\".*Macro Error for Octicon: Couldn't find octicon symbol for "foobar".*/, @wiki.pages[0].formatted_data
   end
 
 end
