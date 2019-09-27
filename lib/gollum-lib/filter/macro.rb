@@ -50,7 +50,7 @@ class Gollum::Filter::Macro < Gollum::Filter
         rescue StandardError => e
           icon = Octicons::Octicon.new('zap', {width: 24, height: 24})
           icon.options[:class] << ' mr-2'
-          "<div class='flash flash-error'>#{icon.to_svg}!!!Macro Error for #{macro}: #{e.message}!!!</div>"
+          "<div class='flash flash-error'>#{icon.to_svg}Macro Error for #{macro}: #{e.message}</div>"
         end
       end
     end
