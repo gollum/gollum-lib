@@ -303,10 +303,10 @@ class Gollum::Filter::Tags < Gollum::Filter
     attr_string = attrs.map {|key, value| "#{key}=\"#{value}\""}.join(' ')
 
     if containered
-      %{<span class="#{classes.join(' ')}">} +
-          %{<span>} +
+      %{<span class="d-flex #{classes[:container].join(' ')}">} +
+          %{<span class="#{classes[:nested].join(' ')}">} +
           %{<img src="#{path}" #{attr_string}/>} +
-          (classes.include?('frame') && attrs[:alt] ? %{<span>#{attrs[:alt]}</span>} : '') +
+          (options[:frame] && attrs[:alt] ? %{<span class="clearfix">#{attrs[:alt]}</span>} : '') +
           %{</span>} +
           %{</span>}
     else
@@ -318,31 +318,31 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # options  - The Hash of parsed image options.
   #
-  # Returns an Array of CSS classes, a Hash of CSS attributes, and a Boolean indicating whether or not the image is containered.
+  # Returns a Hash containing CSS class Arrays, a Hash of CSS attributes, and a Boolean indicating whether or not the image is containered.
   def generate_image_attributes(options)
     containered = false
-    classes = [] # applied to whatever the outermost container is
+    classes = {container: [], nested: []} # applied to the container(s)
     attrs   = {} # applied to the image
 
     align = options[:align]
     if options[:float]
       containered = true
-      align       ||= 'left'
-      if %w{left right}.include?(align)
-        classes << "float-#{align}"
-      end
+      align = 'left' unless align == 'right'
+      classes[:container] << "float-#{align} pb-4"
     elsif %w{top texttop middle absmiddle bottom absbottom baseline}.include?(align)
       attrs[:align] = align
     elsif align
       if %w{left center right}.include?(align)
         containered = true
-        classes << "align-#{align}"
+        text_align = "text-#{align}"
+        align = 'end' if align == 'right'
+        classes[:container] << "flex-justify-#{align} #{text_align}"
       end
     end
 
-    if options[:frame]
+    if options[:frame] 
       containered = true
-      classes << 'frame'
+      classes[:nested] << 'border p-4'
     end
 
     attrs[:alt]    = options[:alt]    if options[:alt]
