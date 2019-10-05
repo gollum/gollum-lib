@@ -221,7 +221,7 @@ module Gollum
      write(merge_path_elements(nil, name, format), data, commit)
     end
 
-    # Public: Write a new version of a file to the Gollum repo root.
+    # Public: Write a new version of a file to the Gollum repo.
     #
     # path   - The String path where the file will be written.
     # data   - The new String contents of the page.
@@ -239,6 +239,26 @@ module Gollum
     # Gollum::Committer instance if this is part of a batch update
     def write_file(name, data, commit = {})
       write(merge_path_elements(nil, name, nil), data, commit)
+    end
+    
+    # Public: Write a file to the Gollum repo regardless of existing versions.
+    #
+    # path   - The String path where the file will be written.
+    # data   - The new String contents of the page.
+    # commit - The commit Hash details:
+    #          :message   - The String commit message.
+    #          :name      - The String author full name.
+    #          :email     - The String email address.
+    #          :parent    - Optional Gollum::Git::Commit parent to this update.
+    #          :tree      - Optional String SHA of the tree to create the
+    #                       index from.
+    #          :committer - Optional Gollum::Committer instance.  If provided,
+    #                       assume that this operation is part of batch of
+    #                       updates and the commit happens later.
+    # Returns the String SHA1 of the newly written version, or the
+    # Gollum::Committer instance if this is part of a batch update
+    def overwrite_file(name, data, commit = {})
+      write(merge_path_elements(nil, name, nil), data, commit, force_overwrite = true)
     end
 
     # Public: Rename an existing page without altering content.
@@ -579,6 +599,16 @@ module Gollum
       @history_sanitizer ||= history_sanitization.to_sanitize
     end
 
+    def redirects
+      ::Gollum::Redirects.load(self)
+    end
+    
+    def add_redirect(old_path, new_path)
+      redirects = ::Gollum::Redirects.load(self)
+      redirects[old_path] = new_path
+      ::Gollum::Redirects.dump(self, redirects)
+    end
+
     #########################################################################
     #
     # Internal Methods
@@ -641,14 +671,14 @@ module Gollum
     #
     # ref - A String ref that is either a commit SHA or references one.
     #
-    # Returns a flat Array of Gollum::Page instances.
+    # Returns a flat Array of Gollum::Page and Gollum::File instances.
     def tree_list(ref = @ref, pages=true, files=true)
       if (sha = @access.ref_to_sha(ref))
         commit = @access.commit(sha)
         tree_map_for(sha).inject([]) do |list, entry|
           if ::Gollum::Page.valid_page_name?(entry.name)
             list << entry.page(self, commit) if pages
-          elsif files && !entry.name.start_with?('_')
+          elsif files && !entry.name.start_with?('_') && !::Gollum::Page.protected_files.include?(entry.name)
             list << entry.file(self, commit)
           end
           list
@@ -761,10 +791,10 @@ module Gollum
       @page_file_dir ? path[@page_file_dir.length+1..-1] : path
     end
 
-    def write(path, data, commit = {})
+    def write(path, data, commit = {}, force_overwrite = false)
       multi_commit = !!commit[:committer]
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
-      committer.add_to_index(path, data)
+      committer.add_to_index(path, data, commit, force_overwrite)
 
       committer.after_commit do |index, _sha|
         @access.refresh
