@@ -4,10 +4,19 @@ REDIRECTS_FILE = '.redirects.gollum'
 
 module Gollum
   
-  class Redirects
+  module Redirects
         
-    def self.load(wiki)
-      file = wiki.file(REDIRECTS_FILE)
+    def stale?
+      @current_head != @wiki.repo.head.commit.sha
+    end
+
+    def init(wiki)
+      @wiki = wiki
+      @current_head = @wiki.repo.head.commit.sha
+    end
+
+    def load
+      file = @wiki.file(REDIRECTS_FILE)
       redirects = {}
       if file
         begin
@@ -16,13 +25,14 @@ module Gollum
           # TODO handle error
         end
       end
-      redirects
+      self.clear
+      self.merge!(redirects)
     end
     
-    def self.dump(wiki, hash)
-      wiki.overwrite_file(REDIRECTS_FILE, hash.to_yaml, {})
+    def dump
+      @wiki.overwrite_file(REDIRECTS_FILE, self.to_yaml, {})
     end
     
-  end # Class
-  
-end # Module
+  end # Redirects Module
+
+end # Gollum Module

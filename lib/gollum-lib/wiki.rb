@@ -600,13 +600,22 @@ module Gollum
     end
 
     def redirects
-      ::Gollum::Redirects.load(self)
+      if @redirects.nil? || @redirects.stale?
+        @redirects = {}.extend(::Gollum::Redirects)
+        @redirects.init(self)
+        @redirects.load
+      end
+      @redirects
     end
     
     def add_redirect(old_path, new_path)
-      redirects = ::Gollum::Redirects.load(self)
       redirects[old_path] = new_path
-      ::Gollum::Redirects.dump(self, redirects)
+      redirects.dump
+    end
+    
+    def remove_redirect(path)
+      redirects.tap{|k| k.delete(path)}
+      redirects.dump
     end
 
     #########################################################################

@@ -729,12 +729,18 @@ context "redirects" do
     assert_equal 'Home.md', @wiki.redirects['Home.old.md']
   end
   
-  test "#add_redirect modifies the .redirects.gollum file" do
+  test "#add_redirect modifies the .redirects.gollum file by adding a redirect entry" do
     @wiki.add_redirect('oldpage.md', 'newpage.md')
     redirects_file = @wiki.file('.redirects.gollum')
     assert_equal "---\noldpage.md: newpage.md\n", redirects_file.raw_data
   end
   
+  test "#remove_redirect modifies the .redirects.gollum file by removing a redirect entry" do
+    @wiki.add_redirect('oldpage.md', 'newpage.md')
+    @wiki.remove_redirect('oldpage.md')
+    redirects_file = @wiki.file('.redirects.gollum')
+    assert_equal "--- {}\n", redirects_file.raw_data
+  end
 
   teardown do
     FileUtils.rm_rf(@path)
