@@ -97,7 +97,7 @@ module Gollum
       ERB::Util.url_encode(self.url_path).gsub('%2F', '/').force_encoding('utf-8')
     end
 
-    # Public: The raw contents of the page.
+    # Public: The raw contents of the file.
     #
     # Returns the String data.
     def raw_data
@@ -129,6 +129,10 @@ module Gollum
     # Public: The String mime type of the file.
     def mime_type
       @blob && @blob.mime_type
+    end
+
+    def self.protected_files
+      ['custom.css', 'custom.js', '.redirects.gollum']
     end
 
     private

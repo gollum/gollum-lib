@@ -331,6 +331,14 @@ context "Wiki page writing" do
     end
   end
 
+  test "overwrite file is allowed to overwrite an existing file" do
+    @wiki.write_file("Abc-Def.file", "# Gollum", commit_details)
+    assert_nothing_raised Gollum::DuplicatePageError do
+      @wiki.overwrite_file("Abc-Def.file", "# Gollum modified", commit_details)
+    end
+    assert_equal "# Gollum modified", @wiki.file("Abc-Def.file").raw_data
+  end
+
   test "write_page does not mutate input parameters" do
     name = "Hello There"
     @wiki.write_page(name, :markdown, 'content', commit_details)
@@ -703,6 +711,57 @@ context "Wiki page writing with different branch" do
 
     assert_equal nil, @wiki.page("Bilbo")
   end
+end
+
+context "redirects" do
+
+  setup do
+    @path = cloned_testpath("examples/lotr.git")
+    @wiki = Gollum::Wiki.new(@path)
+  end
+
+  test "#redirects returns an empty hash if the .redirects.gollum file does not exist" do
+    assert @wiki.redirects.empty?
+  end
+  
+  test "#redirects returns a hash with redirects if the .redirects.gollum file exists" do
+    @wiki.write_file('.redirects.gollum', {'Home.old.md' => 'Home.md'}.to_yaml)
+    assert_equal 'Home.md', @wiki.redirects['Home.old.md']
+  end
+  
+  test "#add_redirect modifies the .redirects.gollum file by adding a redirect entry" do
+    @wiki.add_redirect('oldpage.md', 'newpage.md')
+    redirects_file = @wiki.file('.redirects.gollum')
+    assert_equal "---\noldpage.md: newpage.md\n", redirects_file.raw_data
+  end
+  
+  test "#remove_redirect modifies the .redirects.gollum file by removing a redirect entry" do
+    @wiki.add_redirect('oldpage.md', 'newpage.md')
+    @wiki.remove_redirect('oldpage.md')
+    redirects_file = @wiki.file('.redirects.gollum')
+    assert_equal "--- {}\n", redirects_file.raw_data
+  end
+
+  test "#redirects reloads the redirects hash when the cache has become stale" do
+    @wiki.add_redirect('oldpage.md', 'newpage.md')
+    redirects = @wiki.redirects
+    object_id1 = redirects.object_id
+    assert_equal 'newpage.md', redirects['oldpage.md']
+    # Test that the cache works by calling #redirects again
+    assert_equal object_id1, @wiki.redirects.object_id
+    # Overwriting the redirects file changes HEAD, turning the redirects cache stale
+    @wiki.overwrite_file('.redirects.gollum', {'Home.old.md' => 'Home.md'}.to_yaml)
+    redirects = @wiki.redirects
+    object_id2 = redirects.object_id
+    assert_not_equal object_id1, object_id2
+    assert_equal nil, redirects['oldpage.md']
+    assert_equal 'Home.md', redirects['Home.old.md']
+  end
+
+  teardown do
+    FileUtils.rm_rf(@path)
+  end
+  
 end
 
 context "Renames directory traversal" do
