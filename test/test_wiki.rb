@@ -742,6 +742,22 @@ context "redirects" do
     assert_equal "--- {}\n", redirects_file.raw_data
   end
 
+  test "#redirects reloads the redirects hash when the cache has become stale" do
+    @wiki.add_redirect('oldpage.md', 'newpage.md')
+    redirects = @wiki.redirects
+    object_id1 = redirects.object_id
+    assert_equal 'newpage.md', redirects['oldpage.md']
+    # Test that the cache works by calling #redirects again
+    assert_equal object_id1, @wiki.redirects.object_id
+    # Overwriting the redirects file changes HEAD, turning the redirects cache stale
+    @wiki.overwrite_file('.redirects.gollum', {'Home.old.md' => 'Home.md'}.to_yaml)
+    redirects = @wiki.redirects
+    object_id2 = redirects.object_id
+    assert_not_equal object_id1, object_id2
+    assert_equal nil, redirects['oldpage.md']
+    assert_equal 'Home.md', redirects['Home.old.md']
+  end
+
   teardown do
     FileUtils.rm_rf(@path)
   end
