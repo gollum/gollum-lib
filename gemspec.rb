@@ -29,7 +29,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_dependency 'rouge', '~> 3.1'
     s.add_dependency 'nokogiri', '~> 1.8'
     s.add_dependency 'stringex', '~> 2.6'
-    s.add_dependency 'sanitize', '~> 2.1.1', '>= 2.1.1'
+    s.add_dependency 'loofah', '~> 2.3'
     s.add_dependency 'github-markup', '~> 3.0'
     s.add_dependency 'gemojione', '~> 3.2'
     s.add_dependency 'octicons', '~> 8.5'

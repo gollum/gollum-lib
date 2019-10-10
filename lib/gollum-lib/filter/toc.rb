@@ -26,10 +26,10 @@ class Gollum::Filter::TOC < Gollum::Filter
         add_entry_to_toc     header, anchor_name
       end
       if not @toc_doc.nil?
-        toc_str = @toc_doc.to_xml(@markup.to_xml_opts)
+        toc_str = @toc_doc.to_xml(@markup.class.to_xml_opts)
       end
 
-      data  = @doc.to_xml(@markup.to_xml_opts)
+      data  = @doc.to_xml(@markup.class.to_xml_opts)
     end
 
     @markup.toc = toc_str
@@ -51,7 +51,7 @@ class Gollum::Filter::TOC < Gollum::Filter
             e.remove
           end
         end
-        toc_clone.to_xml(@markup.to_xml_opts)
+        toc_clone.to_xml(@markup.class.to_xml_opts)
       end
     end
 

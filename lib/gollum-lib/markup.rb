@@ -22,6 +22,10 @@ module Gollum
 
     class << self
 
+      def to_xml_opts
+        { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML ^ 1, :indent => 0, :encoding => 'UTF-8' }
+      end
+
       # Only use the formats that are specified in config.rb
       def formats
         if defined? Gollum::Page::FORMAT_NAMES
@@ -65,7 +69,6 @@ module Gollum
     attr_accessor :toc
     attr_accessor :metadata
     attr_reader :encoding
-    attr_reader :sanitize
     attr_reader :format
     attr_reader :wiki
     attr_reader :page
@@ -73,8 +76,8 @@ module Gollum
     attr_reader :sub_page
     attr_reader :name
     attr_reader :include_levels
-    attr_reader :to_xml_opts
     attr_reader :dir
+    attr_reader :historical
 
     # Initialize a new Markup object.
     #
@@ -92,7 +95,6 @@ module Gollum
       @page        = page
       @dir         = ::File.dirname(page.path)
       @metadata    = nil
-      @to_xml_opts = { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML ^ 1, :indent => 0, :encoding => 'UTF-8' }
     end
 
     # Whether or not this markup's format uses reversed-order links ([description | url] rather than [url | description]). Defaults to false.
@@ -146,12 +148,11 @@ module Gollum
     #
     # Returns the formatted String content.
     def render(no_follow = false, encoding = nil, include_levels = 10, &block)
-      @sanitize = no_follow ? @wiki.history_sanitizer : @wiki.sanitizer
-
+      @historical     = no_follow
       @encoding       = encoding
       @include_levels = include_levels
 
-      data     = @data.dup
+      data = @data.dup
 
       filter_chain = @wiki.filter_chain.reject {|filter| skip_filter?(filter)}
       filter_chain.map! do |filter_sym|
