@@ -16,10 +16,6 @@ module Gollum
       node.remove if REMOVE_NODES.include?(node.name)
     end
 
-    SCRUB_EMPTY_P = Loofah::Scrubber.new do |node|
-      node.remove if node.name == 'p' && node.text.blank? && node.children.empty?
-    end
-
     attr_reader :id_prefix
 
     def initialize(to_xml_opts = {})
@@ -31,30 +27,21 @@ module Gollum
       doc.scrub!(SCRUB_REMOVE)
       doc.scrub!(:strip)
       doc.scrub!(:nofollow) if historical
-      postprocess.each do |scrubber|
-        doc.scrub!(scrubber)
-      end
-      doc.to_xml(@to_xml_opts)
+      doc.scrub!(wiki_id_scrubber) if id_prefix
+      doc.to_xml(@to_xml_opts).gsub('<p></p>', '')
     end
 
-    private 
-
-    # Additional html transformation tasks to be completed after sanitization
-    def postprocess
-      [wiki_id_scrubber, SCRUB_EMPTY_P].compact
-    end
+    private
 
     # Returns a Loofah::Scrubber if the `id_prefix` attribute is set, or nil otherwise.
     def wiki_id_scrubber
-      if id_prefix
-        @id_scrubber ||= Loofah::Scrubber.new do |node|
-          if node.name == 'a' && val = node['href']
-            node['href'] = val.gsub(/\A\#(#{id_prefix})?/, '#' + id_prefix) unless node[:class] == 'internal anchorlink' # Don't prefix pure anchor links
-          else
-            %w(id name).each do |key|
-              if (value = node[key])
-                node[key] = value.gsub(/\A(#{id_prefix})?/, id_prefix)
-              end
+      @id_scrubber ||= Loofah::Scrubber.new do |node|
+        if node.name == 'a' && val = node['href']
+          node['href'] = val.gsub(/\A\#(#{id_prefix})?/, '#' + id_prefix) unless node[:class] == 'internal anchorlink' # Don't prefix pure anchor links
+        else
+          %w(id name).each do |key|
+            if (value = node[key])
+              node[key] = value.gsub(/\A(#{id_prefix})?/, id_prefix)
             end
           end
         end
