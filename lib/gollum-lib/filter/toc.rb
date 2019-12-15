@@ -90,7 +90,7 @@ class Gollum::Filter::TOC < Gollum::Filter
     a['class'] = 'anchor'
     a['id'] = name
     a['href'] = "##{name}"
-    header.children.before a # Add anchor element before the header
+    header.children.before(a) # Add anchor element before the header
   end
 
   # Adds an entry to the TOC for the given header.  The generated entry
