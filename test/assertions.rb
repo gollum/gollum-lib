@@ -5,6 +5,7 @@ require 'nokogiri/diff'
 def normalize_html(text)
   text.strip!
   text.gsub!(/\s\s+/,' ')
+  text.gsub!("\r","\n") # Windows line endings
   text.gsub!(/\p{Pi}|\p{Pf}|&amp;quot;/u,'"')
   text.gsub!("\u2026",'...')
   text
@@ -34,4 +35,3 @@ def assert_max_seconds(max_seconds, name = "an operation")
   yield
   assert (Time.now - start) < max_seconds, "#{name} took more than #{max_seconds} seconds"
 end
-

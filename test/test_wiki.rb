@@ -66,7 +66,7 @@ context "Wiki" do
   test "latest changes in repo" do
     assert_equal @wiki.latest_changes({:max_count => 1}).first.id, "324396c422678622ca16524424161429ee673bb9"
   end
-  
+
   test "text_data" do
     wiki = Gollum::Wiki.new(testpath("examples/yubiwa.git"))
     if String.instance_methods.include?(:encoding)
@@ -252,7 +252,7 @@ context "Wiki TOC in _Sidebar.md" do
     options = { :universal_toc => true }
     @wiki = Class.new(Gollum::Wiki).new(@path, options)
   end
-  
+
   test "_Sidebar.md with [[_TOC_]] renders TOC" do
     cd = commit_details
     @wiki.write_page("Gollum", :markdown, "# Gollum", cd)
@@ -262,9 +262,9 @@ context "Wiki TOC in _Sidebar.md" do
     assert_not_equal '', sidebar.toc_data
     assert_html_equal "<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#gollum\">Gollum</a></li></ul></div></p>\n", sidebar.formatted_data
   end
-  
+
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
+    FileUtils.rm_rf(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end
 
@@ -463,7 +463,7 @@ context "Wiki page writing" do
   end
 
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
+    FileUtils.rm_rf(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end
 
@@ -581,7 +581,7 @@ context "Wiki sync with working directory" do
   end
 
   teardown do
-    FileUtils.rm_r(@path)
+    FileUtils.rm_rf(@path)
   end
 end
 
@@ -624,7 +624,7 @@ context "Wiki sync with working directory (filename contains whitespace)" do
   end
 
   teardown do
-    FileUtils.rm_r(@path)
+    FileUtils.rm_rf(@path)
   end
 end
 
@@ -676,7 +676,7 @@ context "page_file_dir option" do
   end
 
   teardown do
-    FileUtils.rm_r(@path)
+    FileUtils.rm_rf(@path)
   end
 end
 
@@ -1012,6 +1012,6 @@ context "Wiki subclassing" do
   end
 
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
+    FileUtils.rm_rf(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end

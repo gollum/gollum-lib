@@ -3,7 +3,6 @@
 # stdlib
 require 'test/unit'
 require 'fileutils'
-
 # external
 require 'rubygems'
 require 'shoulda'
@@ -49,12 +48,14 @@ end
 def cloned_testpath(path, bare = false)
   repo   = File.expand_path(testpath(path))
   path   = File.dirname(repo)
-  name   = File.basename(Tempfile.new(self.class.name, path).path)
+  tmp    = Tempfile.new(self.class.name, path)
+  name   = File.basename(tmp.path)
   cloned = File.join(path, name)
   bare   = bare ? "--bare" : ""
-  FileUtils.rm_rf(cloned)
+  tmp.close(true)
   Dir.chdir(path) do
-    %x{git clone #{bare} #{File.basename(repo)} #{name} 2>/dev/null}
+    redirect = Gem.win_platform? ? '' : '2>/dev/null'
+    %x{git clone #{bare} #{File.basename(repo)} #{name} #{redirect}}
   end
   cloned
 end
@@ -77,7 +78,7 @@ class MockWiki
       :path => path
     )
   end
-  
+
   def path
     TEST_DIR
   end

@@ -3,8 +3,12 @@
 module Gollum
   class File
 
+    # Does the filesystem support reading symlinks?
+    FS_SUPPORT_SYMLINKS = !Gem.win_platform?
+
     class << self
-      # For use with self.find: returns true if the given query corresponds to the in-repo path of the BlobEntry. 
+
+      # For use with self.find: returns true if the given query corresponds to the in-repo path of the BlobEntry.
       #
       # query     - The String path to match.
       # entry     - The BlobEntry to check against.
@@ -28,6 +32,7 @@ module Gollum
       map = wiki.tree_map_for(version.to_s)
 
       query_path = Pathname.new(::File.join(['/', wiki.page_file_dir, path].compact)).cleanpath.to_s
+      query_path.sub!(/^\/\//, '/') if Gem.win_platform? # On Windows, Pathname#cleanpath will leave double slashes at the start of a path intact, so sub them out.
 
       begin
         entry = map.detect do |entry|
@@ -38,7 +43,7 @@ module Gollum
         nil
       end
     end
-    
+
     # Public: Initialize a file.
     #
     # wiki - The Gollum::Wiki
@@ -145,6 +150,7 @@ module Gollum
     def get_disk_reference
       return false if @wiki.repo.bare
       return false if @version.sha != @wiki.repo.head.commit.sha
+      return false if @blob.is_symlink && !FS_SUPPORT_SYMLINKS
 
       # This will try to resolve symbolic links, as well
       pathname = Pathname.new(::File.expand_path(::File.join(@wiki.repo.path, '..', @path)))
