@@ -21,7 +21,6 @@ class Gollum::Filter::TOC < Gollum::Filter
         next if (i == 0 && header.name =~ /[Hh]1/) && @markup.wiki && @markup.wiki.h1_title
 
         anchor_name = generate_anchor_name(header)
-        
         add_anchor_to_header header, anchor_name
         add_entry_to_toc     header, anchor_name
       end
@@ -60,9 +59,9 @@ class Gollum::Filter::TOC < Gollum::Filter
 
   private
 
-  # Generates the anchor name from the given header element 
+  # Generates the anchor name from the given header element
   # removing all non alphanumeric characters, replacing them
-  # with single dashes.  
+  # with single dashes.
   #
   # Generates heading ancestry prefixing the headings
   # ancestor names to the generated name.
@@ -73,10 +72,10 @@ class Gollum::Filter::TOC < Gollum::Filter
     level = header.name[1..-1].to_i
 
     # normalize the header name
-    name.gsub!(/[^\d\w\u00C0-\u1FFF\u2C00-\uD7FF]/, "-")
-    name.gsub!(/-+/, "-")
-    name.gsub!(/^-/, "")
-    name.gsub!(/-$/, "")
+    name.gsub!(/[^\d\w\u00C0-\u1FFF\u2C00-\uD7FF]/, '-')
+    name.gsub!(/-+/, '-')
+    name.gsub!(/^-/, '')
+    name.gsub!(/-$/, '')
     name.downcase!
 
     # Ensure duplicate anchors have a unique prefix or the toc will break
@@ -87,8 +86,11 @@ class Gollum::Filter::TOC < Gollum::Filter
   # Creates an anchor element with the given name and adds it before
   # the given header element.
   def add_anchor_to_header(header, name)
-    anchor_element = %Q(<a class="anchor" id="#{name}" href="##{name}"></a>)
-    header.children.before anchor_element # Add anchor element before the header
+    a = Nokogiri::XML::Node.new('a', @doc)
+    a['class'] = 'anchor'
+    a['id'] = name
+    a['href'] = "##{name}"
+    header.children.before a # Add anchor element before the header
   end
 
   # Adds an entry to the TOC for the given header.  The generated entry
