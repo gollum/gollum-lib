@@ -17,19 +17,22 @@ EOF
     @path = cloned_testpath('examples/lotr.git')
     @wiki = Gollum::Wiki.new(@path, :page_file_dir => 'Rivendell')
     @wiki.write_page('bar', :markdown, 'bar', commit_details)
-    @wiki.write_page('filename:with:colons', :markdown, '# Filename with colons', commit_details)
+    name = Gem.win_platform? ? 'filename_with_colons' : 'filename:with:colons'
+    @wiki.write_page(name, :markdown, '# Filename with colons', commit_details) unless Gem.win_platform?
     @wiki.write_page('foo', :markdown, "# File with query in contents and filename\nfoo", commit_details)
     @wiki.write_page('dir/nested', :markdown, "Nested file", commit_details)
     @wiki.write_page('Hobbit Info', :markdown, SEARCH_TEST_PAGE, commit_details)
   end
-  
-  test 'search results should be able to return a filename with an embedded colon' do
-    results = @wiki.search('colons').first
-    assert_not_nil results
-    result = results.first
-    assert_equal 'filename:with:colons.md', result[:name]
-    assert_equal 1, result[:count]
-    assert_equal 1, result[:filename_count]
+
+  unless Gem.win_platform?
+    test 'search results should be able to return a filename with an embedded colon' do
+      results = @wiki.search('colons').first
+      assert_not_nil results
+      result = results.first
+      assert_equal 'filename:with:colons.md', result[:name]
+      assert_equal 1, result[:count]
+      assert_equal 1, result[:filename_count]
+    end
   end
 
   test 'search finds utf8' do
@@ -124,7 +127,7 @@ EOF
     assert_equal 1, img_result[:filename_count]
     assert_equal [], img_result[:context]
   end
-  
+
   teardown do
     FileUtils.rm_rf(@path)
   end
