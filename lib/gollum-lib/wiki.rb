@@ -221,7 +221,7 @@ module Gollum
      write(merge_path_elements(nil, name, format), data, commit)
     end
 
-    # Public: Write a new version of a file to the Gollum repo root.
+    # Public: Write a new version of a file to the Gollum repo.
     #
     # path   - The String path where the file will be written.
     # data   - The new String contents of the page.
@@ -239,6 +239,26 @@ module Gollum
     # Gollum::Committer instance if this is part of a batch update
     def write_file(name, data, commit = {})
       write(merge_path_elements(nil, name, nil), data, commit)
+    end
+    
+    # Public: Write a file to the Gollum repo regardless of existing versions.
+    #
+    # path   - The String path where the file will be written.
+    # data   - The new String contents of the page.
+    # commit - The commit Hash details:
+    #          :message   - The String commit message.
+    #          :name      - The String author full name.
+    #          :email     - The String email address.
+    #          :parent    - Optional Gollum::Git::Commit parent to this update.
+    #          :tree      - Optional String SHA of the tree to create the
+    #                       index from.
+    #          :committer - Optional Gollum::Committer instance.  If provided,
+    #                       assume that this operation is part of batch of
+    #                       updates and the commit happens later.
+    # Returns the String SHA1 of the newly written version, or the
+    # Gollum::Committer instance if this is part of a batch update
+    def overwrite_file(name, data, commit = {})
+      write(merge_path_elements(nil, name, nil), data, commit, force_overwrite = true)
     end
 
     # Public: Rename an existing page without altering content.
@@ -506,29 +526,23 @@ module Gollum
     # Returns an Array with Objects of page name and count of matches
     def search(query)
       options = {:path => page_file_dir, :ref => ref}
-      results = {}
-      @repo.git.grep(query, options).each do |hit|
-        name = hit[:name]
-        count = hit[:count]
-        # Remove ext only from known extensions.
-        # test.pdf => test.pdf, test.md => test
-        file_name = Page::valid_page_name?(name) ? name.chomp(::File.extname(name)) : name
-        results[file_name] = count.to_i
+      search_terms = query.scan(/"([^"]+)"|(\S+)/).flatten.compact.map {|term| Regexp.escape(term)}
+      search_terms_regex = search_terms.join('|')
+      query = /^(.*(?:#{search_terms_regex}).*)$/i
+      results = @repo.git.grep(search_terms, options) do |name, data|
+        result = {:count => 0}
+        result[:name] = extract_page_file_dir(name)
+        result[:filename_count] = result[:name].scan(/#{search_terms_regex}/i).size
+        result[:context] = []
+        if data
+          data.scan(query) do |match|
+            result[:context] << match.first
+            result[:count] += match.first.scan(/#{search_terms_regex}/i).size
+          end
+        end
+        ((result[:count] + result[:filename_count]) == 0) ? nil : result
       end
-
-      # Use ls_files '*query*' to search for file names. Grep only searches file content.
-      # Spaces are converted to dashes when saving pages to disk.
-      @repo.git.ls_files(query, options).each do |path|
-        # Remove ext only from known extensions.
-        file_name          = Page::valid_page_name?(path) ? path.chomp(::File.extname(path)) : path
-        # If there's not already a result for file_name then
-        # the value is nil and nil.to_i is 0.
-        results[file_name] = results[file_name].to_i + 1;
-      end
-
-      results.map do |key, val|
-        { :count => val, :name => key }
-      end
+      [results, search_terms]
     end
 
     # Public: All of the versions that have touched the Page.
@@ -583,6 +597,25 @@ module Gollum
     # Returns a Sanitize instance.
     def history_sanitizer
       @history_sanitizer ||= history_sanitization.to_sanitize
+    end
+
+    def redirects
+      if @redirects.nil? || @redirects.stale?
+        @redirects = {}.extend(::Gollum::Redirects)
+        @redirects.init(self)
+        @redirects.load
+      end
+      @redirects
+    end
+    
+    def add_redirect(old_path, new_path)
+      redirects[old_path] = new_path
+      redirects.dump
+    end
+    
+    def remove_redirect(path)
+      redirects.tap{|k| k.delete(path)}
+      redirects.dump
     end
 
     #########################################################################
@@ -647,14 +680,14 @@ module Gollum
     #
     # ref - A String ref that is either a commit SHA or references one.
     #
-    # Returns a flat Array of Gollum::Page instances.
+    # Returns a flat Array of Gollum::Page and Gollum::File instances.
     def tree_list(ref = @ref, pages=true, files=true)
       if (sha = @access.ref_to_sha(ref))
         commit = @access.commit(sha)
         tree_map_for(sha).inject([]) do |list, entry|
           if ::Gollum::Page.valid_page_name?(entry.name)
             list << entry.page(self, commit) if pages
-          elsif files && !entry.name.start_with?('_')
+          elsif files && !entry.name.start_with?('_') && !::Gollum::Page.protected_files.include?(entry.name)
             list << entry.file(self, commit)
           end
           list
@@ -763,10 +796,14 @@ module Gollum
       end
     end
 
-    def write(path, data, commit = {})
+    def extract_page_file_dir(path)
+      @page_file_dir ? path[@page_file_dir.length+1..-1] : path
+    end
+
+    def write(path, data, commit = {}, force_overwrite = false)
       multi_commit = !!commit[:committer]
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
-      committer.add_to_index(path, data)
+      committer.add_to_index(path, data, commit, force_overwrite)
 
       committer.after_commit do |index, _sha|
         @access.refresh

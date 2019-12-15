@@ -45,7 +45,8 @@ class Gollum::Filter::RemoteCode < Gollum::Filter
     return "Too many redirects or retries" if cut >= 10
     http         = Net::HTTP.new uri.host, uri.port
     http.use_ssl = true
-    resp         = http.get uri.path, {
+    path         = uri.path.empty? ? '/' : uri.path
+    resp         = http.get path, {
         'Accept'        => 'text/plain',
         'Cache-Control' => 'no-cache',
         'Connection'    => 'keep-alive',

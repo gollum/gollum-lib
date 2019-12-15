@@ -64,7 +64,7 @@ context "Wiki" do
   end
 
   test "latest changes in repo" do
-    assert_equal @wiki.latest_changes({:max_count => 1}).first.id, "a3945142cd821113c46a3a824e832cf8e37d5e1e"
+    assert_equal @wiki.latest_changes({:max_count => 1}).first.id, "324396c422678622ca16524424161429ee673bb9"
   end
 
   test "text_data" do
@@ -303,10 +303,14 @@ context "Wiki page writing" do
     assert @wiki.page("Saruman")
   end
 
-  test "write page is not allowed to overwrite file" do
+  test "write page is not allowed to overwrite pages" do
     @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
     assert_raises Gollum::DuplicatePageError do
       @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
+    end
+    @wiki.write_page("subdir/Abc-Def", :markdown, "# Gollum", commit_details)
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.write_page("subdir/Abc-Def", :markdown, "# Gollum", commit_details)
     end
     assert_nothing_raised Gollum::DuplicatePageError do
       @wiki.write_page("Abc-Def", :textile, "# Gollum", commit_details)
@@ -314,6 +318,25 @@ context "Wiki page writing" do
     assert_nothing_raised Gollum::DuplicatePageError do
       @wiki.write_page("abc-def", :markdown, "# Gollum", commit_details)
     end
+  end
+  
+  test "write file is not allowed to overwrite files" do
+    @wiki.write_file("Abc-Def.file", "# Gollum", commit_details)
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.write_file("Abc-Def.file", "# Gollum", commit_details)
+    end
+    @wiki.write_file("subdir/Abc-Def.file", "# Gollum", commit_details)
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.write_file("subdir/Abc-Def.file", "# Gollum", commit_details)
+    end
+  end
+
+  test "overwrite file is allowed to overwrite an existing file" do
+    @wiki.write_file("Abc-Def.file", "# Gollum", commit_details)
+    assert_nothing_raised Gollum::DuplicatePageError do
+      @wiki.overwrite_file("Abc-Def.file", "# Gollum modified", commit_details)
+    end
+    assert_equal "# Gollum modified", @wiki.file("Abc-Def.file").raw_data
   end
 
   test "write_page does not mutate input parameters" do
@@ -437,42 +460,6 @@ context "Wiki page writing" do
     assert_nil @wiki.page("greek/Bilbo-Baggins")
 
     assert @wiki.page("Gollum")
-  end
-
-  teardown do
-    FileUtils.rm_rf(File.join(File.dirname(__FILE__), *%w(examples test.git)))
-  end
-end
-
-context "Wiki search" do
-  setup do
-    @path = testpath("examples/test.git")
-    FileUtils.rm_rf(@path)
-    Gollum::Git::Repo.init_bare(@path)
-    @wiki = Class.new(Gollum::Wiki).new(@path)
-    @wiki.write_page("bar", :markdown, "bar", commit_details)
-    @wiki.write_page("filename:with:colons", :markdown, "# Filename with colons", commit_details)
-    @wiki.write_page("foo", :markdown, "# File with query in contents and filename\nfoo", commit_details)
-  end
-
-  test "search results should be able to return a filename with an embedded colon" do
-    results = @wiki.search("colons")
-    assert_not_nil results
-    assert_equal "filename:with:colons", results.first[:name]
-    assert_equal 2, results.first[:count]
-  end
-
-  test "search results should make the content/filename search additive" do
-    # There is a file that contains the word 'foo' and is called 'foo', so it should
-    # have a count of 2, not 1...
-    results = @wiki.search("foo")
-    assert_equal 2, results.first[:count]
-  end
-
-  test "search results should not include files that do not match the query" do
-    results = @wiki.search("foo")
-    assert_equal 1, results.size
-    assert_equal "foo", results.first[:name]
   end
 
   teardown do
@@ -682,12 +669,6 @@ context "page_file_dir option" do
     assert !@wiki.page("bar")
   end
 
-  test "search results should be restricted in page filer dir" do
-    results = @wiki.search("foo")
-    assert_equal 1, results.size
-    assert_equal "docs/foo", results[0][:name]
-  end
-
   test "can't write files in root" do
     assert_raises Gollum::IllegalDirectoryPath do
       @wiki.write_page("../Malicious", :markdown, "Hi", {})
@@ -730,6 +711,57 @@ context "Wiki page writing with different branch" do
 
     assert_equal nil, @wiki.page("Bilbo")
   end
+end
+
+context "redirects" do
+
+  setup do
+    @path = cloned_testpath("examples/lotr.git")
+    @wiki = Gollum::Wiki.new(@path)
+  end
+
+  test "#redirects returns an empty hash if the .redirects.gollum file does not exist" do
+    assert @wiki.redirects.empty?
+  end
+  
+  test "#redirects returns a hash with redirects if the .redirects.gollum file exists" do
+    @wiki.write_file('.redirects.gollum', {'Home.old.md' => 'Home.md'}.to_yaml)
+    assert_equal 'Home.md', @wiki.redirects['Home.old.md']
+  end
+  
+  test "#add_redirect modifies the .redirects.gollum file by adding a redirect entry" do
+    @wiki.add_redirect('oldpage.md', 'newpage.md')
+    redirects_file = @wiki.file('.redirects.gollum')
+    assert_equal "---\noldpage.md: newpage.md\n", redirects_file.raw_data
+  end
+  
+  test "#remove_redirect modifies the .redirects.gollum file by removing a redirect entry" do
+    @wiki.add_redirect('oldpage.md', 'newpage.md')
+    @wiki.remove_redirect('oldpage.md')
+    redirects_file = @wiki.file('.redirects.gollum')
+    assert_equal "--- {}\n", redirects_file.raw_data
+  end
+
+  test "#redirects reloads the redirects hash when the cache has become stale" do
+    @wiki.add_redirect('oldpage.md', 'newpage.md')
+    redirects = @wiki.redirects
+    object_id1 = redirects.object_id
+    assert_equal 'newpage.md', redirects['oldpage.md']
+    # Test that the cache works by calling #redirects again
+    assert_equal object_id1, @wiki.redirects.object_id
+    # Overwriting the redirects file changes HEAD, turning the redirects cache stale
+    @wiki.overwrite_file('.redirects.gollum', {'Home.old.md' => 'Home.md'}.to_yaml)
+    redirects = @wiki.redirects
+    object_id2 = redirects.object_id
+    assert_not_equal object_id1, object_id2
+    assert_equal nil, redirects['oldpage.md']
+    assert_equal 'Home.md', redirects['Home.old.md']
+  end
+
+  teardown do
+    FileUtils.rm_rf(@path)
+  end
+  
 end
 
 context "Renames directory traversal" do

@@ -24,7 +24,7 @@ context "Page" do
 
     assert_not_nil page.last_version
     assert_equal page.versions.first.id, page.last_version.id
-    assert page.last_version.stats.files.map{|file| file_path = file.first}.include? page.path
+    assert_equal page.path, page.last_version.stats.files.first[:new_file]
   end
 
   test "getting pages is case sensitive" do

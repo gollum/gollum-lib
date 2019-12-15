@@ -5,7 +5,7 @@ require 'digest/sha1'
 require 'ostruct'
 require 'pathname'
 
-DEFAULT_ADAPTER = RUBY_PLATFORM == 'java' ? 'rjgit' : 'grit'
+DEFAULT_ADAPTER = RUBY_PLATFORM == 'java' ? 'rjgit' : 'rugged'
 
 Gollum::GIT_ADAPTER = DEFAULT_ADAPTER if !defined?(Gollum::GIT_ADAPTER)
 require "#{Gollum::GIT_ADAPTER.downcase}_adapter"
@@ -23,6 +23,7 @@ require File.expand_path('../gollum-lib/committer', __FILE__)
 require File.expand_path('../gollum-lib/pagination', __FILE__)
 require File.expand_path('../gollum-lib/blob_entry', __FILE__)
 require File.expand_path('../gollum-lib/wiki', __FILE__)
+require File.expand_path('../gollum-lib/redirects', __FILE__)
 require File.expand_path('../gollum-lib/file', __FILE__)
 require File.expand_path('../gollum-lib/page', __FILE__)
 require File.expand_path('../gollum-lib/macro', __FILE__)
