@@ -349,6 +349,8 @@ module Gollum
       end
     end
 
+    attr_accessor :path
+
     def initialize(wiki, name, data, version, parent_page = nil)
       @wiki           = wiki 
       @path           = name
