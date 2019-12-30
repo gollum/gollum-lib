@@ -133,11 +133,17 @@ context "Wiki page previewing" do
     assert page.set_sidebar('[[_TOC_]]')
     assert_html_equal page.sidebar.formatted_data, "<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#bilbo\">Bilbo</a></li></ul></div></p>"
 
-
     assert_equal @wiki.repo.commit(@wiki.ref).id, page.version.id
     assert_nil page.last_version
     assert page.versions.empty?
   end
+
+  test 'preview page updates its path' do
+    page = @wiki.preview_page("Test", "# Bilbo", :markdown)
+    assert_equal "Test.md", page.escaped_url_path
+    page.path = "Renamed.md"
+    assert_equal "Renamed.md", page.escaped_url_path
+  end 
 end
 
 context "Wiki TOC" do
