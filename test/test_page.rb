@@ -29,13 +29,13 @@ context "Page" do
 
     assert_not_nil page.last_version
     assert_equal page.versions.first.id, page.last_version.id
-    assert page.last_version.stats.files.map{|file| file_path = file.first}.include? page.path
+    assert page.last_version.stats.files.first[:new_file] == page.path
   end
 
   test "getting pages is case sensitive" do
     assert_not_equal Gollum::Page, @wiki.page('bilbo-baggins').class
     assert_not_equal Gollum::Page, @wiki.page('Bilbo-baggins').class
-    
+
     assert_equal Gollum::Page, @wiki.page('Bilbo-Baggins').class
   end
 

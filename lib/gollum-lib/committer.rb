@@ -111,11 +111,6 @@ module Gollum
         end
       end
 
-      # TODO Remove once grit is deprecated
-      if Gollum::GIT_ADAPTER == 'grit'
-        fullpath = fullpath.force_encoding('ascii-8bit') if fullpath.respond_to?(:force_encoding)
-      end
-
       unless options[:normalize] == false
         begin
           data = @wiki.normalize(data)
@@ -148,10 +143,6 @@ module Gollum
             else
               ::File.join(dir, @wiki.page_file_name(name, format))
             end
-        
-        if Gollum::GIT_ADAPTER == 'grit'
-          path = path.force_encoding('ascii-8bit') if path.respond_to?(:force_encoding)
-        end
 
         Dir.chdir(::File.join(@wiki.repo.path, '..')) do
           if file_path_scheduled_for_deletion?(index.tree, path)
@@ -237,7 +228,6 @@ module Gollum
 
     # Proxies methods t
     def method_missing(name, *args)
-      args.map! { |item| item.respond_to?(:force_encoding) ? item.force_encoding('ascii-8bit') : item } if Gollum::GIT_ADAPTER == 'grit'
       index.send(name, *args)
     end
   end
