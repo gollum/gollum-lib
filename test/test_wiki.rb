@@ -24,13 +24,25 @@ context "Wiki" do
   test "shows paginated log with 1st page" do
     Gollum::Wiki.per_page = 3
     commits               = @wiki.repo.commits[0..2].map(&:id)
-    assert_equal commits, @wiki.log(:page => 1).map(&:id)
+    assert_equal commits, @wiki.log(:page_num => 1).map(&:id)
   end
 
   test "shows paginated log with next page" do
     Gollum::Wiki.per_page = 3
     commits               = @wiki.repo.commits[3..5].map(&:id)
-    assert_equal commits, @wiki.log(:page => 2).map(&:id)
+    assert_equal commits, @wiki.log(:page_num => 2).map(&:id)
+  end
+
+  test "list files and pages" do
+    contents = @wiki.tree_list
+    pages = contents.select {|x| x.is_a?(::Gollum::Page)}
+    assert_equal \
+      ['Bilbo-Baggins.md', 'Boromir.md', 'Elrond.md', 'Eye-Of-Sauron.md', 'Hobbit.md', 'Home.textile', 'My-Precious.md', 'RingBearers.md', 'Samwise Gamgee.mediawiki', 'todo.txt'],
+      pages.map(&:filename).sort
+    files = contents.select {|x| x.class.to_s == 'Gollum::File'}
+    assert_equal \
+      ['Data-Two.csv', 'Data.csv', 'Riddles.rd', 'eye.jpg'],
+      files.map(&:filename).sort
   end
 
   test "list pages" do
@@ -52,9 +64,9 @@ context "Wiki" do
   end
 
   test "latest changes in repo" do
-    assert_equal @wiki.latest_changes({:max_count => 1}).first.id, "a3945142cd821113c46a3a824e832cf8e37d5e1e"
+    assert_equal @wiki.latest_changes({:max_count => 1}).first.id, "324396c422678622ca16524424161429ee673bb9"
   end
-  
+
   test "text_data" do
     wiki = Gollum::Wiki.new(testpath("examples/yubiwa.git"))
     if String.instance_methods.include?(:encoding)
@@ -77,9 +89,9 @@ context "Wiki" do
       index.add('Foobar/Elrond.md', 'Baz')
       index.commit 'Add Foobar/Elrond.', [wiki.repo.head.commit], Gollum::Git::Actor.new('Tom Preston-Werner', 'tom@github.com')
 
-      assert_equal 'Rivendell/Elrond.md', wiki.page('Elrond', nil, 'Rivendell').path
+      assert_equal 'Rivendell/Elrond.md', wiki.page('Rivendell/Elrond').path
       # test paged as well.
-      assert_equal 'Foobar/Elrond.md', wiki.paged('Elrond', 'Foobar').path
+      assert_equal 'Foobar/Elrond.md', wiki.page('Foobar/Elrond').path
     ensure
       FileUtils.rm_rf(@path)
     end
@@ -96,14 +108,29 @@ context "Wiki page previewing" do
   test "preview_page" do
     page = @wiki.preview_page("Test", "# Bilbo", :markdown)
     assert_equal "# Bilbo", page.raw_data
-    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
+    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"></a>Bilbo</h1>", page.formatted_data
     assert_equal "Test.md", page.filename
     assert_equal "Test", page.name
+
+    # Getting and setting subpage contents
+    assert page.set_sidebar("*Hobbit*\n")
+    assert_html_equal page.sidebar.formatted_data, "<p><em>Hobbit</em></p>\n"
+
+    # Sidebar uses TOC data from parent page.
+    assert page.set_sidebar('[[_TOC_]]')
+    assert_html_equal page.sidebar.formatted_data, "<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#bilbo\">Bilbo</a></li></ul></div></p>"
 
     assert_equal @wiki.repo.commit(@wiki.ref).id, page.version.id
     assert_nil page.last_version
     assert page.versions.empty?
   end
+
+  test 'preview page updates its path' do
+    page = @wiki.preview_page("Test", "# Bilbo", :markdown)
+    assert_equal "Test.md", page.escaped_url_path
+    page.path = "Renamed.md"
+    assert_equal "Renamed.md", page.escaped_url_path
+  end 
 end
 
 context "Wiki TOC" do
@@ -122,7 +149,7 @@ context "Wiki TOC" do
   test "toc_generation" do
     page = @wiki.preview_page("Test", "# Bilbo", :markdown)
     assert_equal "# Bilbo", page.raw_data
-    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"><i class=\"fa fa-link\"></i></a>Bilbo</h1>", page.formatted_data
+    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"bilbo\" href=\"#bilbo\"></a>Bilbo</h1>", page.formatted_data
     assert_html_equal %{<div class="toc"><div class="toc-title">Table of Contents</div><ul><li><a href="#bilbo">Bilbo</a></li></ul></div>}, page.toc_data
   end
 
@@ -140,11 +167,11 @@ context "Wiki TOC" do
     MARKDOWN
 
     formatted = <<-HTML
-<h1 class=\"editable\"><a class="anchor" id="ecthelion" href="#ecthelion"><i class="fa fa-link"></i></a>Ecthelion</h1>
-<h2 class=\"editable\"><a class="anchor" id="denethor" href="#denethor"><i class="fa fa-link"></i></a>Denethor</h2>
-<h3 class=\"editable\"><a class="anchor" id="ecthelion-1" href="#ecthelion-1"><i class="fa fa-link"></i></a>Ecthelion</h3>
-<h3 class=\"editable\"><a class="anchor" id="boromir" href="#boromir"><i class="fa fa-link"></i></a>Boromir</h3>
-<h3 class=\"editable\"><a class="anchor" id="faramir" href="#faramir"><i class="fa fa-link"></i></a>Faramir</h3>
+<h1 class=\"editable\"><a class="anchor" id="ecthelion" href="#ecthelion"></a>Ecthelion</h1>
+<h2 class=\"editable\"><a class="anchor" id="denethor" href="#denethor"></a>Denethor</h2>
+<h3 class=\"editable\"><a class="anchor" id="ecthelion-1" href="#ecthelion-1"></a>Ecthelion</h3>
+<h3 class=\"editable\"><a class="anchor" id="boromir" href="#boromir"></a>Boromir</h3>
+<h3 class=\"editable\"><a class="anchor" id="faramir" href="#faramir"></a>Faramir</h3>
     HTML
 
     page_level0 = @wiki.preview_page("Test", "[[_TOC_ | levels=0]] \n\n" + content, :markdown)
@@ -205,7 +232,7 @@ context "Wiki TOC" do
   test "' in link" do
     page = @wiki.preview_page("Test", "# a'b", :markdown)
     assert_equal "# a'b", page.raw_data
-    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"a-b\" href=\"#a-b\"><i class=\"fa fa-link\"></i></a>a'b</h1>", page.formatted_data
+    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"a-b\" href=\"#a-b\"></a>a'b</h1>", page.formatted_data
     assert_html_equal %{<div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#a-b\">a'b</a></li></ul></div>}, page.toc_data
   end
 end
@@ -218,20 +245,19 @@ context "Wiki TOC in _Sidebar.md" do
     options = { :universal_toc => true }
     @wiki = Class.new(Gollum::Wiki).new(@path, options)
   end
-  
+
   test "_Sidebar.md with [[_TOC_]] renders TOC" do
     cd = commit_details
     @wiki.write_page("Gollum", :markdown, "# Gollum", cd)
     page = @wiki.page("Gollum")
     @wiki.write_page("_Sidebar", :markdown, "[[_TOC_]]", cd)
-    sidebar = @wiki.page("_Sidebar")
-    sidebar.parent_page = page
-    assert_not_equal "\n", sidebar.formatted_data
+    sidebar = page.sidebar
+    assert_not_equal '', sidebar.toc_data
     assert_html_equal "<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#gollum\">Gollum</a></li></ul></div></p>\n", sidebar.formatted_data
   end
-  
+
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
+    FileUtils.rm_rf(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end
 
@@ -265,16 +291,45 @@ context "Wiki page writing" do
     assert_equal cd2[:email], first_commit.author.email
     assert @wiki.page("Bilbo")
     assert @wiki.page("Gollum")
+
+    @wiki.write_page("//Saruman", :markdown, "# Saruman", cd2)
+    assert @wiki.page("Saruman")
   end
 
-  test "write page is not allowed to overwrite file" do
+  test "write page is not allowed to overwrite pages" do
     @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
     assert_raises Gollum::DuplicatePageError do
-      @wiki.write_page("aBC-dEF", :markdown, "# Gollum", commit_details)
+      @wiki.write_page("Abc-Def", :markdown, "# Gollum", commit_details)
+    end
+    @wiki.write_page("subdir/Abc-Def", :markdown, "# Gollum", commit_details)
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.write_page("subdir/Abc-Def", :markdown, "# Gollum", commit_details)
     end
     assert_nothing_raised Gollum::DuplicatePageError do
       @wiki.write_page("Abc-Def", :textile, "# Gollum", commit_details)
     end
+    assert_nothing_raised Gollum::DuplicatePageError do
+      @wiki.write_page("abc-def", :markdown, "# Gollum", commit_details)
+    end
+  end
+  
+  test "write file is not allowed to overwrite files" do
+    @wiki.write_file("Abc-Def.file", "# Gollum", commit_details)
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.write_file("Abc-Def.file", "# Gollum", commit_details)
+    end
+    @wiki.write_file("subdir/Abc-Def.file", "# Gollum", commit_details)
+    assert_raises Gollum::DuplicatePageError do
+      @wiki.write_file("subdir/Abc-Def.file", "# Gollum", commit_details)
+    end
+  end
+
+  test "overwrite file is allowed to overwrite an existing file" do
+    @wiki.write_file("Abc-Def.file", "# Gollum", commit_details)
+    assert_nothing_raised Gollum::DuplicatePageError do
+      @wiki.overwrite_file("Abc-Def.file", "# Gollum modified", commit_details)
+    end
+    assert_equal "# Gollum modified", @wiki.file("Abc-Def.file").raw_data
   end
 
   test "write_page does not mutate input parameters" do
@@ -364,11 +419,11 @@ context "Wiki page writing" do
     index.add("lotr/Gollum.md", "# Gollum")
     index.commit("Add nested page")
 
-    page = @wiki.page("Gollum")
-    assert_equal :markdown, @wiki.page("Gollum").format
+    page = @wiki.page("lotr/Gollum")
+    assert_equal :markdown, @wiki.page("lotr/Gollum").format
     @wiki.update_page(page, page.name, :textile, "h1. Gollum", commit_details)
 
-    page = @wiki.page("Gollum")
+    page = @wiki.page("lotr/Gollum")
     assert_equal "lotr/Gollum.textile", page.path
     assert_equal :textile, page.format
     assert_equal "h1. Gollum", page.raw_data
@@ -390,54 +445,18 @@ context "Wiki page writing" do
     index.add("Gollum.md", "hi")
     index.commit("Add alpha.jpg")
 
-    page = @wiki.page("Bilbo-Baggins")
+    page = @wiki.page("greek/Bilbo-Baggins")
     assert page
     @wiki.delete_page(page, commit_details)
 
     assert_equal 2, @wiki.repo.commits.size
-    assert_nil @wiki.page("Bilbo-Baggins")
+    assert_nil @wiki.page("greek/Bilbo-Baggins")
 
     assert @wiki.page("Gollum")
   end
 
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
-  end
-end
-
-context "Wiki search" do
-  setup do
-    @path = testpath("examples/test.git")
-    FileUtils.rm_rf(@path)
-    Gollum::Git::Repo.init_bare(@path)
-    @wiki = Class.new(Gollum::Wiki).new(@path)
-    @wiki.write_page("bar", :markdown, "bar", commit_details)
-    @wiki.write_page("filename:with:colons", :markdown, "# Filename with colons", commit_details)
-    @wiki.write_page("foo", :markdown, "# File with query in contents and filename\nfoo", commit_details)
-  end
-  
-  test "search results should be able to return a filename with an embedded colon" do
-    results = @wiki.search("colons")
-    assert_not_nil results
-    assert_equal "filename:with:colons", results.first[:name]
-    assert_equal 2, results.first[:count]
-  end
-
-  test "search results should make the content/filename search additive" do
-    # There is a file that contains the word 'foo' and is called 'foo', so it should
-    # have a count of 2, not 1...
-    results = @wiki.search("foo")
-    assert_equal 2, results.first[:count]
-  end
-
-  test "search results should not include files that do not match the query" do
-    results = @wiki.search("foo")
-    assert_equal 1, results.size
-    assert_equal "foo", results.first[:name]
-  end
-  
-  teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
+    FileUtils.rm_rf(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end
 
@@ -512,7 +531,7 @@ context "Wiki sync with working directory" do
   end
 
   test "write a page in subdirectory" do
-    @wiki.write_page("New Page", :markdown, "Hi", commit_details, "Subdirectory")
+    @wiki.write_page("Subdirectory/New Page", :markdown, "Hi", commit_details)
     assert_equal "Hi", File.read(File.join(@path, "Subdirectory", "New Page.md"))
   end
 
@@ -555,7 +574,7 @@ context "Wiki sync with working directory" do
   end
 
   teardown do
-    FileUtils.rm_r(@path)
+    FileUtils.rm_rf(@path)
   end
 end
 
@@ -598,7 +617,7 @@ context "Wiki sync with working directory (filename contains whitespace)" do
   end
 
   teardown do
-    FileUtils.rm_r(@path)
+    FileUtils.rm_rf(@path)
   end
 end
 
@@ -620,22 +639,37 @@ context "page_file_dir option" do
     @wiki.update_page(page, page.name, page.format, 'new contents', commit_details)
   end
 
+  test 'delete a page' do
+    @wiki.write_page("New Page", :markdown, "Hi", commit_details)
+    result = @wiki.page("New Page")
+    assert_not_nil result
+    @wiki.delete_page(result, commit_details)
+    assert_nil @wiki.page("New Page")
+  end
+
   test "a file in page file dir should be found" do
     assert @wiki.page("foo")
+  end
+
+  test "a file in page file dir should have the correct url path" do
+    assert_equal 'docs/foo.md', @wiki.page("foo").path
+    assert_equal 'foo.md', @wiki.page("/foo").url_path
+    @wiki.write_page("baz/Test", :markdown, "Hi", commit_details)
+    assert_equal 'baz/Test.md', @wiki.page('baz/Test').url_path
   end
 
   test "a file out of page file dir should not be found" do
     assert !@wiki.page("bar")
   end
 
-  test "search results should be restricted in page filer dir" do
-    results = @wiki.search("foo")
-    assert_equal 1, results.size
-    assert_equal "docs/foo", results[0][:name]
+  test "can't write files in root" do
+    assert_raises Gollum::IllegalDirectoryPath do
+      @wiki.write_page("../Malicious", :markdown, "Hi", {})
+    end
   end
 
   teardown do
-    FileUtils.rm_r(@path)
+    FileUtils.rm_rf(@path)
   end
 end
 
@@ -670,6 +704,57 @@ context "Wiki page writing with different branch" do
 
     assert_equal nil, @wiki.page("Bilbo")
   end
+end
+
+context "redirects" do
+
+  setup do
+    @path = cloned_testpath("examples/lotr.git")
+    @wiki = Gollum::Wiki.new(@path)
+  end
+
+  test "#redirects returns an empty hash if the .redirects.gollum file does not exist" do
+    assert @wiki.redirects.empty?
+  end
+  
+  test "#redirects returns a hash with redirects if the .redirects.gollum file exists" do
+    @wiki.write_file('.redirects.gollum', {'Home.old.md' => 'Home.md'}.to_yaml)
+    assert_equal 'Home.md', @wiki.redirects['Home.old.md']
+  end
+  
+  test "#add_redirect modifies the .redirects.gollum file by adding a redirect entry" do
+    @wiki.add_redirect('oldpage.md', 'newpage.md')
+    redirects_file = @wiki.file('.redirects.gollum')
+    assert_equal "---\noldpage.md: newpage.md\n", redirects_file.raw_data
+  end
+  
+  test "#remove_redirect modifies the .redirects.gollum file by removing a redirect entry" do
+    @wiki.add_redirect('oldpage.md', 'newpage.md')
+    @wiki.remove_redirect('oldpage.md')
+    redirects_file = @wiki.file('.redirects.gollum')
+    assert_equal "--- {}\n", redirects_file.raw_data
+  end
+
+  test "#redirects reloads the redirects hash when the cache has become stale" do
+    @wiki.add_redirect('oldpage.md', 'newpage.md')
+    redirects = @wiki.redirects
+    object_id1 = redirects.object_id
+    assert_equal 'newpage.md', redirects['oldpage.md']
+    # Test that the cache works by calling #redirects again
+    assert_equal object_id1, @wiki.redirects.object_id
+    # Overwriting the redirects file changes HEAD, turning the redirects cache stale
+    @wiki.overwrite_file('.redirects.gollum', {'Home.old.md' => 'Home.md'}.to_yaml)
+    redirects = @wiki.redirects
+    object_id2 = redirects.object_id
+    assert_not_equal object_id1, object_id2
+    assert_equal nil, redirects['oldpage.md']
+    assert_equal 'Home.md', redirects['Home.old.md']
+  end
+
+  teardown do
+    FileUtils.rm_rf(@path)
+  end
+  
 end
 
 context "Renames directory traversal" do
@@ -720,22 +805,22 @@ context "Renames directory traversal" do
 
   test "rename page with subdirs" do
     # Make sure renames in subdirectories happen ok
-    source = @wiki.paged("H", "G")
+    source = @wiki.page("G/H")
 
     # G/H.md => G/F.md
     assert @wiki.rename_page(source, "G/F", rename_commit_details)
 
-    assert_renamed source, @wiki.paged("F", "G")
+    assert_renamed source, @wiki.page("G/F")
   end
 
   test "rename page containing space with subdir" do
     # Make sure renames involving spaces in subdirectories happen ok
-    source = @wiki.paged("H", "G")
+    source = @wiki.page("G/H")
 
     # G/H.md => G/F H.md
     assert @wiki.rename_page(source, "G/F H", rename_commit_details)
 
-    assert_renamed source, @wiki.paged("F H", "G")
+    assert_renamed source, @wiki.page("G/F H")
   end
 
   test "rename page absolute path is still no-act" do
@@ -748,7 +833,7 @@ context "Renames directory traversal" do
 
   test "rename page absolute path NOOPs ok" do
     # Make sure renames don't do anything if the name is the same and we are in a subdirectory.
-    source = @wiki.paged("H", "G")
+    source = @wiki.page("G/H")
 
     # G/H.md => G/H.md
     res    = @wiki.rename_page(source, "/G/H", rename_commit_details)
@@ -777,68 +862,68 @@ context "Renames directory traversal" do
 
   test "rename page absolute directory with subdirs" do
     # Make sure renames in subdirectories happen ok
-    source = @wiki.paged("H", "G")
+    source = @wiki.page("G/H")
 
     # G/H.md => G/F.md
     assert @wiki.rename_page(source, "/G/F", rename_commit_details)
 
-    assert_renamed source, @wiki.paged("F", "G")
+    assert_renamed source, @wiki.page("G/F")
   end
 
   test "rename page containing space absolute directory with subdir" do
     # Make sure renames involving spaces in subdirectories happen ok
-    source = @wiki.paged("H", "G")
+    source = @wiki.page("G/H")
 
     # G/H.md => G/F H.md
     assert @wiki.rename_page(source, "/G/F H", rename_commit_details)
 
-    assert_renamed source, @wiki.paged("F H", "G")
+    assert_renamed source, @wiki.page("G/F H")
   end
 
   test "rename page relative directory with new dir creation" do
     # Make sure renames in subdirectories create more subdirectories ok
-    source = @wiki.paged("H", "G")
+    source = @wiki.page("G/H")
 
     # G/H.md => G/K/F.md
     assert @wiki.rename_page(source, "K/F", rename_commit_details)
 
-    new_page = @wiki.paged("F", "K")
+    new_page = @wiki.page("K/F")
     assert_not_nil new_page
     assert_renamed source, new_page
   end
 
   test "rename page relative directory with new dir creation containing space" do
     # Make sure renames involving spaces in subdirectories create more subdirectories ok
-    source = @wiki.paged("H", "G")
+    source = @wiki.page("G/H")
 
     # G/H.md => G/K L/F.md
     assert @wiki.rename_page(source, "K L/F", rename_commit_details)
 
-    new_page = @wiki.paged("F", "K L")
+    new_page = @wiki.page("K L/F")
     assert_not_nil new_page
     assert_renamed source, new_page
   end
 
   test "rename page absolute directory with subdir creation" do
     # Make sure renames in subdirectories create more subdirectories ok
-    source = @wiki.paged("H", "G")
+    source = @wiki.page("G/H")
 
     # G/H.md => G/K/F.md
     assert @wiki.rename_page(source, "/G/K/F", rename_commit_details)
 
-    new_page = @wiki.paged("F", "G/K")
+    new_page = @wiki.page("G/K/F")
     assert_not_nil new_page
     assert_renamed source, new_page
   end
 
   test "rename page absolute directory with subdir creation containing space" do
     # Make sure renames involving spaces in subdirectories create more subdirectories ok
-    source = @wiki.paged("H", "G")
+    source = @wiki.page("G/H")
 
     # G/H.md => G/K L/F.md
     assert @wiki.rename_page(source, "/G/K L/F", rename_commit_details)
 
-    new_page = @wiki.paged("F", "G/K L")
+    new_page = @wiki.page("G/K L/F")
     assert_not_nil new_page
     assert_renamed source, new_page
   end
@@ -854,7 +939,7 @@ context "Renames directory traversal" do
 
   def assert_renamed(page_source, page_target)
     @wiki.clear_cache
-    assert_nil @wiki.paged(page_source.name, page_source.path)
+    assert_nil @wiki.page(::File.join(page_source.path, page_source.name))
 
     assert_equal "INITIAL\n\nSPAM2\n", page_target.raw_data
     assert_equal "def", page_target.version.message
@@ -920,6 +1005,6 @@ context "Wiki subclassing" do
   end
 
   teardown do
-    FileUtils.rm_r(File.join(File.dirname(__FILE__), *%w(examples test.git)))
+    FileUtils.rm_rf(File.join(File.dirname(__FILE__), *%w(examples test.git)))
   end
 end

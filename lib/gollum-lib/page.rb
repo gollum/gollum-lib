@@ -1,19 +1,22 @@
 # ~*~ encoding: utf-8 ~*~
 module Gollum
-  class Page
+  class Page < Gollum::File
     include Pagination
     
     SUBPAGENAMES = [:header, :footer, :sidebar]
 
-    # Sets a Boolean determing whether this page is a historical version.
-    #
-    # Returns nothing.
-    attr_writer :historical
-
-    # Parent page if this is a sub page
-    #
-    # Returns a Page
-    attr_accessor :parent_page
+    class << self
+      # For use with self.find: returns true if the given query corresponds to the in-repo path of the BlobEntry. 
+      #
+      # query     - The String path to match.
+      # entry     - The BlobEntry to check against.
+      def path_match(query, entry)
+        return false if "#{entry.name}".empty?
+        return false unless valid_extension?(entry.name)
+        entry_name = valid_extension?(query) ? entry.name : strip_filename(entry.name)
+        query == ::File.join('/', entry.dir, entry_name)
+      end
+    end
 
     # Checks if a filename has a valid, registered extension
     #
@@ -25,14 +28,14 @@ module Gollum
     end
 
     # Checks if a filename has a valid extension understood by GitHub::Markup.
-    # Also, checks if the filename has no "_" in the front (such as
-    # _Footer.md).
+    # Also, checks if the filename is subpages (such as _Footer.md).
     #
     # filename - String filename, like "Home.md".
     #
     # Returns true or false.
     def self.valid_page_name?(filename)
-      !(filename =~ /^_/) && self.valid_extension?(filename)
+      subpage_names = SUBPAGENAMES.map(&:capitalize).join("|")
+      filename =~ /^_(#{subpage_names})/ ? false : self.valid_extension?(filename)
     end
 
     # Public: The format of a given filename.
@@ -57,32 +60,27 @@ module Gollum
       ::File.basename(filename.to_s, ::File.extname(filename.to_s))
     end
 
-    # Public: Initialize a page.
+    # Public: Initialize a Page.
     #
-    # wiki - The Gollum::Wiki in question.
+    # wiki - The Gollum::Wiki
+    # blob - The Gollum::Git::Blob
+    # path - The String path
+    # version - The String SHA or Gollum::Git::Commit version
+    # try_on_disk - If true, try to get an on disk reference for this page.
     #
     # Returns a newly initialized Gollum::Page.
-    def initialize(wiki)
-      @wiki           = wiki
-      @blob           = nil
+    def initialize(wiki, blob, path, version, try_on_disk = false)
+      super
       @formatted_data = nil
       @doc            = nil
       @parent_page    = nil
+      @historical     = @version.to_s == version.to_s
     end
 
-    # Public: The SHA hash identifying this page
+    # Parent page if this is a sub page
     #
-    # Returns the String SHA.
-    def sha
-      @blob && @blob.id
-    end
-
-    # Public: The on-disk filename of the page including extension.
-    #
-    # Returns the String name.
-    def filename
-      @blob && @blob.name
-    end
+    # Returns a Page
+    attr_accessor :parent_page
 
     # Public: The on-disk filename of the page with extension stripped.
     #
@@ -114,30 +112,11 @@ module Gollum
       filename =~ /^_/
     end
 
-    # Public: The path of the page within the repo.
-    #
-    # Returns the String path.
-    attr_reader :path
-
-    # Public: The url path required to reach this page within the repo.
-    #
-    # Returns the String url_path
-    def url_path
-      construct_path(filename)
-    end
-
     # Public: Defines title for page.rb
     #
     # Returns the String title
     def url_path_title
-      metadata_title || construct_path(name)
-    end
-
-    # Public: The url_path, but URL encoded.
-    #
-    # Returns the String url_path
-    def escaped_url_path
-      ERB::Util.url_encode(self.url_path).gsub('%2F', '/').force_encoding('utf-8')
+      metadata_title || name
     end
 
     # Public: Metadata title
@@ -146,12 +125,7 @@ module Gollum
     #
     # Returns the String title or nil if not defined
     def metadata_title
-      if metadata
-        title = metadata['title']
-        return title unless title.nil?
-      end
-
-      nil
+      metadata ? metadata['title'] : nil
     end
 
     # Public: Whether or not to display the metadata
@@ -159,20 +133,6 @@ module Gollum
       return false if (metadata.keys - ['title', 'header_enum']).empty?
       return false if metadata['display_metadata'] == false
       @wiki.display_metadata
-    end
-
-    # Public: The raw contents of the page.
-    #
-    # Returns the String data.
-    def raw_data
-      return nil unless @blob
-
-      if !@wiki.repo.bare && @blob.is_symlink
-        new_path = @blob.symlink_target(::File.join(@wiki.repo.path, '..', self.path))
-        return IO.read(new_path) if new_path
-      end
-
-      @blob.data
     end
 
     # Public: A text data encoded in specified encoding.
@@ -245,17 +205,12 @@ module Gollum
       @markup ||= ::Gollum::Markup.new(self)
     end
 
-    # Public: The current version of the page.
-    #
-    # Returns the Gollum::Git::Commit.
-    attr_reader :version
-
     # Public: All of the versions that have touched the Page.
     #
     # options - The options Hash:
-    #           :page     - The Integer page number (default: 1).
-    #           :per_page - The Integer max count of items to return.
-    #           :follow   - Follow's a file across renames, slower.  (default: false)
+    #           :page_num  - The Integer page number (default: 1).
+    #           :per_page  - The Integer max count of items to return.
+    #           :follow    - Follow's a file across renames, slower.  (default: false)
     #
     # Returns an Array of Gollum::Git::Commit.
     def versions(options = {})
@@ -319,76 +274,10 @@ module Gollum
       format == :markdown ? "md" : format.to_s
     end
 
-    #########################################################################
-    #
-    # Internal Methods
-    #
-    #########################################################################
-
     # The underlying wiki repo.
     #
     # Returns the Gollum::Wiki containing the page.
     attr_reader :wiki
-
-    # Set the Gollum::Git::Commit version of the page.
-    #
-    # Returns nothing.
-    attr_writer :version
-
-    # Find a page in the given Gollum repo.
-    #
-    # name    - The human or canonical String page name to find.
-    # version - The String version ID to find.
-    #
-    # Returns a Gollum::Page or nil if the page could not be found.
-    def find(name, version, dir = nil, exact = false)
-      map = @wiki.tree_map_for(version.to_s)
-      if (page = find_page_in_tree(map, name, dir, exact))
-        page.version    = version.is_a?(Gollum::Git::Commit) ?
-            version : @wiki.commit_for(version)
-        page.historical = page.version.to_s == version.to_s
-        page
-      end
-    rescue Gollum::Git::NoSuchShaFound
-    end
-
-    # Find a page in a given tree.
-    #
-    # map         - The Array tree map from Wiki#tree_map.
-    # name        - The canonical String page name.
-    # checked_dir - Optional String of the directory a matching page needs
-    #               to be in.  The string should
-    #
-    # Returns a Gollum::Page or nil if the page could not be found.
-    def find_page_in_tree(map, name, checked_dir = nil, exact = false)
-      return nil if !map || name.to_s.empty?
-
-      checked_dir = BlobEntry.normalize_dir(checked_dir)
-      checked_dir = '' if exact && checked_dir.nil?
-      query       = checked_dir ? ::File.join(checked_dir, name) : name
-
-      map.each do |entry|
-        next if entry.name.to_s.empty? || !self.class.valid_extension?(entry.name)
-        entry_name = ::File.extname(name).empty? ? ::Gollum::Page.strip_filename(entry.name) : entry.name
-        path = checked_dir ? ::File.join(entry.dir, entry_name) : entry_name
-        next unless query == path
-        return entry.page(@wiki, @version)
-      end
-
-      return nil # nothing was found
-    end
-
-    # Populate the Page with information from the Blob.
-    #
-    # blob - The Gollum::Git::Blob that contains the info.
-    # path - The String directory path of the page file.
-    #
-    # Returns the populated Gollum::Page.
-    def populate(blob, path=nil)
-      @blob = blob
-      @path = "#{path}/#{blob.name}"[1..-1]
-      self
-    end
 
     # The full directory path for the given tree.
     #
@@ -398,7 +287,7 @@ module Gollum
     # Returns the String path.
     def tree_path(treemap, tree)
       if (ptree = treemap[tree])
-        tree_path(treemap, ptree) + '/' + tree.name
+        "#{tree_path(treemap, ptree)}#{::File::SEPARATOR}#{tree.name}"
       else
         ''
       end
@@ -433,6 +322,7 @@ module Gollum
 
           if subpageblob
             instance_variable_set("@#{subpagename}", subpageblob.page(@wiki, @version) )
+            instance_variable_get("@#{subpagename}").parent_page = self
             break
           end
 
@@ -445,16 +335,32 @@ module Gollum
       %(#<#{self.class.name}:#{object_id} #{name} (#{format}) @wiki=#{@wiki.repo.path.inspect}>)
     end
 
-    private
+  end
 
-    def construct_path(name)
-      path = if self.path.include?('/')
-        self.path.sub(/\/[^\/]+$/, '/')
-          else
-            ''
-          end
-      path << name
+  class PreviewPage < Gollum::Page
+    include Pagination
+
+    SUBPAGENAMES.each do |subpage|
+      define_method(subpage) do
+        instance_variable_get("@#{subpage}")
+      end
+      define_method("set_#{subpage}") do |val|
+        instance_variable_set("@#{subpage}", PreviewPage.new(@wiki, "_#{subpage.to_s.capitalize}.md", val, @version, self))
+      end
     end
 
+    attr_accessor :path
+
+    def initialize(wiki, name, data, version, parent_page = nil)
+      @wiki           = wiki 
+      @path           = name
+      @blob           = OpenStruct.new(:name => name, :data => data, :is_symlink => false)
+      @version        = version
+      @formatted_data = nil
+      @doc            = nil
+      @parent_page    = parent_page
+      @historical     = false
+    end
   end
+
 end

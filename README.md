@@ -92,7 +92,13 @@ Note that `base_path` just modifies the links.
 Get the latest version of the given human or canonical page name:
 
 ```ruby
-page = wiki.page('page-name')
+page = wiki.page('/page name') # Finds pages in the root directory of the wiki that are named 'page name' with a valid extension. 
+# => <Gollum::Page>
+
+page = wiki.page('page name') # For convenience, you can leave out the '/' in front. Paths are assumed to be relative to '/'.
+# => <Gollum::Page>
+
+page = wiki.page('page name.md') # You can also specifiy the extension explicitly to disambiguate between pages with the same name, but different formats.
 # => <Gollum::Page>
 
 page.raw_data
@@ -141,7 +147,7 @@ vsns.first.authored_date
 Get a specific version of a given canonical page file:
 
 ```ruby
-wiki.page('page-name', '5ec521178e0eec4dc39741a8978a2ba6616d0f0a')
+wiki.page('page name', '5ec521178e0eec4dc39741a8978a2ba6616d0f0a')
 ```
 
 Get the latest version of a given static file:
@@ -182,10 +188,10 @@ commit = { :message => 'commit message',
 ```
 
 Write a new version of a page (the file will be created if it does not already
-exist) and commit the change. The file will be written at the repo root.
+exist) and commit the change. The file will be written at the repo root if no subdirectory is specified.
 
 ```ruby
-wiki.write_page('Page Name', :markdown, 'Page contents', commit)
+wiki.write_page('Subdirectory/Page Name', :markdown, 'Page contents', commit)
 ```
 
 Update an existing page. If the format is different than the page's current

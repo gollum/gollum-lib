@@ -122,7 +122,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     len = INCLUDE_TAG.length
     return html_error('Cannot process include directive: no page name given') if tag.length <= len
     page_name          = tag[len..-1]
-    resolved_page_name = ::File.expand_path(page_name, "#{::File::SEPARATOR}#{@markup.dir}")
+    resolved_page_name = ::File.join(@markup.dir, page_name)
     if @markup.include_levels > 0
       page = find_page_from_path(resolved_page_name)
       if page
@@ -147,7 +147,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     if path =~ /^https?:\/\/.+$/i
       generate_image(path, opts)
     elsif file = @markup.find_file(path)
-      generate_image(generate_href_for_path(file.path), opts)
+      generate_image(generate_href_for_path(file.url_path), opts)
     else
       generate_image('', opts)
     end
@@ -196,7 +196,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   #   if it is not.
   def process_file_link_tag(link_part, pretty_name)
     if file = @markup.find_file(link_part)
-      generate_link(file.path, pretty_name, nil, :file)
+      generate_link(file.url_path, pretty_name, nil, :file)
     else
       nil
     end
@@ -215,12 +215,21 @@ class Gollum::Filter::Tags < Gollum::Filter
     page      = find_page_from_path(link)
 
     # If no match yet, try finding page with anchor removed
-    if (page.nil? && pos = link.rindex('#'))
-      extra     = link[pos..-1]
-      link      = link[0...pos]
-      page      = find_page_from_path(link)
+    if page.nil?
+      if pos = link.rindex('#')
+        extra = link[pos..-1]
+        link  = link[0...pos]
+      else
+        extra = nil
+      end
+
+      if link.empty? && extra # Internal anchor link, don't search for the page but return immediately
+        return generate_link(nil, pretty_name, extra, :internal_anchor)
+      end
+
+      page  = find_page_from_path(link)
     end
-    presence  = :page_present if page
+    presence = :page_present if page
 
     name = pretty_name ? pretty_name : link
     link = page ? page.escaped_url_path : ERB::Util.url_encode(link).force_encoding('utf-8')
@@ -233,15 +242,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns a Gollum::Page instance if a page is found, or nil otherwise
   def find_page_from_path(path)
-    slash = path.rindex('/')
-
-    unless slash.nil?
-      name = path[slash+1..-1]
-      path = path[0..slash]
-      @markup.wiki.paged(name, path)
-    else
-      @markup.wiki.page(path)
-    end
+    @markup.wiki.page(path)
   end
 
   # Generate an HTML link tag.
@@ -264,7 +265,8 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns a String href.
   def generate_href_for_path(path, extra = nil)
-   "#{trim_leading_slash(::File.join(@markup.wiki.base_path, path))}#{extra}"
+    return extra if !path && extra # Internal anchor link
+    "#{trim_leading_slash(::File.join(@markup.wiki.base_path, path))}#{extra}"
   end
 
   # Construct a CSS class and attribute string for different kinds of links: internal Pages (absent or present) and Files, and External links.
@@ -278,6 +280,8 @@ class Gollum::Filter::Tags < Gollum::Filter
       'class="internal absent"'
     when :page_present
       'class="internal present"'
+    when :internal_anchor
+      'class="internal anchorlink"'
     when :file
       nil
     when :external
@@ -299,10 +303,10 @@ class Gollum::Filter::Tags < Gollum::Filter
     attr_string = attrs.map {|key, value| "#{key}=\"#{value}\""}.join(' ')
 
     if containered
-      %{<span class="#{classes.join(' ')}">} +
-          %{<span>} +
+      %{<span class="d-flex #{classes[:container].join(' ')}">} +
+          %{<span class="#{classes[:nested].join(' ')}">} +
           %{<img src="#{path}" #{attr_string}/>} +
-          (classes.include?('frame') && attrs[:alt] ? %{<span>#{attrs[:alt]}</span>} : '') +
+          (options[:frame] && attrs[:alt] ? %{<span class="clearfix">#{attrs[:alt]}</span>} : '') +
           %{</span>} +
           %{</span>}
     else
@@ -314,31 +318,31 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # options  - The Hash of parsed image options.
   #
-  # Returns an Array of CSS classes, a Hash of CSS attributes, and a Boolean indicating whether or not the image is containered.
+  # Returns a Hash containing CSS class Arrays, a Hash of CSS attributes, and a Boolean indicating whether or not the image is containered.
   def generate_image_attributes(options)
     containered = false
-    classes = [] # applied to whatever the outermost container is
+    classes = {container: [], nested: []} # applied to the container(s)
     attrs   = {} # applied to the image
 
     align = options[:align]
     if options[:float]
       containered = true
-      align       ||= 'left'
-      if %w{left right}.include?(align)
-        classes << "float-#{align}"
-      end
+      align = 'left' unless align == 'right'
+      classes[:container] << "float-#{align} pb-4"
     elsif %w{top texttop middle absmiddle bottom absbottom baseline}.include?(align)
       attrs[:align] = align
     elsif align
       if %w{left center right}.include?(align)
         containered = true
-        classes << "align-#{align}"
+        text_align = "text-#{align}"
+        align = 'end' if align == 'right'
+        classes[:container] << "flex-justify-#{align} #{text_align}"
       end
     end
 
-    if options[:frame]
+    if options[:frame] 
       containered = true
-      classes << 'frame'
+      classes[:nested] << 'border p-4'
     end
 
     attrs[:alt]    = options[:alt]    if options[:alt]

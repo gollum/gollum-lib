@@ -91,6 +91,22 @@ context "Markup" do
     end
   end
 
+  test 'github-markup knows about gollum markups' do
+    markups_with_render_filter = Gollum::Markup.formats.select do |k, v|
+      case v[:skip_filters]
+      when Array
+        !v[:skip_filters].include?(:Render)
+      when Proc
+        !v[:skip_filters].call(:Render)
+      else
+        true
+      end
+    end
+    markups_with_render_filter.each do |name, info|
+      assert ::GitHub::Markup.markups.key?(name), "GitHub::Markup does not know about format #{name}"
+    end
+  end
+
   #########################################################################
   #
   # Links
@@ -266,6 +282,35 @@ context "Markup" do
     assert_html_equal "<p>\na <a class=\"internal present\" href=\"/Potato.mediawiki\">Potato Heaad</a> </p>", output
   end
 
+  test "page link with internal anchorlink only" do
+    @wiki.write_page("Potato", :markdown, "# Test\nWaa\n[[Link Text|#test]] ", commit_details)
+    page   = @wiki.page("Potato")
+    output = page.formatted_data
+    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"test\" href=\"#test\"></a>Test</h1><p>Waa<br />\n<a class=\"internal anchorlink\" href=\"#test\">Link Text</a></p>", output
+  end
+
+  test "page link with internal anchorlink only on mediawiki" do
+    @wiki.write_page("Potato", :mediawiki, "= Test =\nWaa\n[[#test|Link Text]] ", commit_details)
+    page   = @wiki.page("Potato")
+    output = page.formatted_data
+
+    # Workaround for testing HTML equality, needed because of differences in nokogiri output on JRuby and MRI
+    expected = "<h1 class=\"editable\"><a class=\"anchor\" "
+    id = "id=\"test\""
+    href = "href=\"#test\""
+    if RUBY_PLATFORM == 'java'
+      expected = expected << href << " " << id
+    else
+      expected = expected << id << " " << href
+    end
+    expected = expected << " ></a><a name=\"wiki-Test\""
+    expected = expected << " id=\"wiki-Test\"" unless RUBY_PLATFORM == 'java'
+    expected = expected << "></a><span class=\"mw-headline\" id=\"wiki-Test\">Test</span>\n</h1><p>Waa<a class=\"internal anchorlink\" href=\"#test\">Link Text</a></p>"
+
+    assert_html_equal expected, output
+  end
+
+
   test "wiki link within inline code block" do
     @wiki.write_page("Potato", :markdown, "`sed -i '' 's/[[:space:]]*$//'`", commit_details)
     page = @wiki.page("Potato")
@@ -293,13 +338,25 @@ org
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
         (<<-'DATA'
-          ```
-          rot13='tr '\''A-Za-z'\'' '\''N-ZA-Mn-za-m'\'
-          ```
+  ```
+  rot13='tr '\''A-Za-z'\'' '\''N-ZA-Mn-za-m'\'
+  ```
         DATA
         ), commit_details)
     output   = @wiki.page(page).formatted_data
-    expected = %Q{<pre><code>      <pre class=\"highlight\"><code>rot13='tr '\\''A-Za-z'\\'' '\\''N-ZA-Mn-za-m'\\'</code></pre>\n</code></pre>}
+    expected = %Q{<pre class=\"highlight\"><code>rot13='tr '\\''A-Za-z'\\'' '\\''N-ZA-Mn-za-m'\\'</code></pre>}
+    assert_html_equal expected, output
+  end
+
+  test "backtick code blocks must have no more than three space indents" do
+    page = 'test_rgx'
+    @wiki.write_page(page, :markdown,
+                     %Q(    ```ruby
+'hi'
+```
+      ), commit_details)
+    output   = @wiki.page(page).formatted_data
+    expected = %Q{<pre><code>```ruby 'hi' ```\n</code></pre>}
     assert_html_equal expected, output
   end
 
@@ -320,7 +377,7 @@ org
   test "tilde code blocks #537" do
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
-                     %Q(~~~ {.ruby}
+                     %Q(~~~ruby
 'hi'
 ~~~
       ), commit_details)
@@ -329,11 +386,34 @@ org
     assert_html_equal expected, output
   end
 
-  # Issue #537
-  test "tilde code blocks with more than one class" do
+  test "tilde code blocks must have no more than three space indents" do
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
-                     %Q(~~~ {#hi .ruby .sauce}
+                     %Q(    ~~~ruby
+'hi'
+~~~
+      ), commit_details)
+    output   = @wiki.page(page).formatted_data
+    expected = %Q{<pre><code>~~~ruby 'hi' ~~~\n</code></pre>}
+    assert_html_equal expected, output
+  end
+
+  test "tilde code blocks must have longer end tag than opening tag" do
+    page = 'test_rgx'
+    @wiki.write_page(page, :markdown,
+                     %Q(~~~~ruby
+'hi'
+~~~
+      ), commit_details)
+    output   = @wiki.page(page).formatted_data
+    expected = %Q{\n}
+    assert_html_equal expected, output
+  end
+
+  test "tilde code blocks with more than one word in info string" do
+    page = 'test_rgx'
+    @wiki.write_page(page, :markdown,
+                     %Q(~~~ ruby bla
 'hi'
 ~~~
       ), commit_details)
@@ -347,7 +427,7 @@ org
   test "tilde code blocks with lots of tildes" do
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
-                     %Q(~~~~~~ {#hi .ruby .sauce}
+                     %Q(~~~~~~ruby
 ~~
 'hi'~
 ~~~~~~
@@ -528,7 +608,7 @@ org
     index.add("greek/Bilbo-Baggins.md", "a [[alpha.jpg]] [[a | alpha.jpg]] b")
     index.commit("Add alpha.jpg")
 
-    page   = @wiki.page("Bilbo-Baggins")
+    page   = @wiki.page("greek/Bilbo-Baggins")
     output = page.formatted_data
     assert_html_equal %{<p>a <img src=\"/wiki/greek/alpha.jpg\" /><a href=\"/wiki/greek/alpha.jpg\">a</a> b</p>}, output
   end
@@ -589,46 +669,48 @@ org
   test "image with horizontal align" do
     %w{left center right}.each do |align|
       content = "a [[alpha.jpg|align=#{align}]] b"
-      output  = "<p>a<span class=\"align-#{align}\"><span><img src=\"/greek/alpha.jpg\"/></span></span>b</p>"
+      text_align = align
+      align = 'end' if align == 'right'
+      output  = "<p>a<span class=\"d-flex flex-justify-#{align} text-#{text_align}\"><span class=\"\"><img src=\"/greek/alpha.jpg\"/></span></span>b</p>"
       relative_image(content, output)
     end
   end
 
   test "image with float" do
     content = "a\n\n[[alpha.jpg|float]]\n\nb"
-    output  = "<p>a</p><p><span class=\"float-left\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"d-flex float-left pb-4\"><span class=\"\"><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
   test "image with float and align" do
     %w{left right}.each do |align|
       content = "a\n\n[[alpha.jpg|float, align=#{align}]]\n\nb"
-      output  = "<p>a</p><p><span class=\"float-#{align}\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
+      output  = "<p>a</p><p><span class=\"d-flex float-#{align} pb-4\"><span class=\"\"><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
       relative_image(content, output)
     end
   end
 
   test "image with frame" do
     content = "a\n\n[[alpha.jpg|frame]]\n\nb"
-    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"d-flex \"><span class=\"border p-4\"><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
   test "absolute image with frame" do
     content = "a\n\n[[http://example.com/bilbo.jpg|frame]]\n\nb"
-    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"http://example.com/bilbo.jpg\"/></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"d-flex \"><span class=\"border p-4\"><img src=\"http://example.com/bilbo.jpg\"/></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
   test "image with align and alt" do
     content = "a [[alpha.jpg|alt=Alpha Dog, align=center]] b"
-    output  ="<p>a<span class=\"align-center\"><span><img src=\"/greek/alpha.jpg\" alt=\"Alpha Dog\"/></span></span>b</p>"
+    output  ="<p>a<span class=\"d-flex flex-justify-center text-center\"><span class=\"\"><img src=\"/greek/alpha.jpg\" alt=\"Alpha Dog\"/></span></span>b</p>"
     relative_image(content, output)
   end
 
   test "image with frame and alt" do
     content = "a\n\n[[alpha.jpg|frame, alt=Alpha]]\n\nb"
-    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"/greek/alpha.jpg\" alt=\"Alpha\"/><span>Alpha</span></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"d-flex \"><span class=\"border p-4\"><img src=\"/greek/alpha.jpg\" alt=\"Alpha\"/><span class=\"clearfix\">Alpha</span></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
@@ -660,13 +742,13 @@ org
     assert_html_equal %{<p>a <a href="/alpha.jpg">Alpha</a> b</p>}, output
   end
 
-  test "file link with relative path" do
+  test "file link with relative path is relative to root" do
     index = @wiki.repo.index
     index.add("greek/alpha.jpg", "hi")
     index.add("greek/Bilbo-Baggins.md", "a [[Alpha|alpha.jpg]] b")
     index.commit("Add alpha.jpg")
 
-    page   = @wiki.page("Bilbo-Baggins")
+    page   = @wiki.page("greek/Bilbo-Baggins")
     output = Gollum::Markup.new(page).render
     assert_html_equal %{<p>a <a href="/greek/alpha.jpg">Alpha</a> b</p>}, output
   end
@@ -676,7 +758,7 @@ org
     index.add("greek/Bilbo-Baggins.md", "a [[Alpha|http://example.com/alpha.jpg]] b")
     index.commit("Add alpha.jpg")
 
-    page = @wiki.page("Bilbo-Baggins")
+    page = @wiki.page("greek/Bilbo-Baggins")
     assert_html_equal %{<p>a <a href="http://example.com/alpha.jpg">Alpha</a> b</p>}, page.formatted_data
   end
 
@@ -957,13 +1039,13 @@ np.array([[2,2],[1,3]],np.float)
 
   test "id with prefix ok" do
     content = "h2(example#wiki-foo). xxxx"
-    output  = "<h2 class=\"example editable\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"><i class=\"fa fa-link\"></i></a>xxxx</h2>"
+    output  = "<h2 class=\"example editable\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"></i></a>xxxx</h2>"
     compare(content, output, :textile)
   end
 
   test "id prefix added" do
     content = "h2(#foo). xxxx[1]\n\nfn1.footnote"
-    output  = "<h2 class=\"editable\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx1\" href=\"#xxxx1\"><i class=\"fa fa-link\"></i></a>xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup>\n</h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
+    output  = "<h2 class=\"editable\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx1\" href=\"#xxxx1\"></a>xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup>\n</h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
     compare(content, output, :textile)
   end
 
@@ -979,13 +1061,13 @@ np.array([[2,2],[1,3]],np.float)
 
   test "adds editable class to headers in the source document" do
     content = '# Test'
-    output = '<h1 class="editable"><a class="anchor" id="test" href="#test"><i class="fa fa-link"></i></a>Test</h1>'
+    output = '<h1 class="editable"><a class="anchor" id="test" href="#test"></a>Test</h1>'
     compare(content, output, :markdown)
   end
 
   test "does not add editable class to headers in the source document when it contains placeholder" do
     content = '# Test %SomeFilter%BLA=SomeFilter='
-    output = '<h1><a class="anchor" id="test-somefilter-bla-somefilter" href="#test-somefilter-bla-somefilter"><i class="fa fa-link"></i></a>Test %SomeFilter%BLA=SomeFilter=</h1'
+    output = '<h1><a class="anchor" id="test-somefilter-bla-somefilter" href="#test-somefilter-bla-somefilter"></a>Test %SomeFilter%BLA=SomeFilter=</h1'
     compare(content, output, :markdown)
   end
   
@@ -1006,7 +1088,7 @@ __TOC__
 # Summary
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary-1\" href=\"#summary-1\"><i class=\"fa fa-link\"></i></a>Summary</h1>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary\" href=\"#summary\"></a>Summary</h1>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary-1\" href=\"#summary-1\"></a>Summary</h1>"
     compare(content, output, :markdown)
   end
 
@@ -1019,7 +1101,7 @@ __TOC__
 # Summary !@$#%^&*() stuff
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary-stuff\" href=\"#summary-stuff\"><i class=\"fa fa-link\"></i></a>Summary '\"' stuff</h1>\n\n<h1  class=\"editable\"><a class=\"anchor\" id=\"summary-stuff-1\" href=\"#summary-stuff-1\"><i class=\"fa fa-link\"></i></a>Summary !@$#%^&*() stuff</h1>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary-stuff\" href=\"#summary-stuff\"></a>Summary '\"' stuff</h1>\n\n<h1  class=\"editable\"><a class=\"anchor\" id=\"summary-stuff-1\" href=\"#summary-stuff-1\"></a>Summary !@$#%^&*() stuff</h1>"
     compare(content, output, :markdown)
   end
 
@@ -1036,7 +1118,7 @@ __TOC__
 ### Horse
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h2 class=\"editable\"><a class=\"anchor\" id=\"horse\" href=\"#horse\"><i class=\"fa fa-link\"></i></a>Horse</h2>\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary-1\" href=\"#summary-1\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h3 class=\"editable\"><a class=\"anchor\" id=\"horse-1\" href=\"#horse-1\"><i class=\"fa fa-link\"></i></a>Horse</h3>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary\" href=\"#summary\"></a>Summary</h1>\n\n<h2 class=\"editable\"><a class=\"anchor\" id=\"horse\" href=\"#horse\"></a>Horse</h2>\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary-1\" href=\"#summary-1\"></a>Summary</h1>\n\n<h3 class=\"editable\"><a class=\"anchor\" id=\"horse-1\" href=\"#horse-1\"></a>Horse</h3>"
     compare(content, output, :markdown)
   end
 
@@ -1115,13 +1197,6 @@ def sub_word(mo):
     compare(content, output, "txt")
   end
 
-  test 'font awesome class' do
-    content = "# hi\n\n[[_TOC_]]"
-    # must expect <i class="fa fa-link">
-    output = "<h1 class=\"editable\"><a class=\"anchor\" id=\"hi\" href=\"#hi\"><i class=\"fa fa-link\"></i></a>hi</h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
-    compare(content, output)
-  end
-
   #########################################################################
   #
   # Helpers
@@ -1155,7 +1230,7 @@ def sub_word(mo):
     index.commit("Add alpha.jpg")
 
     @wiki.clear_cache
-    page     = @wiki.page("Bilbo-Baggins")
+    page     = @wiki.page("greek/Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
     assert_html_equal output, rendered
   end

@@ -90,7 +90,7 @@ module Gollum
       @sub_page    = page.sub_page
       @parent_page = page.parent_page
       @page        = page
-      @dir         = ::File.dirname(page.path)
+      @dir         = ::File.dirname("/#{@page.url_path}")
       @metadata    = nil
       @to_xml_opts = { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML ^ 1, :indent => 0, :encoding => 'UTF-8' }
     end

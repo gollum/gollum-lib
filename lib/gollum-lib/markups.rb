@@ -55,12 +55,16 @@ end
 
 module Gollum
   class Markup
-    GitHub::Markup::Markdown::MARKDOWN_GEMS['kramdown'] = proc { |content|
-        Kramdown::Document.new(content, :input => "GFM", :auto_ids => false, :math_engine => nil, :smart_quotes => ["'", "'", '"', '"'].map{|char| char.codepoints.first}).to_html
-    }
-    GitHub::Markup::Markdown::MARKDOWN_GEMS['pandoc-ruby'] = proc { |content|
-        PandocRuby.convert(content, :s, :from => :markdown, :to => :html, :filter => 'pandoc-citeproc')
-    } if gem_exists?('pandoc-ruby')
+    if gem_exists?('pandoc-ruby')
+      GitHub::Markup::Markdown::MARKDOWN_GEMS.delete('kramdown')
+      GitHub::Markup::Markdown::MARKDOWN_GEMS['pandoc-ruby'] = proc { |content|
+          PandocRuby.convert(content, :s, :from => :markdown, :to => :html, :filter => 'pandoc-citeproc')
+      }
+    else
+      GitHub::Markup::Markdown::MARKDOWN_GEMS['kramdown'] = proc { |content|
+          Kramdown::Document.new(content, :input => "GFM", :auto_ids => false, :math_engine => nil, :smart_quotes => ["'", "'", '"', '"'].map{|char| char.codepoints.first}).to_html
+      }
+    end
 
     # markdown, rdoc, and plain text are always supported.
     register(:markdown, "Markdown", :extensions => ['md','mkd','mkdn','mdown','markdown'])
@@ -76,7 +80,7 @@ module Gollum
     register(:creole, "Creole",
              :enabled => MarkupRegisterUtils::gem_exists?("creole"),
              :reverse_links => true)
-    register(:rest, "reStructuredText",
+    register(:rst, "reStructuredText",
              :enabled => MarkupRegisterUtils::executable_exists?("python2"),
              :extensions => ['rest', 'rst'])
     register(:asciidoc, "AsciiDoc",
