@@ -240,7 +240,7 @@ module Gollum
     def write_file(name, data, commit = {})
       write(merge_path_elements(nil, name, nil), data, commit)
     end
-    
+
     # Public: Write a file to the Gollum repo regardless of existing versions.
     #
     # path   - The String path where the file will be written.
@@ -573,12 +573,12 @@ module Gollum
       end
       @redirects
     end
-    
+
     def add_redirect(old_path, new_path)
       redirects[old_path] = new_path
       redirects.dump
     end
-    
+
     def remove_redirect(path)
       redirects.tap{|k| k.delete(path)}
       redirects.dump
@@ -735,10 +735,7 @@ module Gollum
         @access.refresh
 
         paths.each do |path|
-          dir = ::File.dirname(path)
-          dir = '' if dir == '.'
-          name = ::File.basename(path, ::File.extname(path))
-          index.update_working_dir(dir, name, ::Gollum::Page.format_for(path))
+          index.update_working_dir(path)
         end
       end
 
