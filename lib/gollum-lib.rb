@@ -13,8 +13,8 @@ require "#{Gollum::GIT_ADAPTER.downcase}_adapter"
 # external
 require 'github/markup'
 require 'erb'
-require 'sanitize'
 require 'gemojione'
+require 'loofah'
 
 # internal
 require File.expand_path('../gollum-lib/git_access', __FILE__)
