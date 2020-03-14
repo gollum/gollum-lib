@@ -541,30 +541,6 @@ module Gollum
       @access.refresh
     end
 
-    # Returns an instance of Gollum::Sanitization
-    def sanitization
-      @sanitization ||= ::Gollum::Sanitization.new
-    end
-
-    # Returns an instance of Gollum::Sanitization set to allow elements required for viewing older versions of files
-    def history_sanitization
-      @history_sanitization ||= ::Gollum::Sanitization.history_sanitization
-    end
-
-    # Public: Creates a Sanitize instance
-    #
-    # Returns a Sanitize instance.
-    def sanitizer
-      @sanitizer ||= sanitization.to_sanitize
-    end
-
-    # Public: Creates a Sanitize instance set to allow elements required for viewing older versions of files
-    #
-    # Returns a Sanitize instance.
-    def history_sanitizer
-      @history_sanitizer ||= history_sanitization.to_sanitize
-    end
-
     def redirects
       if @redirects.nil? || @redirects.stale?
         @redirects = {}.extend(::Gollum::Redirects)
@@ -710,6 +686,13 @@ module Gollum
 
     def inspect
       %(#<#{self.class.name}:#{object_id} #{@repo.path}>)
+    end
+
+    # Public: Creates a Sanitize instance
+    #
+    # Returns a Sanitize instance.
+    def sanitizer
+      @sanitizer ||= Gollum::Sanitization.new(Gollum::Markup.to_xml_opts)
     end
 
     private

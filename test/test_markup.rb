@@ -671,21 +671,21 @@ org
       content = "a [[alpha.jpg|align=#{align}]] b"
       text_align = align
       align = 'end' if align == 'right'
-      output  = "<p>a<span class=\"d-flex flex-justify-#{align} text-#{text_align}\"><span class=\"\"><img src=\"/greek/alpha.jpg\"/></span></span>b</p>"
+      output  = "<p>a<span class=\"d-flex flex-justify-#{align} text-#{text_align}\"><span><img src=\"/greek/alpha.jpg\"/></span></span>b</p>"
       relative_image(content, output)
     end
   end
 
   test "image with float" do
     content = "a\n\n[[alpha.jpg|float]]\n\nb"
-    output  = "<p>a</p><p><span class=\"d-flex float-left pb-4\"><span class=\"\"><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"d-flex float-left pb-4\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
   test "image with float and align" do
     %w{left right}.each do |align|
       content = "a\n\n[[alpha.jpg|float, align=#{align}]]\n\nb"
-      output  = "<p>a</p><p><span class=\"d-flex float-#{align} pb-4\"><span class=\"\"><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
+      output  = "<p>a</p><p><span class=\"d-flex float-#{align} pb-4\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
       relative_image(content, output)
     end
   end
@@ -704,7 +704,7 @@ org
 
   test "image with align and alt" do
     content = "a [[alpha.jpg|alt=Alpha Dog, align=center]] b"
-    output  ="<p>a<span class=\"d-flex flex-justify-center text-center\"><span class=\"\"><img src=\"/greek/alpha.jpg\" alt=\"Alpha Dog\"/></span></span>b</p>"
+    output  ="<p>a<span class=\"d-flex flex-justify-center text-center\"><span><img src=\"/greek/alpha.jpg\" alt=\"Alpha Dog\"/></span></span>b</p>"
     relative_image(content, output)
   end
 
