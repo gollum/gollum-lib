@@ -30,7 +30,7 @@ context "Page" do
   test "getting pages is case sensitive" do
     assert_not_equal Gollum::Page, @wiki.page('bilbo-baggins').class
     assert_not_equal Gollum::Page, @wiki.page('Bilbo-baggins').class
-    
+
     assert_equal Gollum::Page, @wiki.page('Bilbo-Baggins').class
   end
 

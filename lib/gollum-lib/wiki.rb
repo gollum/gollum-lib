@@ -240,7 +240,7 @@ module Gollum
     def write_file(name, data, commit = {})
       write(merge_path_elements(nil, name, nil), data, commit)
     end
-    
+
     # Public: Write a file to the Gollum repo regardless of existing versions.
     #
     # path   - The String path where the file will be written.
@@ -426,48 +426,12 @@ module Gollum
     #          :name    - The String author full name.
     #          :email   - The String email address.
     #          :parent  - Optional Gollum::Git::Commit parent to this update.
-    #
     # Returns a String SHA1 of the new commit, or nil if the reverse diff does
     # not apply.
     def revert_page(page, sha1, sha2 = nil, commit = {})
-      if sha2.is_a?(Hash)
-        commit = sha2
-        sha2   = nil
-      end
-
-      patch     = full_reverse_diff_for(page, sha1, sha2)
-      committer = Committer.new(self, commit)
-      parent    = committer.parents[0]
-      committer.options[:tree] = @repo.git.apply_patch(parent.sha, patch)
-      return false unless committer.options[:tree]
-      committer.after_commit do |index, _sha|
-        @access.refresh
-
-        files = []
-        if page
-          files << [page.path, page.filename_stripped, page.format]
-        else
-          # Grit::Diff can't parse reverse diffs.... yet
-          patch.each_line do |line|
-            if line =~ %r(^diff --git b/.+? a/(.+)$)
-              path = Regexp.last_match[1]
-              ext  = ::File.extname(path)
-              name = ::File.basename(path, ext)
-              if (format = ::Gollum::Page.format_for(ext))
-                files << [path, name, format]
-              end
-            end
-          end
-        end
-
-        files.each do |(path, name, format)|
-          dir = ::File.dirname(path)
-          dir = '' if dir == '.'
-          index.update_working_dir(merge_path_elements(dir, name, format))
-        end
-      end
-
-      committer.commit
+      return false unless page
+      left, right, options = parse_revert_options(sha1, sha2, commit)
+      commit_and_update_paths(@repo.git.revert_path(page.path, left, right), [page.path], options)
     end
 
     # Public: Applies a reverse diff to the repo.  If only 1 SHA is given,
@@ -485,7 +449,9 @@ module Gollum
     # Returns a String SHA1 of the new commit, or nil if the reverse diff does
     # not apply.
     def revert_commit(sha1, sha2 = nil, commit = {})
-      revert_page(nil, sha1, sha2, commit)
+      left, right, options = parse_revert_options(sha1, sha2, commit)
+      tree, files = repo.git.revert_commit(left, right)
+      commit_and_update_paths(tree, files, options)
     end
 
     # Public: Lists all pages for this wiki.
@@ -583,12 +549,12 @@ module Gollum
       end
       @redirects
     end
-    
+
     def add_redirect(old_path, new_path)
       redirects[old_path] = new_path
       redirects.dump
     end
-    
+
     def remove_redirect(path)
       redirects.tap{|k| k.delete(path)}
       redirects.dump
@@ -673,34 +639,6 @@ module Gollum
       end
     end
 
-    # Creates a reverse diff for the given SHAs on the given Gollum::Page.
-    #
-    # page   - The Gollum::Page to scope the patch to, or a String Path.
-    # sha1   - String SHA1 of the earlier parent if two SHAs are given,
-    #          or the child.
-    # sha2   - Optional String SHA1 of the child.
-    #
-    # Returns a String of the reverse Diff to apply.
-    def full_reverse_diff_for(page, sha1, sha2 = nil)
-      sha1, sha2 = "#{sha1}^", sha1 if sha2.nil?
-      if page
-        path = (page.respond_to?(:path) ? page.path : page.to_s)
-        return repo.diff(sha2, sha1, path).first.diff
-      end
-      repo.diff(sha2, sha1).map { |d| d.diff }.join("\n")
-    end
-
-    # Creates a reverse diff for the given SHAs.
-    #
-    # sha1   - String SHA1 of the earlier parent if two SHAs are given,
-    #          or the child.
-    # sha2   - Optional String SHA1 of the child.
-    #
-    # Returns a String of the reverse Diff to apply.
-    def full_reverse_diff(sha1, sha2 = nil)
-      full_reverse_diff_for(nil, sha1, sha2)
-    end
-
     # Gets the default name for commits.
     #
     # Returns the String name.
@@ -758,6 +696,34 @@ module Gollum
     end
 
     private
+
+    def parse_revert_options(sha1, sha2, commit = {})
+      if sha2.is_a?(Hash)
+        return "#{sha1}^", sha1, sha2
+      elsif sha2.nil?
+        return "#{sha1}^", sha1, commit
+      else
+        return sha1, sha2, commit
+      end
+    end
+
+    def commit_and_update_paths(tree, paths, options)
+      return false unless tree
+      committer = Committer.new(self, options)
+      parent    = committer.parents[0]
+
+      committer.options[:tree] = tree
+
+      committer.after_commit do |index, _sha|
+        @access.refresh
+
+        paths.each do |path|
+          index.update_working_dir(path)
+        end
+      end
+
+      committer.commit
+    end
 
     # Conjoins elements of a page or file path and prefixes the page_file_dir.
     # Throws Gollum::IllegalDirectoryPath if page_file_dir is set, and the resulting

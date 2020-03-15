@@ -8,7 +8,7 @@ def specification(version, default_adapter, platform = nil)
     s.name              = 'gollum-lib'
     s.version           = version
     s.platform          = platform if platform
-    s.date              = '2018-09-17'
+    s.date              = '2020-03-12'
     s.date              = '2017-04-13'
     s.rubyforge_project = 'gollum-lib'
     s.license           = 'MIT'
@@ -44,13 +44,13 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'bibtex-ruby', '~> 4.3'
     s.add_development_dependency 'citeproc-ruby', '~> 1.1'
     s.add_development_dependency 'unicode_utils', '~> 1.4.0' # required by citeproc-ruby on ruby < 2.4
-    s.add_development_dependency 'rake', '~> 10.4.0'
+    s.add_development_dependency 'rake', '>= 12.3.3'
     s.add_development_dependency 'pry', '~> 0.10.1'
     # required by pry
     s.add_development_dependency 'rb-readline', '~> 0.5.1'
     # updating minitest-reporters requires a new minitest which fails with gollum's tests.
     s.add_development_dependency 'test-unit', '~> 3.1.5'
-    s.add_development_dependency 'minitest-reporters', '~> 0.14.16'
+    s.add_development_dependency 'minitest-reporters', '~> 1.4'
     s.add_development_dependency 'nokogiri-diff', '~> 0.2.0'
     # required by guard
     s.add_development_dependency 'guard', '~> 2.8.2'
@@ -79,6 +79,7 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/filter.rb
     lib/gollum-lib/filter/bibtex.rb
     lib/gollum-lib/filter/code.rb
+    lib/gollum-lib/filter/critic_markup.rb
     lib/gollum-lib/filter/emoji.rb
     lib/gollum-lib/filter/macro.rb
     lib/gollum-lib/filter/pandoc_bib.rb
@@ -95,6 +96,7 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/hook.rb
     lib/gollum-lib/macro.rb
     lib/gollum-lib/macro/all_pages.rb
+    lib/gollum-lib/macro/audio.rb
     lib/gollum-lib/macro/global_toc.rb
     lib/gollum-lib/macro/navigation.rb
     lib/gollum-lib/macro/series.rb
