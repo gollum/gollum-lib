@@ -52,6 +52,7 @@ module Gollum
     # Setup the object.  Sets `@markup` to be the instance of Gollum::Markup that
     # is running this filter chain, and sets `@map` to be an empty hash (for use
     # in your extract/process operations).
+
     def initialize(markup)
       @markup = markup
       @map    = {}
@@ -72,6 +73,11 @@ module Gollum
     end
 
     protected
+
+    def sanitize(data)
+      @markup.wiki.sanitizer.clean(data, @markup.historical)
+    end
+
     # Render a (presumably) non-fatal error as HTML
     #
     def html_error(message)

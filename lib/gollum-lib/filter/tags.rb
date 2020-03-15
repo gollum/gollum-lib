@@ -173,14 +173,8 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Return the String HTML if the tag is a valid external link tag or
   # nil if it is not.
   def process_external_link_tag(url, pretty_name = nil)
-    accepted_protocols = @markup.wiki.sanitization.protocols['a']['href'].dup
-    if accepted_protocols.include?(:relative)
-      accepted_protocols.select!{|protocol| protocol != :relative}
-      regexp = %r{^((#{accepted_protocols.join("|")}):)?(//)}
-    else
-      regexp = %r{^((#{accepted_protocols.join("|")}):)}
-    end
-    if url =~ regexp
+    @accepted_protocols_regex ||= %r{^((#{::Gollum::Sanitization.accepted_protocols.join('|')}):)?(//)} 
+    if url =~ @accepted_protocols_regex
       generate_link(url, pretty_name, nil, :external)
     else
       nil

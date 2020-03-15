@@ -37,7 +37,7 @@ class Gollum::Filter::Render < Gollum::Filter
         header['class'] = 'editable'
       end
     end
-    doc.to_xml(@markup.to_xml_opts)
+    doc.to_xml(@markup.class.to_xml_opts)
   end
 
 end
