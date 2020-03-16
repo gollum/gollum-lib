@@ -58,8 +58,7 @@ module Gollum
     if gem_exists?('pandoc-ruby')
       GitHub::Markup::Markdown::MARKDOWN_GEMS.delete('kramdown')
       GitHub::Markup::Markdown::MARKDOWN_GEMS['pandoc-ruby'] = proc { |content|
-          result = PandocRuby.convert(content, :s, :from => :markdown, :to => :html, :filter => 'pandoc-citeproc')
-          Nokogiri::HTML::Document.parse(result).at('body').inner_html
+          PandocRuby.convert(content, :from => :markdown, :to => :html, :filter => 'pandoc-citeproc')
       }
     else
       GitHub::Markup::Markdown::MARKDOWN_GEMS['kramdown'] = proc { |content|
