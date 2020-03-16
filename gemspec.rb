@@ -43,7 +43,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'bibtex-ruby', '~> 4.3'
     s.add_development_dependency 'citeproc-ruby', '~> 1.1'
     s.add_development_dependency 'unicode_utils', '~> 1.4.0' # required by citeproc-ruby on ruby < 2.4
-    s.add_development_dependency 'rake', '>= 12.3.3'
+    s.add_development_dependency 'rake', '~> 12.3', '>= 12.3.3'
     s.add_development_dependency 'pry', '~> 0.10.1'
     # required by pry
     s.add_development_dependency 'rb-readline', '~> 0.5.1'
