@@ -741,6 +741,17 @@ org
     output = Gollum::Markup.new(page).render
     assert_html_equal %{<p>a <a href="/alpha.jpg">Alpha</a> b</p>}, output
   end
+  
+  test "page link with relative path" do
+    index = @wiki.repo.index
+    index.add("greek/LinkedRelative.md", "hi")
+    index.add("greek/Foo.md", "a [[LinkedRelative]] b")
+    index.commit("Add Foo and Bar")
+    
+    page   = @wiki.page("greek/Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class="internal present" href="/greek/LinkedRelative.md">LinkedRelative</a> b</p>}, output
+  end
 
   test "file link with relative path is relative to root" do
     index = @wiki.repo.index
