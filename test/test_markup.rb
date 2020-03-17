@@ -744,13 +744,20 @@ org
   
   test "page link with relative path" do
     index = @wiki.repo.index
-    index.add("greek/LinkedRelative.md", "hi")
-    index.add("greek/Foo.md", "a [[LinkedRelative]] b")
-    index.commit("Add Foo and Bar")
+    index.add('LinkedRelative.md', 'Hobbits are nice')
+    index.add('greek/LinkedRelative.md', 'hi')
+    index.add('greek/Foo.md', 'a [[LinkedRelative]] b')
+    index.commit('Add Foo and Bar')
+    subdir_page = @wiki.page('greek/LinkedRelative.md')
     
     page   = @wiki.page("greek/Foo")
     output = Gollum::Markup.new(page).render
     assert_html_equal %{<p>a <a class="internal present" href="/greek/LinkedRelative.md">LinkedRelative</a> b</p>}, output
+    
+    @wiki.delete_page(subdir_page, {})
+    page   = @wiki.page("greek/Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class="internal present" href="/LinkedRelative.md">LinkedRelative</a> b</p>}, output    
   end
 
   test "file link with relative path is relative to root" do
