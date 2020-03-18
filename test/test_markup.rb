@@ -128,7 +128,7 @@ context "Markup" do
     assert_equal '/Page', anchors[0].text
   end
     
-  test "absolute link link text" do
+  test "link text of absolute link" do
     @wiki.write_page("Docs/Integration/How the future will look", :markdown, "Bright", commit_details)
     @wiki.write_page("linktexttest", :markdown, "[[Docs/Integration/How the future will look.md]]", commit_details)
     page   = @wiki.page("linktexttest")
@@ -136,7 +136,7 @@ context "Markup" do
     assert_html_equal %{<p><a class="internal present" href="/Docs/Integration/How%20the%20future%20will%20look.md">How the future will look</a></p>}, output
   end
   
-  test "broken absolute link link text" do
+  test "link text of broken absolute link" do
     @wiki.write_page("linktexttest", :markdown, "[[/Docs/Integration/How the future will look.md]]", commit_details)
     page   = @wiki.page("linktexttest")
     output = Gollum::Markup.new(page).render
