@@ -53,9 +53,6 @@ module Gollum
     # Gets the String directory in which all page files reside.
     attr_reader :page_file_dir
 
-    # Gets the boolean live preview value.
-    attr_reader :live_preview
-
     # Injects custom css from custom.css in root repo.
     # Defaults to false
     attr_reader :css
@@ -89,7 +86,6 @@ module Gollum
     #           site.
     # options - Optional Hash:
     #           :universal_toc - Table of contents on all pages.  Default: false
-    #           :live_preview  - Livepreview editing for markdown files. Default: true
     #           :base_path     - String base path for all Wiki links.
     #                            Default: "/"
     #           :page_file_dir - String the directory in which all page files reside
@@ -132,7 +128,6 @@ module Gollum
       @base_path            = options.fetch :base_path, "/"
       @repo                 = @access.repo
       @ref                  = options.fetch :ref, self.class.default_ref
-      @live_preview         = options.fetch :live_preview, true
       @universal_toc        = options.fetch :universal_toc, false
       @mathjax              = options.fetch :mathjax, false
       @show_all             = options.fetch :show_all, false
