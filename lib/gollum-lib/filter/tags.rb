@@ -236,8 +236,8 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns a Gollum::Page instance if a page is found, or nil otherwise
   def find_page_from_path(path)
-    if Pathname.new(path).relative? && result = @markup.wiki.page(::File.join(@markup.dir, path))
-      result
+    if Pathname.new(path).relative?
+      @markup.wiki.page(::File.join(@markup.dir, path))
     else
       @markup.wiki.page(path)
     end
@@ -253,7 +253,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Returns a String HTML link tag.
   def generate_link(path, name = nil, extra = nil, kind = nil)
     url = kind == :external ? path : generate_href_for_path(path, extra)
-    %{<a #{css_options_for_link(kind)} href="#{url}">#{name || path}</a>}
+    %{<a #{css_options_for_link(kind)} href="#{url}">#{abs_path_to_link_text(name) || path}</a>}
   end
 
   # Generate a normalized href for a path, taking into consideration the wiki's path settings.
@@ -264,7 +264,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Returns a String href.
   def generate_href_for_path(path, extra = nil)
     return extra if !path && extra # Internal anchor link
-    "#{trim_leading_slash(::File.join(@markup.wiki.base_path, path))}#{extra}"
+    "#{trim_leading_slashes(::File.join(@markup.wiki.base_path, path))}#{extra}"
   end
 
   # Construct a CSS class and attribute string for different kinds of links: internal Pages (absent or present) and Files, and External links.

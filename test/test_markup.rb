@@ -125,7 +125,14 @@ context "Markup" do
     assert_equal 1, anchors.size
     assert_equal 'internal absent', anchors[0]['class']
     assert_equal '/Page', anchors[0]['href']
-    assert_equal '/Page', anchors[0].text
+    assert_equal 'Page', anchors[0].text
+  end
+  
+  test "absolute link link text" do
+    @wiki.write_page("linktexttest", :markdown, "[[/Docs/Integration/How the future will look.md]]", commit_details)
+    page    = @wiki.page("linktexttest")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p><a class="internal absent" href="/Docs/Integration/How%20the%20future%20will%20look.md">How the future will look</a></p>}, output
   end
 
   test "double page links no space" do
@@ -748,16 +755,34 @@ org
     index.add('greek/LinkedRelative.md', 'hi')
     index.add('greek/Foo.md', 'a [[LinkedRelative]] b')
     index.commit('Add Foo and Bar')
-    subdir_page = @wiki.page('greek/LinkedRelative.md')
     
     page   = @wiki.page("greek/Foo")
     output = Gollum::Markup.new(page).render
-    assert_html_equal %{<p>a <a class="internal present" href="/greek/LinkedRelative.md">LinkedRelative</a> b</p>}, output
+    assert_html_equal %{<p>a <a class="internal present" href="/greek/LinkedRelative.md">LinkedRelative</a> b</p>}, output 
+  end
+  
+  test "page link with relative path into subdir" do
+    index = @wiki.repo.index
+    index.add('LinkedRelative.md', 'Hobbits are nice')
+    index.add('greek/Subdir/LinkedRelative.md', 'hi')
+    index.add('greek/Foo.md', 'a [[Subdir/LinkedRelative]] b')
+    index.commit('Add Foo and Bar')
     
-    @wiki.delete_page(subdir_page, {})
     page   = @wiki.page("greek/Foo")
     output = Gollum::Markup.new(page).render
-    assert_html_equal %{<p>a <a class="internal present" href="/LinkedRelative.md">LinkedRelative</a> b</p>}, output    
+    assert_html_equal %{<p>a <a class="internal present" href="/greek/Subdir/LinkedRelative.md">LinkedRelative</a> b</p>}, output 
+  end
+  
+  test "page link with absolute path" do
+    index = @wiki.repo.index
+    index.add('LinkedAbsolute.md', 'Hobbits are nice')
+    index.add('greek/LinkedAbsolute.md', 'hi')
+    index.add('greek/Foo.md', 'a [[/LinkedAbsolute]] b')
+    index.commit('Add Foo and Bar')
+    
+    page   = @wiki.page("greek/Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class="internal present" href="/LinkedAbsolute.md">LinkedAbsolute</a> b</p>}, output   
   end
 
   test "file link with relative path is relative to root" do
