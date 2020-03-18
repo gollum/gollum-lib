@@ -125,14 +125,22 @@ context "Markup" do
     assert_equal 1, anchors.size
     assert_equal 'internal absent', anchors[0]['class']
     assert_equal '/Page', anchors[0]['href']
-    assert_equal 'Page', anchors[0].text
+    assert_equal '/Page', anchors[0].text
+  end
+    
+  test "absolute link link text" do
+    @wiki.write_page("Docs/Integration/How the future will look", :markdown, "Bright", commit_details)
+    @wiki.write_page("linktexttest", :markdown, "[[Docs/Integration/How the future will look.md]]", commit_details)
+    page   = @wiki.page("linktexttest")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p><a class="internal present" href="/Docs/Integration/How%20the%20future%20will%20look.md">How the future will look</a></p>}, output
   end
   
-  test "absolute link link text" do
+  test "broken absolute link link text" do
     @wiki.write_page("linktexttest", :markdown, "[[/Docs/Integration/How the future will look.md]]", commit_details)
-    page    = @wiki.page("linktexttest")
+    page   = @wiki.page("linktexttest")
     output = Gollum::Markup.new(page).render
-    assert_html_equal %{<p><a class="internal absent" href="/Docs/Integration/How%20the%20future%20will%20look.md">How the future will look</a></p>}, output
+    assert_html_equal %{<p><a class="internal absent" href="/Docs/Integration/How%20the%20future%20will%20look.md">/Docs/Integration/How the future will look.md</a></p>}, output  
   end
 
   test "double page links no space" do

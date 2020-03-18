@@ -77,7 +77,6 @@ class Gollum::Filter::Tags < Gollum::Filter
     return generate_link('', nil, nil, :page_absent) if link_part.nil?
     img_args = extra ? [extra, link_part] : [link_part]
     mime = MIME::Types.type_for(::File.extname(img_args.first.to_s)).first
-
     result = if tag =~ /^_TOC_/
       %{[[#{tag}]]}
     elsif link_part =~ /^_$/
@@ -189,6 +188,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Returns the String HTML if the tag is a valid file link tag or nil
   #   if it is not.
   def process_file_link_tag(link_part, pretty_name)
+    return nil if ::Gollum::Page.valid_extension?(link_part)
     if file = @markup.find_file(link_part)
       generate_link(file.url_path, pretty_name, nil, :file)
     else
@@ -225,7 +225,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     end
     presence = :page_present if page
 
-    name = pretty_name ? pretty_name : link
+    name = pretty_name ? pretty_name : path_to_link_text(link, !!page)
     link = page ? page.escaped_url_path : ERB::Util.url_encode(link).force_encoding('utf-8')
     generate_link(link, name, extra, presence)
   end
@@ -253,7 +253,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Returns a String HTML link tag.
   def generate_link(path, name = nil, extra = nil, kind = nil)
     url = kind == :external ? path : generate_href_for_path(path, extra)
-    %{<a #{css_options_for_link(kind)} href="#{url}">#{abs_path_to_link_text(name) || path}</a>}
+    %{<a #{css_options_for_link(kind)} href="#{url}">#{name || path}</a>}
   end
 
   # Generate a normalized href for a path, taking into consideration the wiki's path settings.

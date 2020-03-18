@@ -217,8 +217,8 @@ module Gollum
     #                       updates and the commit happens later.
     # Returns the String SHA1 of the newly written version, or the
     # Gollum::Committer instance if this is part of a batch update.
-    def write_page(name, format, data, commit = {})
-     write(merge_path_elements(nil, name, format), data, commit)
+    def write_page(path, format, data, commit = {})
+     write(merge_path_elements(nil, path, format), data, commit)
     end
 
     # Public: Write a new version of a file to the Gollum repo.
