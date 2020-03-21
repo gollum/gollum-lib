@@ -12,7 +12,7 @@ module Gollum
       #
       # query     - The String path to match.
       # entry     - The BlobEntry to check against.
-      def path_match(query, entry)
+      def path_match(query, entry, global_match = false)
         query == ::File.join('/', entry.path)
       end
     end
@@ -28,7 +28,7 @@ module Gollum
     # Returns a Gollum::File or nil if the file could not be found. Note
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
-    def self.find(wiki, path, version, try_on_disk = false)
+    def self.find(wiki, path, version, try_on_disk = false, global_match = false)
       map = wiki.tree_map_for(version.to_s)
 
       query_path = Pathname.new(::File.join(['/', wiki.page_file_dir, path].compact)).cleanpath.to_s
@@ -36,7 +36,7 @@ module Gollum
 
       begin
         entry = map.detect do |entry|
-          path_match(query_path, entry)
+          path_match(query_path, entry, global_match)
         end
         entry ? self.new(wiki, entry.blob(wiki.repo), entry.dir, version, try_on_disk) : nil
       rescue Gollum::Git::NoSuchShaFound

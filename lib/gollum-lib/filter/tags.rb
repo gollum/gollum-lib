@@ -243,7 +243,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     if Pathname.new(path).relative?
       page = @markup.wiki.page(::File.join(@markup.dir, path))
       if page.nil? && @markup.wiki.link_compatibility # 4.x link compatibility option. Slow!
-        page = @markup.wiki.pages.detect {|page| page.path =~ /^(.*\/)?#{path}\..+/i}
+        page = @markup.wiki.page(path, nil, true)
       end
       page
     else

@@ -163,8 +163,8 @@ module Gollum
     # version - The String version ID to find (default: @ref).
     #
     # Returns a Gollum::Page or nil if no matching page was found.
-    def page(path, version = nil)
-      ::Gollum::Page.find(self, path, version.nil? ? @ref : version)
+    def page(path, version = nil, global_match = false)
+      ::Gollum::Page.find(self, path, version.nil? ? @ref : version, false, global_match)
     end
 
     # Public: Get the static file for a given name.
