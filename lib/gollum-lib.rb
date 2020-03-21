@@ -7,6 +7,7 @@ require 'pathname'
 
 DEFAULT_ADAPTER = RUBY_PLATFORM == 'java' ? 'rjgit' : 'rugged'
 
+module Gollum; end
 Gollum::GIT_ADAPTER = DEFAULT_ADAPTER if !defined?(Gollum::GIT_ADAPTER)
 require "#{Gollum::GIT_ADAPTER.downcase}_adapter"
 
