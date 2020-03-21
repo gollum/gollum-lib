@@ -224,8 +224,12 @@ class Gollum::Filter::Tags < Gollum::Filter
       page  = find_page_from_path(link)
     end
     presence = :page_present if page
-
-    name = pretty_name ? pretty_name : path_to_link_text(link, !!page)
+    
+    if pretty_name
+      name = pretty_name
+    else
+      name = page ? path_to_link_text(link) : link
+    end
     link = page ? page.escaped_url_path : ERB::Util.url_encode(link).force_encoding('utf-8')
     generate_link(link, name, extra, presence)
   end

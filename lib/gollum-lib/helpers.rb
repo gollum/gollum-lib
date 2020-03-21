@@ -11,11 +11,11 @@ module Gollum
       url
     end
     
-    # Take a path and turn it into a string for display as link text.
+    # Take a link path and turn it into a string for display as link text.
     # For example:
     # '/opt/local/bin/ruby.ext' -> 'ruby'
-    def path_to_link_text(str, is_path = true)
-      return str unless str && is_path
+    def path_to_link_text(str)
+      return nil unless str
       ::File.basename(str, ::File.extname(str))
     end
 
