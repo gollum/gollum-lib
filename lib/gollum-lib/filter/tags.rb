@@ -77,7 +77,6 @@ class Gollum::Filter::Tags < Gollum::Filter
     return generate_link('', nil, nil, :page_absent) if link_part.nil?
     img_args = extra ? [extra, link_part] : [link_part]
     mime = MIME::Types.type_for(::File.extname(img_args.first.to_s)).first
-
     result = if tag =~ /^_TOC_/
       %{[[#{tag}]]}
     elsif link_part =~ /^_$/
@@ -189,6 +188,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Returns the String HTML if the tag is a valid file link tag or nil
   #   if it is not.
   def process_file_link_tag(link_part, pretty_name)
+    return nil if ::Gollum::Page.valid_extension?(link_part)
     if file = @markup.find_file(link_part)
       generate_link(file.url_path, pretty_name, nil, :file)
     else
@@ -224,8 +224,12 @@ class Gollum::Filter::Tags < Gollum::Filter
       page  = find_page_from_path(link)
     end
     presence = :page_present if page
-
-    name = pretty_name ? pretty_name : link
+    
+    if pretty_name
+      name = pretty_name
+    else
+      name = page ? path_to_link_text(link) : link
+    end
     link = page ? page.escaped_url_path : ERB::Util.url_encode(link).force_encoding('utf-8')
     generate_link(link, name, extra, presence)
   end
@@ -236,7 +240,11 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns a Gollum::Page instance if a page is found, or nil otherwise
   def find_page_from_path(path)
-    @markup.wiki.page(path)
+    if Pathname.new(path).relative?
+      @markup.wiki.page(::File.join(@markup.dir, path))
+    else
+      @markup.wiki.page(path)
+    end
   end
 
   # Generate an HTML link tag.
@@ -260,7 +268,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Returns a String href.
   def generate_href_for_path(path, extra = nil)
     return extra if !path && extra # Internal anchor link
-    "#{trim_leading_slash(::File.join(@markup.wiki.base_path, path))}#{extra}"
+    "#{trim_leading_slashes(::File.join(@markup.wiki.base_path, path))}#{extra}"
   end
 
   # Construct a CSS class and attribute string for different kinds of links: internal Pages (absent or present) and Files, and External links.
