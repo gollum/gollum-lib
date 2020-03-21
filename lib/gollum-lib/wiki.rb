@@ -496,9 +496,13 @@ module Gollum
         result[:filename_count] = result[:name].scan(/#{search_terms_regex}/i).size
         result[:context] = []
         if data
-          data.scan(query) do |match|
-            result[:context] << match.first
-            result[:count] += match.first.scan(/#{search_terms_regex}/i).size
+          begin
+            data.scan(query) do |match|
+              result[:context] << match.first
+              result[:count] += match.first.scan(/#{search_terms_regex}/i).size
+            end
+          rescue ArgumentError # https://github.com/gollum/gollum/issues/1491
+            next
           end
         end
         ((result[:count] + result[:filename_count]) == 0) ? nil : result
