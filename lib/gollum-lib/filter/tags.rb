@@ -241,7 +241,11 @@ class Gollum::Filter::Tags < Gollum::Filter
   # Returns a Gollum::Page instance if a page is found, or nil otherwise
   def find_page_from_path(path)
     if Pathname.new(path).relative?
-      @markup.wiki.page(::File.join(@markup.dir, path))
+      page = @markup.wiki.page(::File.join(@markup.dir, path))
+      if page.nil? && @markup.wiki.global_tag_lookup # 4.x link compatibility option. Slow!
+        page = @markup.wiki.page(path, nil, true)
+      end
+      page
     else
       @markup.wiki.page(path)
     end

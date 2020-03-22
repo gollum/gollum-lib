@@ -95,7 +95,6 @@ module Gollum
     #                            Default: none
     #           :show_all      - Show all files in file view, not just valid pages.
     #                            Default: false
-    #           :collapse_tree - Start with collapsed file view. Default: false
     #           :css           - Include the custom.css file from the repo.
     #           :emoji         - Parse and interpret emoji tags (e.g. :heart:).
     #           :h1_title      - Concatenate all h1's on a page to form the
@@ -131,7 +130,7 @@ module Gollum
       @universal_toc        = options.fetch :universal_toc, false
       @mathjax              = options.fetch :mathjax, false
       @show_all             = options.fetch :show_all, false
-      @collapse_tree        = options.fetch :collapse_tree, false
+      @global_tag_lookup    = options.fetch :global_tag_lookup, false
       @css                  = options.fetch :css, false
       @emoji                = options.fetch :emoji, false
       @critic_markup        = options.fetch :critic_markup, false
@@ -164,8 +163,8 @@ module Gollum
     # version - The String version ID to find (default: @ref).
     #
     # Returns a Gollum::Page or nil if no matching page was found.
-    def page(path, version = nil)
-      ::Gollum::Page.find(self, path, version.nil? ? @ref : version)
+    def page(path, version = nil, global_match = false)
+      ::Gollum::Page.find(self, path, version.nil? ? @ref : version, false, global_match)
     end
 
     # Public: Get the static file for a given name.
@@ -588,8 +587,8 @@ module Gollum
     # When false, only valid pages in the git repo are displayed.
     attr_reader :show_all
 
-    # Start with collapsed file view. Default: false
-    attr_reader :collapse_tree
+    # Enable 4.x compatibility behavior for links
+    attr_reader :global_tag_lookup
 
     # Toggles file upload functionality.
     attr_reader :allow_uploads
