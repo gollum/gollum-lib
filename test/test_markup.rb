@@ -759,7 +759,7 @@ org
   
   test "page link 4.x compatibility" do
     wiki = @wiki.dup
-    wiki.instance_variable_set('@link_compatibility', true)
+    wiki.instance_variable_set('@global_tag_lookup', true)
     index = @wiki.repo.index
     index.add('LinkedRelative.md', 'Hobbits are nice')
     index.add('greek/Foo.md', 'a [[LinkedRelative]] b')

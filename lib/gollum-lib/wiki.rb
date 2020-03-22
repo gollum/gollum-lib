@@ -130,7 +130,7 @@ module Gollum
       @universal_toc        = options.fetch :universal_toc, false
       @mathjax              = options.fetch :mathjax, false
       @show_all             = options.fetch :show_all, false
-      @link_compatibility   = options.fetch :link_compatibility, false
+      @global_tag_lookup    = options.fetch :global_tag_lookup, false
       @css                  = options.fetch :css, false
       @emoji                = options.fetch :emoji, false
       @critic_markup        = options.fetch :critic_markup, false
@@ -584,7 +584,7 @@ module Gollum
     attr_reader :show_all
 
     # Enable 4.x compatibility behavior for links
-    attr_reader :link_compatibility
+    attr_reader :global_tag_lookup
 
     # Toggles file upload functionality.
     attr_reader :allow_uploads
