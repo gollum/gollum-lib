@@ -769,9 +769,22 @@ org
     assert_html_equal %{<p>a <a class="internal present" href="/LinkedRelative.md">LinkedRelative</a> b</p>}, output 
   end
   
-  test "page link with github compatibility" do
+  test "hyphenated file link compatibility" do
     wiki = @wiki.dup
-    wiki.instance_variable_set('@github_tag_compatibility', true)
+    wiki.instance_variable_set('@hyphened_tag_lookup', true)
+    index = wiki.repo.index
+    index.add('Linked-PDF.pdf', 'Hobbits are nice')
+    index.add('Foo.md', 'a [[Linked PDF.pdf]] b')
+    index.commit('Add Foo')
+    
+    page   = wiki.page("Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a href=\"/Linked-PDF.pdf\">Linked-PDF.pdf</a> b</p>\n}, output   
+  end
+    
+  test "hyphenated page link compatibility" do
+    wiki = @wiki.dup
+    wiki.instance_variable_set('@hyphened_tag_lookup', true)
     index = wiki.repo.index
     index.add('Linked-Relative.md', 'Hobbits are nice')
     index.add('Foo.md', 'a [[Linked Relative]] b')

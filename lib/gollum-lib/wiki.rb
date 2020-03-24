@@ -94,7 +94,7 @@ module Gollum
     #           :user_icons    - Enable user icons on the history page. [gravatar, identicon, none].
     #                            Default: none
     #           :global_tag_lookup        - Enable 4.x compatibility behavior for links
-    #           :github_tag_compatibility - Enable github compatibility behavior for links (substitute - for spaces in page names)
+    #           :hyphened_tag_lookup - Spaces in tag paths are treated as dashes (-)
     #           :css           - Include the custom.css file from the repo.
     #           :emoji         - Parse and interpret emoji tags (e.g. :heart:).
     #           :h1_title      - Concatenate all h1's on a page to form the
@@ -130,7 +130,7 @@ module Gollum
       @universal_toc        = options.fetch :universal_toc, false
       @mathjax              = options.fetch :mathjax, false
       @global_tag_lookup    = options.fetch :global_tag_lookup, false
-      @github_tag_compatibility = options.fetch :github_tag_compatibility, false
+      @hyphened_tag_lookup = options.fetch :hyphened_tag_lookup, false
       @css                  = options.fetch :css, false
       @emoji                = options.fetch :emoji, false
       @critic_markup        = options.fetch :critic_markup, false
@@ -162,11 +162,10 @@ module Gollum
     # path    - The String path to the the wiki page (may or may not include file extension).
     # version - The String version ID to find (default: @ref).
     # global_match - If true, find a File matching path's filename, but not it's directory (so anywhere in the repo)
-    # sub_spaces   - GitHub compatibility: substitutes spaces for - when comparing filenames.
     #
     # Returns a Gollum::Page or nil if no matching page was found.
-    def page(path, version = nil, global_match = false, sub_spaces = false)
-      ::Gollum::Page.find(self, path, version.nil? ? @ref : version, false, global_match, sub_spaces)
+    def page(path, version = nil, global_match = false)
+      ::Gollum::Page.find(self, path, version.nil? ? @ref : version, false, global_match)
     end
 
     # Public: Get the static file for a given name.
@@ -592,8 +591,8 @@ module Gollum
     # Enable 4.x compatibility behavior for links
     attr_reader :global_tag_lookup
     
-    # Enable github compatibility behavior for links (substitute spaces for - in page names)
-    attr_reader :github_tag_compatibility
+    # Spaces in tag paths are treated as dashes (-)
+    attr_reader :hyphened_tag_lookup
 
     # Toggles file upload functionality.
     attr_reader :allow_uploads

@@ -162,20 +162,6 @@ module Gollum
       process_chain(data, filter_chain, &block)
     end
 
-    # Find the given file in the repo.
-    #
-    # name - The String absolute or relative path of the file.
-    #
-    # Returns the Gollum::File or nil if none was found.
-    def find_file(name, version=@version)
-      if name =~ /^\//
-        @wiki.file(name[1..-1], version)
-      else
-        path = @dir == '.' ? name : ::File.join(@dir, name)
-        @wiki.file(path, version)
-      end
-    end
-
     # Hook for getting the formatted value of extracted tag data.
     #
     # type - Symbol value identifying what type of data is being extracted.

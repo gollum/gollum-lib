@@ -123,7 +123,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     page_name          = tag[len..-1]
     resolved_page_name = ::File.join(@markup.dir, page_name)
     if @markup.include_levels > 0
-      page = find_page_from_path(resolved_page_name)
+      page = find_page_or_file_from_path(resolved_page_name)
       if page
         page.formatted_data(@markup.encoding, @markup.include_levels-1)
       else
@@ -145,7 +145,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     opts = parse_image_tag_options(options)
     if path =~ /^https?:\/\/.+$/i
       generate_image(path, opts)
-    elsif file = @markup.find_file(path)
+    elsif file = find_page_or_file_from_path(path, :file)
       generate_image(generate_href_for_path(file.url_path), opts)
     else
       generate_image('', opts)
@@ -189,7 +189,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   #   if it is not.
   def process_file_link_tag(link_part, pretty_name)
     return nil if ::Gollum::Page.valid_extension?(link_part)
-    if file = @markup.find_file(link_part)
+    if file = find_page_or_file_from_path(link_part, :file)
       generate_link(file.url_path, pretty_name, nil, :file)
     else
       nil
@@ -206,7 +206,7 @@ class Gollum::Filter::Tags < Gollum::Filter
   def process_page_link_tag(link_part, pretty_name = nil)
     presence  = :page_absent
     link      = link_part
-    page      = find_page_from_path(link)
+    page      = find_page_or_file_from_path(link)
 
     # If no match yet, try finding page with anchor removed
     if page.nil?
@@ -221,7 +221,7 @@ class Gollum::Filter::Tags < Gollum::Filter
         return generate_link(nil, pretty_name, extra, :internal_anchor)
       end
 
-      page  = find_page_from_path(link)
+      page  = find_page_or_file_from_path(link)
     end
     presence = :page_present if page
     
@@ -239,15 +239,16 @@ class Gollum::Filter::Tags < Gollum::Filter
   # path - The String path to search for.
   #
   # Returns a Gollum::Page instance if a page is found, or nil otherwise
-  def find_page_from_path(path)
-    if Pathname.new(path).relative?
-      page = @markup.wiki.page(::File.join(@markup.dir, path))
-      if page.nil? && (@markup.wiki.global_tag_lookup || @markup.wiki.github_tag_compatibility)# 4.x link compatibility option. Slow!
-        page = @markup.wiki.page(path, nil, @markup.wiki.global_tag_lookup, @markup.wiki.github_tag_compatibility)
+  def find_page_or_file_from_path(path, kind = :page)
+    query = query_for_path(path)
+    if Pathname.new(query).relative?
+      result = @markup.wiki.send(kind, ::File.join(@markup.dir, query))
+      if result.nil? && @markup.wiki.global_tag_lookup # 4.x link compatibility option. Slow!
+        result = @markup.wiki.send(kind, query, nil, true)
       end
-      page
+      result
     else
-      @markup.wiki.page(path)
+      @markup.wiki.send(kind, query)
     end
   end
 
@@ -356,5 +357,9 @@ class Gollum::Filter::Tags < Gollum::Filter
     attrs[:height] = options[:height] if options[:height] =~ /^\d+(\.\d+)?(em|px)$/
 
     return classes, attrs, containered
+  end
+  
+  def query_for_path(path)
+    @markup.wiki.hyphened_tag_lookup ? path.gsub(' ', '-') : path
   end
 end
