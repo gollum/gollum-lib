@@ -12,8 +12,8 @@ module Gollum
       #
       # query     - The String path to match.
       # entry     - The BlobEntry to check against.
-      # global_match - If true, find a File matching path's filename, but not it's directory (so anywhere in the repo)
-      # sub_spaces   - GitHub compatibility: substitutes - for spaces when comparing filenames.
+      # global_match - (Not implemented for File) If true, find a File matching path's filename, but not it's directory (so anywhere in the repo)
+      # sub_spaces   - (Not implemented for File) Substitutes spaces for - when comparing filenames.
       def path_match(query, entry, global_match = false, sub_spaces = false)
         query == ::File.join('/', entry.path)
       end

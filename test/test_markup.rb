@@ -774,7 +774,12 @@ org
     wiki.instance_variable_set('@github_tag_compatibility', true)
     index = wiki.repo.index
     index.add('Linked-Relative.md', 'Hobbits are nice')
-    index.add('Foo', 'a [[Linked Relative]] b')
+    index.add('Foo.md', 'a [[Linked Relative]] b')
+    index.commit('Add Foo')
+    
+    page   = wiki.page("Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class="internal present" href="/Linked-Relative.md">Linked Relative</a> b</p>}, output   
   end
   
   test "page link with relative path" do

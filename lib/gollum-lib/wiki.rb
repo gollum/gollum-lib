@@ -162,7 +162,7 @@ module Gollum
     # path    - The String path to the the wiki page (may or may not include file extension).
     # version - The String version ID to find (default: @ref).
     # global_match - If true, find a File matching path's filename, but not it's directory (so anywhere in the repo)
-    # sub_spaces   - GitHub compatibility: substitutes - for spaces when comparing filenames.
+    # sub_spaces   - GitHub compatibility: substitutes spaces for - when comparing filenames.
     #
     # Returns a Gollum::Page or nil if no matching page was found.
     def page(path, version = nil, global_match = false, sub_spaces = false)
@@ -592,7 +592,7 @@ module Gollum
     # Enable 4.x compatibility behavior for links
     attr_reader :global_tag_lookup
     
-    # Enable github compatibility behavior for links (substitute - for spaces in page names)
+    # Enable github compatibility behavior for links (substitute spaces for - in page names)
     attr_reader :github_tag_compatibility
 
     # Toggles file upload functionality.
