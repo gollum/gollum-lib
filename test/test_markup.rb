@@ -769,6 +769,14 @@ org
     assert_html_equal %{<p>a <a class="internal present" href="/LinkedRelative.md">LinkedRelative</a> b</p>}, output 
   end
   
+  test "page link with github compatibility" do
+    wiki = @wiki.dup
+    wiki.instance_variable_set('@github_tag_compatibility', true)
+    index = wiki.repo.index
+    index.add('Linked-Relative.md', 'Hobbits are nice')
+    index.add('Foo', 'a [[Linked Relative]] b')
+  end
+  
   test "page link with relative path" do
     index = @wiki.repo.index
     index.add('LinkedRelative.md', 'Hobbits are nice')

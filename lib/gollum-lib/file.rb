@@ -12,7 +12,9 @@ module Gollum
       #
       # query     - The String path to match.
       # entry     - The BlobEntry to check against.
-      def path_match(query, entry, global_match = false)
+      # global_match - If true, find a File matching path's filename, but not it's directory (so anywhere in the repo)
+      # sub_spaces   - GitHub compatibility: substitutes - for spaces when comparing filenames.
+      def path_match(query, entry, global_match = false, sub_spaces = false)
         query == ::File.join('/', entry.path)
       end
     end
@@ -24,11 +26,13 @@ module Gollum
     # version - The String version ID to find.
     # try_on_disk - If true, try to return just a reference to a file
     #               that exists on the disk.
+    # global_match - If true, find a File matching path's filename, but not it's directory (so anywhere in the repo)
+    # sub_spaces   - GitHub compatibility: substitutes - for spaces when comparing filenames.
     #
     # Returns a Gollum::File or nil if the file could not be found. Note
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
-    def self.find(wiki, path, version, try_on_disk = false, global_match = false)
+    def self.find(wiki, path, version, try_on_disk = false, global_match = false, sub_spaces = false)
       map = wiki.tree_map_for(version.to_s)
 
       query_path = Pathname.new(::File.join(['/', wiki.page_file_dir, path].compact)).cleanpath.to_s
@@ -36,7 +40,7 @@ module Gollum
 
       begin
         entry = map.detect do |entry|
-          path_match(query_path, entry, global_match)
+          path_match(query_path, entry, global_match, sub_spaces)
         end
         entry ? self.new(wiki, entry.blob(wiki.repo), entry.dir, version, try_on_disk) : nil
       rescue Gollum::Git::NoSuchShaFound
