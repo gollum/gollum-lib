@@ -12,6 +12,7 @@ module Gollum
       #
       # query     - The String path to match.
       # entry     - The BlobEntry to check against.
+      # global_match - If true, find a File matching path's filename, but not its directory (so anywhere in the repo)
       def path_match(query, entry, global_match = false)
         query == ::File.join('/', entry.path)
       end
@@ -24,6 +25,7 @@ module Gollum
     # version - The String version ID to find.
     # try_on_disk - If true, try to return just a reference to a file
     #               that exists on the disk.
+    # global_match - If true, find a File matching path's filename, but not it's directory (so anywhere in the repo)
     #
     # Returns a Gollum::File or nil if the file could not be found. Note
     # that if you specify try_on_disk=true, you may or may not get a file

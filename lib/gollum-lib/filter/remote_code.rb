@@ -20,7 +20,7 @@ class Gollum::Filter::RemoteCode < Gollum::Filter
 
       # Detect local file
       if protocol.nil?
-        if (file = @markup.find_file(uri, @markup.wiki.ref))
+        if (file = @markup.wiki.file(uri, @markup.wiki.ref))
           contents = file.raw_data
         else
           # How do we communicate a render error?
