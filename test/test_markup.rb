@@ -788,11 +788,30 @@ org
     index = wiki.repo.index
     index.add('Linked-Relative.md', 'Hobbits are nice')
     index.add('Foo.md', 'a [[Linked Relative]] b')
+    index.add('Some Spaced Filename.md', 'Hobbits are smart')
+    index.add('Zoo.md', 'a [[Some Spaced Filename]] b')
     index.commit('Add Foo')
     
     page   = wiki.page("Foo")
     output = Gollum::Markup.new(page).render
-    assert_html_equal %{<p>a <a class="internal present" href="/Linked-Relative.md">Linked Relative</a> b</p>}, output   
+    assert_html_equal %{<p>a <a class="internal present" href="/Linked-Relative.md">Linked Relative</a> b</p>}, output
+    
+    page2   = wiki.page("Zoo")
+    output = Gollum::Markup.new(page2).render
+    assert_html_equal %{<p>a <a class="internal present" href="/Some%20Spaced%20Filename.md">Some Spaced Filename</a> b</p>}, output    
+  end
+  
+  test "case insensitive page links" do
+    wiki = @wiki.dup
+    wiki.instance_variable_set('@case_insensitive_tag_lookup', true)
+    index = wiki.repo.index
+    index.add('linked relative.md', 'Hobbits are nice')
+    index.add('Foo.md', 'a [[Linked Relative]] b')
+    index.commit('Add Foo')
+    
+    page   = wiki.page("Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class="internal present" href="/linked%20relative.md">Linked Relative</a> b</p>}, output
   end
   
   test "page link with relative path" do
