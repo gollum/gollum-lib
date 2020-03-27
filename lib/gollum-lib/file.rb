@@ -12,7 +12,7 @@ module Gollum
       #
       # query     - The String path to match.
       # entry     - The BlobEntry to check against.
-      # global_match - (Not implemented for File) If true, find a File matching path's filename, but not its directory (so anywhere in the repo)
+      # global_match - (Not implemented for File, see Page.path_match)
       # hyphened_tags  - If true, replace spaces in match_path with hyphens.
       # case_insensitive - If true, compare query and match_path case-insensitively
       def path_match(query, entry, global_match = false, hyphened_tags = false, case_insensitive = false)
@@ -22,7 +22,7 @@ module Gollum
       # For use with self.path_match: returns true if 'query' and 'match_path' match, strictly or taking account of the following parameters:
       # hyphened_tags  - If true, replace spaces in match_path with hyphens.
       # case_insensitive - If true, compare query and match_path case-insensitively
-      def path_compare(query, match_path, hyphened_tags, case_insensitive = false)
+      def path_compare(query, match_path, hyphened_tags, case_insensitive)
         (hyphened_tags ? match_path.gsub(' ', '-') : match_path).send(case_insensitive ? :casecmp? : :==, query)
       end
     end
