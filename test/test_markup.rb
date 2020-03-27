@@ -799,6 +799,8 @@ org
     page2   = wiki.page("Zoo")
     output = Gollum::Markup.new(page2).render
     assert_html_equal %{<p>a <a class="internal present" href="/Some%20Spaced%20Filename.md">Some Spaced Filename</a> b</p>}, output    
+    
+    assert_not_nil wiki.page('Some Spaced Filename')
   end
   
   test "case insensitive page links" do

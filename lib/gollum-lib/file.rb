@@ -23,7 +23,14 @@ module Gollum
       # hyphened_tags  - If true, replace spaces in match_path with hyphens.
       # case_insensitive - If true, compare query and match_path case-insensitively
       def path_compare(query, match_path, hyphened_tags, case_insensitive)
-        (hyphened_tags ? match_path.gsub(' ', '-') : match_path).send(case_insensitive ? :casecmp? : :==, query)
+        if hyphened_tags
+          final_query = query.gsub(' ', '-')
+          final_match = match_path.gsub(' ', '-')
+        else
+          final_query = query
+          final_match = match_path
+        end
+        final_match.send(case_insensitive ? :casecmp? : :==, final_query)
       end
     end
 
