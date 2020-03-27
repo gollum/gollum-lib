@@ -12,9 +12,18 @@ module Gollum
       #
       # query     - The String path to match.
       # entry     - The BlobEntry to check against.
-      # global_match - If true, find a File matching path's filename, but not its directory (so anywhere in the repo)
-      def path_match(query, entry, global_match = false)
-        query == ::File.join('/', entry.path)
+      # global_match - (Not implemented for File) If true, find a File matching path's filename, but not its directory (so anywhere in the repo)
+      # hyphened_tags  - If true, replace spaces in match_path with hyphens.
+      # case_insensitive - If true, compare query and match_path case-insensitively
+      def path_match(query, entry, global_match = false, hyphened_tags = false, case_insensitive = false)
+        path_compare(query, ::File.join('/', entry.path), hyphened_tags, case_insensitive)
+      end
+      
+      # For use with self.path_match: returns true if 'query' and 'match_path' match, strictly or taking account of the following parameters:
+      # hyphened_tags  - If true, replace spaces in match_path with hyphens.
+      # case_insensitive - If true, compare query and match_path case-insensitively
+      def path_compare(query, match_path, hyphened_tags, case_insensitive = false)
+        (hyphened_tags ? match_path.gsub(' ', '-') : match_path).send(case_insensitive ? :casecmp? : :==, query)
       end
     end
 
@@ -38,7 +47,7 @@ module Gollum
 
       begin
         entry = map.detect do |entry|
-          path_match(query_path, entry, global_match)
+          path_match(query_path, entry, global_match, wiki.hyphened_tag_lookup, wiki.case_insensitive_tag_lookup)
         end
         entry ? self.new(wiki, entry.blob(wiki.repo), entry.dir, version, try_on_disk) : nil
       rescue Gollum::Git::NoSuchShaFound

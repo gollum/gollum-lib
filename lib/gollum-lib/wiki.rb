@@ -95,6 +95,7 @@ module Gollum
     #                            Default: none
     #           :global_tag_lookup        - Enable 4.x compatibility behavior for links
     #           :hyphened_tag_lookup - Spaces in tag paths are treated as dashes (-)
+    #           :case_insensitive_tag_lookup - Paths in tags are compared case-case_insensitively
     #           :css           - Include the custom.css file from the repo.
     #           :emoji         - Parse and interpret emoji tags (e.g. :heart:).
     #           :h1_title      - Concatenate all h1's on a page to form the
@@ -130,7 +131,8 @@ module Gollum
       @universal_toc        = options.fetch :universal_toc, false
       @mathjax              = options.fetch :mathjax, false
       @global_tag_lookup    = options.fetch :global_tag_lookup, false
-      @hyphened_tag_lookup = options.fetch :hyphened_tag_lookup, false
+      @hyphened_tag_lookup  = options.fetch :hyphened_tag_lookup, false
+      @case_insensitive_tag_lookup = options.fetch :case_insensitive_tag_lookup, false
       @css                  = options.fetch :css, false
       @emoji                = options.fetch :emoji, false
       @critic_markup        = options.fetch :critic_markup, false
@@ -590,6 +592,9 @@ module Gollum
 
     # Enable 4.x compatibility behavior for links
     attr_reader :global_tag_lookup
+    
+    # Enable 4.x compatibility for case-case_insensitive links
+    attr_reader :case_insensitive_tag_lookup
     
     # Spaces in tag paths are treated as dashes (-)
     attr_reader :hyphened_tag_lookup

@@ -11,16 +11,16 @@ module Gollum
       # query     - The String path to match.
       # entry     - The BlobEntry to check against.
       # global_match - If true, find a File matching path's filename, but not its directory (so anywhere in the repo)
-      def path_match(query, entry, global_match = false)
+      def path_match(query, entry, global_match = false, hyphened_tags = false, case_insensitive = false)
         return false if "#{entry.name}".empty?
         return false unless valid_extension?(entry.name)
         entry_name = valid_extension?(query) ? entry.name : strip_filename(entry.name)     
         match_path = ::File.join([
           '/',
           global_match ? nil : entry.dir,
-          entry_name
+        entry_name
         ].compact)
-        query == match_path
+        path_compare(query, match_path, hyphened_tags, case_insensitive)
       end
     end
 
