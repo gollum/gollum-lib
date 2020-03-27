@@ -270,7 +270,7 @@ context "Markup" do
     page = @wiki.page("Bilbo Baggins")
     assert_html_equal "<p>a <a href=\"http://example.com\">http://example.com</a> b</p>", page.formatted_data
   end
-  
+
   test "external page link with different text" do
     @wiki.write_page("Bilbo Baggins", :markdown, "a [[Words|http://example.com]] b", commit_details)
     page = @wiki.page("Bilbo Baggins")
@@ -356,7 +356,7 @@ org
   ```
   rot13='tr '\''A-Za-z'\'' '\''N-ZA-Mn-za-m'\'
   ```
-        DATA
+DATA
         ), commit_details)
     output   = @wiki.page(page).formatted_data
     expected = %Q{<pre class=\"highlight\"><code>rot13='tr '\\''A-Za-z'\\'' '\\''N-ZA-Mn-za-m'\\'</code></pre>}
@@ -547,6 +547,7 @@ org
       con:
       /dev/null
       \0
+      \ \ \
       \\\\\\\\
 
     ).each_with_index do |ugly, n|

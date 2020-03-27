@@ -2,9 +2,25 @@
 require File.expand_path(File.join(File.dirname(__FILE__), 'helper'))
 require File.expand_path '../../lib/gollum-lib/file_view', __FILE__
 
+class FakeSane
+  def clean(data)
+    data
+  end
+end
+
+class FakeWiki
+  def sanitizer
+    FakeSane.new
+  end
+end
+
 class FakePage
   def initialize(filepath)
     @filepath = filepath
+  end
+
+  def wiki
+    FakeWiki.new
   end
 
   # From page.rb
@@ -39,6 +55,10 @@ end
 class FakePages
   def initialize(filepath_array)
     @array = filepath_array.map { |filepath| FakePage.new filepath }
+  end
+
+  def first
+    @array.first
   end
 
   def size
