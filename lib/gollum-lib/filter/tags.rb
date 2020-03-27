@@ -240,15 +240,14 @@ class Gollum::Filter::Tags < Gollum::Filter
   #
   # Returns a Gollum::Page instance if a page is found, or nil otherwise
   def find_page_or_file_from_path(path, kind = :page)
-    query = query_for_path(path)
-    if Pathname.new(query).relative?
-      result = @markup.wiki.send(kind, ::File.join(@markup.dir, query))
+    if Pathname.new(path).relative?
+      result = @markup.wiki.send(kind, ::File.join(@markup.dir, path))
       if result.nil? && @markup.wiki.global_tag_lookup # 4.x link compatibility option. Slow!
-        result = @markup.wiki.send(kind, query, nil, true)
+        result = @markup.wiki.send(kind, path, nil, true)
       end
       result
     else
-      @markup.wiki.send(kind, query)
+      @markup.wiki.send(kind, path)
     end
   end
 
@@ -357,9 +356,5 @@ class Gollum::Filter::Tags < Gollum::Filter
     attrs[:height] = options[:height] if options[:height] =~ /^\d+(\.\d+)?(em|px)$/
 
     return classes, attrs, containered
-  end
-  
-  def query_for_path(path)
-    @markup.wiki.hyphened_tag_lookup ? path.gsub(' ', '-') : path
   end
 end
