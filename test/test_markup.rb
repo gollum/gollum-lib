@@ -547,7 +547,6 @@ DATA
       con:
       /dev/null
       \0
-      \ \ \
       \\\\\\\\
 
     ).each_with_index do |ugly, n|
