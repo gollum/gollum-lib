@@ -1,6 +1,0 @@
-# Roadmap to 5.x
-
-* Unicode everywhere
-* Reduce whitespace substitution array to a single character to reduce lookup times
-* Benchmarking
-* 
