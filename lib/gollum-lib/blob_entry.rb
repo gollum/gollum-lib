@@ -47,10 +47,7 @@ module Gollum
     #
     # Returns a Gollum::Page instance.
     def page(wiki, commit)
-      blob         = self.blob(wiki.repo)
-      page         = wiki.page_class.new(wiki).populate(blob, self.dir)
-      page.version = commit
-      page
+      ::Gollum::Page.new(wiki, self.blob(wiki.repo), self.dir, commit)
     end
 
     # Gets a File instance for this blob.
@@ -59,10 +56,7 @@ module Gollum
     #
     # Returns a Gollum::File instance.
     def file(wiki, commit)
-      blob         = self.blob(wiki.repo)
-      file         = wiki.file_class.new(wiki).populate(blob, self.dir)
-      file.version = commit
-      file
+      ::Gollum::File.new(wiki, self.blob(wiki.repo), self.dir, commit)
     end
 
     def inspect

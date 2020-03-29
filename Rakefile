@@ -107,7 +107,7 @@ end
 
 desc "Build and install"
 task :install => :build do
-  sh "gem install --local --no-ri --no-rdoc pkg/#{name}-#{version}.gem"
+  sh "gem install --local --no-document pkg/#{name}-#{version}.gem"
 end
 
 #############################################################################
@@ -118,7 +118,7 @@ end
 
 desc 'Create a release build'
 task :release => :build do
-  unless `git branch` =~ /^\* master$/
+  unless `git branch` =~ /master/
     puts "You must be on the master branch to release!"
     exit!
   end

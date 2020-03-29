@@ -1,4 +1,5 @@
 # ~*~ encoding: utf-8 ~*~
+require 'octicons'
 
 # Replace specified tokens with dynamically generated content.
 class Gollum::Filter::Macro < Gollum::Filter
@@ -12,7 +13,7 @@ class Gollum::Filter::Macro < Gollum::Filter
 
     data.gsub(/('?)\<\<\s*([A-Z][A-Za-z0-9]*)\s*\(#{arg_list}\)\s*\>\>/) do
       next CGI.escape_html($&[1..-1]) unless Regexp.last_match[1].empty?
-      id = Digest::SHA1.hexdigest(Regexp.last_match[2] + Regexp.last_match[3])
+      id = "#{open_pattern}#{Digest::SHA1.hexdigest(Regexp.last_match[2] + Regexp.last_match[3])}#{close_pattern}"
       macro = Regexp.last_match[2]
       argstr = Regexp.last_match[3]
       args = []
@@ -47,7 +48,9 @@ class Gollum::Filter::Macro < Gollum::Filter
         begin
           Gollum::Macro.instance(macro, @markup.wiki, @markup.page).render(*args)
         rescue StandardError => e
-          "!!!Macro Error: #{e.message}!!!"
+          icon = Octicons::Octicon.new('zap', {width: 24, height: 24})
+          icon.options[:class] << ' mr-2'
+          "<div class='flash flash-error'>#{icon.to_svg}Macro Error for #{macro}: #{e.message}</div>"
         end
       end
     end

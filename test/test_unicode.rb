@@ -53,7 +53,7 @@ context "Unicode Support" do
 
     assert_equal nfd(expected), nfd(actual)
 
-    expected = nfd(%Q(<h1><a class="anchor" id="#{text.downcase}" href="##{text.downcase}"><i class="fa fa-link"></i></a>#{text}</h1>))
+    expected = nfd(%Q(<h1 class=\"editable\"><a class="anchor" id="#{text.downcase}" href="##{text.downcase}"></a>#{text}</h1>))
     actual   = nfd(page.formatted_data)
 
     # UTF-8 headers should not be encoded.

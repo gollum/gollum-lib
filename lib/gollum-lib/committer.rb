@@ -30,7 +30,6 @@ module Gollum
       @wiki      = wiki
       @options   = options
       @callbacks = []
-      after_commit { |*args| Hook.execute(:post_commit, *args) }
     end
 
     # Public: References the Git index for this commit.
@@ -71,87 +70,45 @@ module Gollum
       end
     end
 
-    # Adds a page to the given Index.
+    # Adds a path to the Index.
     #
-    # dir    - The String subdirectory of the Gollum::Page without any
-    #          prefix or suffix slashes (e.g. "foo/bar").
-    # name   - The String Gollum::Page filename_stripped.
-    # format - The Symbol Gollum::Page format.
+    # path   - The String path to be added
     # data   - The String wiki data to store in the tree map.
-    # allow_same_ext - A Boolean determining if the tree map allows the same
-    #                  filename with the same extension.
     #
-    # Raises Gollum::DuplicatePageError if a matching filename already exists.
+    # Raises Gollum::DuplicatePageError if a matching filename already exists, unless force_overwrite is explicitly enabled.
     # This way, pages are not inadvertently overwritten.
     #
     # Returns nothing (modifies the Index in place).
-    def add_to_index(dir, name, format, data, allow_same_ext = false)
-      # spaces must be dashes
-      dir.gsub!(' ', '-')
-      name.gsub!(' ', '-')
-
-      path = @wiki.page_file_name(name, format)
-
-      dir  = '/' if dir.strip.empty?
-
-      fullpath = ::File.join(*[dir, path])
-      fullpath = fullpath[1..-1] if fullpath =~ /^\//
-
-      if index.current_tree && (tree = index.current_tree / (@wiki.page_file_dir || '/'))
-        tree = tree / dir unless tree.nil?
-      end
-
-      if tree
-        downpath = path.downcase.sub(/\.\w+$/, '')
-
-        tree.blobs.each do |blob|
-          next if page_path_scheduled_for_deletion?(index.tree, fullpath)
-
-          existing_file     = blob.name.downcase.sub(/\.\w+$/, '')
-          existing_file_ext = ::File.extname(blob.name).sub(/^\./, '')
-
-          new_file_ext = ::File.extname(path).sub(/^\./, '')
-
-          if downpath == existing_file && !(allow_same_ext && new_file_ext == existing_file_ext)
-            raise DuplicatePageError.new(dir, blob.name, path)
-          end
+    def add_to_index(path, data, options = {}, force_overwrite = false)
+      if tree = index.current_tree
+        unless page_path_scheduled_for_deletion?(index.tree, path) || force_overwrite
+          raise DuplicatePageError.new(path) if tree / path
         end
       end
 
-      fullpath = fullpath.force_encoding('ascii-8bit') if fullpath.respond_to?(:force_encoding)
-
-      begin
-        data = @wiki.normalize(data)
-      rescue ArgumentError => err
-        # Swallow errors that arise from data being binary
-        raise err unless err.message.include?('invalid byte sequence')
+      unless options[:normalize] == false
+        begin
+          data = @wiki.normalize(data)
+        rescue ArgumentError => err
+          # Swallow errors that arise from data being binary
+          raise err unless err.message.include?('invalid byte sequence')
+        end
       end
-      index.add(fullpath, data)
+      index.add(path, data)
     end
 
     # Update the given file in the repository's working directory if there
     # is a working directory present.
     #
-    # dir    - The String directory in which the file lives.
-    # name   - The String name of the page or the stripped filename
-    #          (should be pre-canonicalized if required).
-    # format - The Symbol format of the page.
+    # path    - The String path to update
     #
     # Returns nothing.
-    def update_working_dir(dir, name, format)
+    def update_working_dir(path)
       unless @wiki.repo.bare
-        if @wiki.page_file_dir && dir !~ /^#{@wiki.page_file_dir}/
-          dir = dir.size.zero? ? @wiki.page_file_dir : ::File.join(@wiki.page_file_dir, dir)
+        if @wiki.page_file_dir && !path.start_with?(@wiki.page_file_dir)
+          # Skip the path if it is not under the wiki's page file dir
+          return nil
         end
-
-        path =
-            if dir == ''
-              @wiki.page_file_name(name, format)
-            else
-              ::File.join(dir, @wiki.page_file_name(name, format))
-            end
-
-        path = path.force_encoding('ascii-8bit') if path.respond_to?(:force_encoding)
 
         Dir.chdir(::File.join(@wiki.repo.path, '..')) do
           if file_path_scheduled_for_deletion?(index.tree, path)
@@ -171,6 +128,7 @@ module Gollum
       @callbacks.each do |cb|
         cb.call(self, sha1)
       end
+      Hook.execute(:post_commit, self, sha1)
       sha1
     end
 
@@ -198,8 +156,7 @@ module Gollum
       parts = path.split('/')
       if parts.size == 1
         deletions = map.keys.select { |k| !map[k] }
-        downfile  = parts.first.downcase.sub(/\.\w+$/, '')
-        deletions.any? { |d| d.downcase.sub(/\.\w+$/, '') == downfile }
+        deletions.any? { |d| d == parts.first }
       else
         part = parts.shift
         if (rest = map[part])
@@ -236,7 +193,6 @@ module Gollum
 
     # Proxies methods t
     def method_missing(name, *args)
-      args.map! { |item| item.respond_to?(:force_encoding) ? item.force_encoding('ascii-8bit') : item }
       index.send(name, *args)
     end
   end

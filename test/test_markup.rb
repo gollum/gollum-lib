@@ -60,6 +60,27 @@ context "Markup" do
     assert Gollum::Markup.formats.size > 1
   end
 
+  test "knows whether to skip specified filters" do
+      Gollum::Markup.stubs(:formats).returns({:markdown => {:skip_filters => [:Render], :extensions => ['md']}})
+      @wiki.write_page("Test", :markdown, "abc", commit_details)
+      page   = @wiki.page("Test")
+      markup = Gollum::Markup.new(page)
+      assert_equal false, markup.skip_filter?(:YAML)
+      assert_equal true, markup.skip_filter?(:Render)
+
+      Gollum::Markup.stubs(:formats).returns({:markdown => {:skip_filters => Proc.new {|x| x == :Render}, :extensions => ['md']}})
+      assert_equal false, markup.skip_filter?(:YAML)
+      assert_equal true, markup.skip_filter?(:Render)
+  end
+
+  test "knows whether link parts for this markup are reversed" do
+    Gollum::Markup.stubs(:formats).returns({:markdown => {:reverse_links => true, :extensions => ['md']}})
+    @wiki.write_page("Test", :markdown, "abc", commit_details)
+    page   = @wiki.page("Test")
+    markup = Gollum::Markup.new(page)
+    assert_equal true, markup.reverse_links?
+  end
+
   test "Gollum::Markup#formats is limited by Gollum::Page::FORMAT_NAMES" do
     begin
       Gollum::Page::FORMAT_NAMES = { :markdown => "Markdown" }
@@ -67,6 +88,22 @@ context "Markup" do
       assert !Gollum::Markup.formats.keys.include?(:asciidoc)
     ensure
       Gollum::Page.send :remove_const, :FORMAT_NAMES
+    end
+  end
+
+  test 'github-markup knows about gollum markups' do
+    markups_with_render_filter = Gollum::Markup.formats.select do |k, v|
+      case v[:skip_filters]
+      when Array
+        !v[:skip_filters].include?(:Render)
+      when Proc
+        !v[:skip_filters].call(:Render)
+      else
+        true
+      end
+    end
+    markups_with_render_filter.each do |name, info|
+      assert ::GitHub::Markup.markups.key?(name), "GitHub::Markup does not know about format #{name}"
     end
   end
 
@@ -89,6 +126,21 @@ context "Markup" do
     assert_equal 'internal absent', anchors[0]['class']
     assert_equal '/Page', anchors[0]['href']
     assert_equal '/Page', anchors[0].text
+  end
+    
+  test "link text of absolute link" do
+    @wiki.write_page("Docs/Integration/How the future will look", :markdown, "Bright", commit_details)
+    @wiki.write_page("linktexttest", :markdown, "[[Docs/Integration/How the future will look.md]]", commit_details)
+    page   = @wiki.page("linktexttest")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p><a class="internal present" href="/Docs/Integration/How%20the%20future%20will%20look.md">How the future will look</a></p>}, output
+  end
+  
+  test "link text of broken absolute link" do
+    @wiki.write_page("linktexttest", :markdown, "[[/Docs/Integration/How the future will look.md]]", commit_details)
+    page   = @wiki.page("linktexttest")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p><a class="internal absent" href="/Docs/Integration/How%20the%20future%20will%20look.md">/Docs/Integration/How the future will look.md</a></p>}, output  
   end
 
   test "double page links no space" do
@@ -135,7 +187,7 @@ context "Markup" do
     page   = @wiki.page("Bilbo Baggins")
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Bilbo-Baggins"/, output)
+    assert_match(/href="\/Bilbo%20Baggins.md"/, output)
     assert_match(/\>Bilbo Baggins\</, output)
   end
 
@@ -155,7 +207,7 @@ context "Markup" do
     page   = @wiki.page("Tolkien")
     output = page.formatted_data
     assert_match(/class="internal absent"/, output)
-    assert_match(/href="\/J\.\-R\.\-R\.\-Tolkien"/, output)
+    assert_match(/href="\/J\.\%20R\.\%20R\.\%20Tolkien"/, output)
     assert_match(/\>J\. R\. R\. Tolkien\</, output)
   end
 
@@ -168,7 +220,7 @@ context "Markup" do
       page   = @wiki.page(name)
       output = page.formatted_data
       assert_match(/class="internal present"/, output)
-      assert_match(/href="\/wiki\/Bilbo-Baggins-\d"/, output)
+      assert_match(/href="\/wiki\/Bilbo\%20Baggins\%20\d.md"/, output)
       assert_match(/\>Bilbo Baggins \d\</, output)
     end
   end
@@ -178,7 +230,23 @@ context "Markup" do
     page   = @wiki.page('Precious #1')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Precious-%231"/, output)
+    assert_match(/href="\/Precious\%20%231.md"/, output)
+  end
+
+  test "page link with multiple included #" do
+    @wiki.write_page("Precious #1 #2", :markdown, "a [[Precious #1 #2]] b", commit_details)
+    page   = @wiki.page('Precious #1 #2')
+    output = page.formatted_data
+    assert_match(/class="internal present"/, output)
+    assert_match(/href="\/Precious\%20%231\%20%232.md"/, output)
+  end
+
+  test "page link with extra # and multiple included #{}" do
+    @wiki.write_page("Potato #1 #2", :markdown, "a [[Potato #1 #2#anchor]] b", commit_details)
+    page   = @wiki.page('Potato #1 #2')
+    output = page.formatted_data
+    assert_match(/class="internal present"/, output)
+    assert_match(/href="\/Potato\%20%231\%20%232.md#anchor"/, output)
   end
 
   test "page link with extra #" do
@@ -186,7 +254,15 @@ context "Markup" do
     page   = @wiki.page('Potato')
     output = page.formatted_data
     assert_match(/class="internal present"/, output)
-    assert_match(/href="\/Potato#1"/, output)
+    assert_match(/href="\/Potato.md#1"/, output)
+  end
+
+  test "absent page link with extra #" do
+    @wiki.write_page("Potato", :markdown, "a [[Tomato#1]] b", commit_details)
+    page   = @wiki.page('Potato')
+    output = page.formatted_data
+    assert_match(/class="internal absent"/, output)
+    assert_match(/href="\/Tomato#1"/, output)
   end
 
   test "external page link" do
@@ -211,15 +287,44 @@ context "Markup" do
     @wiki.write_page("Potato", :markdown, "a [[Potato Heaad|Potato]] ", commit_details)
     page   = @wiki.page("Potato")
     output = page.formatted_data
-    assert_html_equal "<p>a<a class=\"internal present\" href=\"/Potato\">Potato Heaad</a></p>", output
+    assert_html_equal "<p>a<a class=\"internal present\" href=\"/Potato.md\">Potato Heaad</a></p>", output
   end
 
   test "page link with different text on mediawiki" do
     @wiki.write_page("Potato", :mediawiki, "a [[Potato|Potato Heaad]] ", commit_details)
     page   = @wiki.page("Potato")
     output = page.formatted_data
-    assert_html_equal "<p>\na <a class=\"internal present\" href=\"/Potato\">Potato Heaad</a> </p>", output
+    assert_html_equal "<p>\na <a class=\"internal present\" href=\"/Potato.mediawiki\">Potato Heaad</a> </p>", output
   end
+
+  test "page link with internal anchorlink only" do
+    @wiki.write_page("Potato", :markdown, "# Test\nWaa\n[[Link Text|#test]] ", commit_details)
+    page   = @wiki.page("Potato")
+    output = page.formatted_data
+    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"test\" href=\"#test\"></a>Test</h1><p>Waa\n<a class=\"internal anchorlink\" href=\"#test\">Link Text</a></p>", output
+  end
+
+  test "page link with internal anchorlink only on mediawiki" do
+    @wiki.write_page("Potato", :mediawiki, "= Test =\nWaa\n[[#test|Link Text]] ", commit_details)
+    page   = @wiki.page("Potato")
+    output = page.formatted_data
+
+    # Workaround for testing HTML equality, needed because of differences in nokogiri output on JRuby and MRI
+    expected = "<h1 class=\"editable\"><a class=\"anchor\" "
+    id = "id=\"test\""
+    href = "href=\"#test\""
+    if RUBY_PLATFORM == 'java'
+      expected = expected << href << " " << id
+    else
+      expected = expected << id << " " << href
+    end
+    expected = expected << " ></a><a name=\"wiki-Test\""
+    expected = expected << " id=\"wiki-Test\"" unless RUBY_PLATFORM == 'java'
+    expected = expected << "></a><span class=\"mw-headline\" id=\"wiki-Test\">Test</span>\n</h1><p>Waa<a class=\"internal anchorlink\" href=\"#test\">Link Text</a></p>"
+
+    assert_html_equal expected, output
+  end
+
 
   test "wiki link within inline code block" do
     @wiki.write_page("Potato", :markdown, "`sed -i '' 's/[[:space:]]*$//'`", commit_details)
@@ -238,7 +343,8 @@ sed -i '' 's/[[:space:]]*$//'
 org
     @wiki.write_page("Pipe", :org, code, commit_details)
     page = @wiki.page("Pipe")
-    assert_html_equal "<pre class=\"highlight\"><code>sed <span class=\"nt\">-i</span> <span class=\"s1\">''</span> <span class=\"s1\">'s/[[:space:]]*$//'</span></code></pre>", page.formatted_data
+    assert_html_equal "<pre class=\"highlight\"><code><span class=\"nb\">sed</span> <span class=\"nt\">-i</span> <span class=\"s1\">''</span> <span class=\"s1\">'s/[[:space:]]*$//'</span></code></pre>\n",
+                      page.formatted_data
   end
 
   test "regexp gsub! backref (#383)" do
@@ -247,13 +353,25 @@ org
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
         (<<-'DATA'
-          ```
-          rot13='tr '\''A-Za-z'\'' '\''N-ZA-Mn-za-m'\'
-          ```
-        DATA
+  ```
+  rot13='tr '\''A-Za-z'\'' '\''N-ZA-Mn-za-m'\'
+  ```
+DATA
         ), commit_details)
     output   = @wiki.page(page).formatted_data
-    expected = %Q{<pre><code>      <pre class=\"highlight\"><code>rot13='tr '\\''A-Za-z'\\'' '\\''N-ZA-Mn-za-m'\\'</code></pre>\n</code></pre>}
+    expected = %Q{<pre class=\"highlight\"><code>rot13='tr '\\''A-Za-z'\\'' '\\''N-ZA-Mn-za-m'\\'</code></pre>}
+    assert_html_equal expected, output
+  end
+
+  test "backtick code blocks must have no more than three space indents" do
+    page = 'test_rgx'
+    @wiki.write_page(page, :markdown,
+                     %Q(    ```ruby
+'hi'
+```
+      ), commit_details)
+    output   = @wiki.page(page).formatted_data
+    expected = %Q{<pre><code>```ruby 'hi' ```\n</code></pre>}
     assert_html_equal expected, output
   end
 
@@ -274,7 +392,7 @@ org
   test "tilde code blocks #537" do
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
-                     %Q(~~~ {.ruby}
+                     %Q(~~~ruby
 'hi'
 ~~~
       ), commit_details)
@@ -283,11 +401,34 @@ org
     assert_html_equal expected, output
   end
 
-  # Issue #537
-  test "tilde code blocks with more than one class" do
+  test "tilde code blocks must have no more than three space indents" do
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
-                     %Q(~~~ {#hi .ruby .sauce}
+                     %Q(    ~~~ruby
+'hi'
+~~~
+      ), commit_details)
+    output   = @wiki.page(page).formatted_data
+    expected = %Q{<pre><code>~~~ruby 'hi' ~~~\n</code></pre>}
+    assert_html_equal expected, output
+  end
+
+  test "tilde code blocks must have longer end tag than opening tag" do
+    page = 'test_rgx'
+    @wiki.write_page(page, :markdown,
+                     %Q(~~~~ruby
+'hi'
+~~~
+      ), commit_details)
+    output   = @wiki.page(page).formatted_data
+    expected = %Q{\n}
+    assert_html_equal expected, output
+  end
+
+  test "tilde code blocks with more than one word in info string" do
+    page = 'test_rgx'
+    @wiki.write_page(page, :markdown,
+                     %Q(~~~ ruby bla
 'hi'
 ~~~
       ), commit_details)
@@ -301,7 +442,7 @@ org
   test "tilde code blocks with lots of tildes" do
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
-                     %Q(~~~~~~ {#hi .ruby .sauce}
+                     %Q(~~~~~~ruby
 ~~
 'hi'~
 ~~~~~~
@@ -406,7 +547,6 @@ org
       con:
       /dev/null
       \0
-      \ \ \
       \\\\\\\\
 
     ).each_with_index do |ugly, n|
@@ -416,6 +556,13 @@ org
       @wiki.write_page(name, :textile, "hello\n[[include:#{ugly}]]\n", commit_details)
       page1 = @wiki.page(name)
       assert_match("does not exist yet", page1.formatted_data)
+    end
+    %w(
+      \ \ \ 
+    ).each_with_index do |ugly, n|
+      @wiki.write_page(name, :textile, "hello\n[[include:#{ugly}]]\n", commit_details)
+      page1 = @wiki.page(name)
+      assert_match("no page name given", page1.formatted_data)
     end
   end
 
@@ -465,7 +612,7 @@ org
     index.add("Bilbo-Baggins.md", "a [[alpha.jpg]] [[a | alpha.jpg]] b")
     index.commit("Add alpha.jpg")
 
-    page = @wiki.page("Bilbo Baggins")
+    page = @wiki.page("Bilbo-Baggins")
     assert_html_equal %Q{<p>a <img src=\"/wiki/alpha.jpg\" /><a href=\"/wiki/alpha.jpg\">a</a> b</p>}, page.formatted_data
   end
 
@@ -476,7 +623,7 @@ org
     index.add("greek/Bilbo-Baggins.md", "a [[alpha.jpg]] [[a | alpha.jpg]] b")
     index.commit("Add alpha.jpg")
 
-    page   = @wiki.page("Bilbo Baggins")
+    page   = @wiki.page("greek/Bilbo-Baggins")
     output = page.formatted_data
     assert_html_equal %{<p>a <img src=\"/wiki/greek/alpha.jpg\" /><a href=\"/wiki/greek/alpha.jpg\">a</a> b</p>}, output
   end
@@ -512,7 +659,7 @@ org
     %w{em px}.each do |unit|
       %w{width height}.each do |dim|
         content = "a [[alpha.jpg|#{dim}=100#{unit}]] b"
-        output  = "<p>a<img src=\"/greek/alpha.jpg\"#{dim}=\"100#{unit}\"/>b</p>"
+        output  = "<p>a<img src=\"/greek/alpha.jpg\" #{dim}=\"100#{unit}\"/>b</p>"
         relative_image(content, output)
       end
     end
@@ -529,7 +676,7 @@ org
   test "image with vertical align" do
     %w{top texttop middle absmiddle bottom absbottom baseline}.each do |align|
       content = "a [[alpha.jpg|align=#{align}]] b"
-      output  = %Q{<p>a<img src=\"/greek/alpha.jpg\"align=\"#{align}\"/>b</p>}
+      output  = %Q{<p>a<img src=\"/greek/alpha.jpg\" align=\"#{align}\"/>b</p>}
       relative_image(content, output)
     end
   end
@@ -537,40 +684,48 @@ org
   test "image with horizontal align" do
     %w{left center right}.each do |align|
       content = "a [[alpha.jpg|align=#{align}]] b"
-      output  = "<p>a<span class=\"align-#{align}\"><span><img src=\"/greek/alpha.jpg\"/></span></span>b</p>"
+      text_align = align
+      align = 'end' if align == 'right'
+      output  = "<p>a<span class=\"d-flex flex-justify-#{align} text-#{text_align}\"><span><img src=\"/greek/alpha.jpg\"/></span></span>b</p>"
       relative_image(content, output)
     end
   end
 
   test "image with float" do
     content = "a\n\n[[alpha.jpg|float]]\n\nb"
-    output  = "<p>a</p><p><span class=\"float-left\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"d-flex float-left pb-4\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
   test "image with float and align" do
     %w{left right}.each do |align|
-      content = "a\n\n[[alpha.jpg|float|align=#{align}]]\n\nb"
-      output  = "<p>a</p><p><span class=\"float-#{align}\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
+      content = "a\n\n[[alpha.jpg|float, align=#{align}]]\n\nb"
+      output  = "<p>a</p><p><span class=\"d-flex float-#{align} pb-4\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
       relative_image(content, output)
     end
   end
 
   test "image with frame" do
     content = "a\n\n[[alpha.jpg|frame]]\n\nb"
-    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"d-flex \"><span class=\"border p-4\"><img src=\"/greek/alpha.jpg\"/></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
   test "absolute image with frame" do
     content = "a\n\n[[http://example.com/bilbo.jpg|frame]]\n\nb"
-    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"http://example.com/bilbo.jpg\"/></span></span></p><p>b</p>"
+    output  = "<p>a</p><p><span class=\"d-flex \"><span class=\"border p-4\"><img src=\"http://example.com/bilbo.jpg\"/></span></span></p><p>b</p>"
+    relative_image(content, output)
+  end
+
+  test "image with align and alt" do
+    content = "a [[alpha.jpg|alt=Alpha Dog, align=center]] b"
+    output  ="<p>a<span class=\"d-flex flex-justify-center text-center\"><span><img src=\"/greek/alpha.jpg\" alt=\"Alpha Dog\"/></span></span>b</p>"
     relative_image(content, output)
   end
 
   test "image with frame and alt" do
-    content = "a\n\n[[alpha.jpg|frame|alt=Alpha]]\n\nb"
-    output  = "<p>a</p><p><span class=\"frame\"><span><img src=\"/greek/alpha.jpg\"alt=\"Alpha\"/><span>Alpha</span></span></span></p><p>b</p>"
+    content = "a\n\n[[alpha.jpg|frame, alt=Alpha]]\n\nb"
+    output  = "<p>a</p><p><span class=\"d-flex \"><span class=\"border p-4\"><img src=\"/greek/alpha.jpg\" alt=\"Alpha\"/><span class=\"clearfix\">Alpha</span></span></span></p><p>b</p>"
     relative_image(content, output)
   end
 
@@ -579,6 +734,17 @@ org
   # File links
   #
   #########################################################################
+
+  test "file link without description" do
+    index = @wiki.repo.index
+    index.add("alpha.csv", "hi")
+    index.commit("Add alpha.csv")
+    @wiki.write_page("Bilbo Baggins", :markdown, "a [[alpha.csv]] b", commit_details)
+
+    page   = @wiki.page("Bilbo Baggins")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a href="/alpha.csv">alpha.csv</a> b</p>}, output
+  end
 
   test "file link with absolute path" do
     index = @wiki.repo.index
@@ -590,14 +756,109 @@ org
     output = Gollum::Markup.new(page).render
     assert_html_equal %{<p>a <a href="/alpha.jpg">Alpha</a> b</p>}, output
   end
+  
+  test "page link 4.x compatibility" do
+    wiki = @wiki.dup
+    wiki.instance_variable_set('@global_tag_lookup', true)
+    index = @wiki.repo.index
+    index.add('LinkedRelative.md', 'Hobbits are nice')
+    index.add('greek/Foo.md', 'a [[LinkedRelative]] b')
+    index.commit('Add Foo and Bar')
+    page   = wiki.page("greek/Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class="internal present" href="/LinkedRelative.md">LinkedRelative</a> b</p>}, output 
+  end
+  
+  test "hyphenated file link compatibility" do
+    wiki = @wiki.dup
+    wiki.instance_variable_set('@hyphened_tag_lookup', true)
+    index = wiki.repo.index
+    index.add('Linked-PDF.pdf', 'Hobbits are nice')
+    index.add('Foo.md', 'a [[Linked PDF.pdf]] b')
+    index.commit('Add Foo')
+    
+    page   = wiki.page("Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a href=\"/Linked-PDF.pdf\">Linked-PDF.pdf</a> b</p>\n}, output   
+  end
+    
+  test "hyphenated page link compatibility" do
+    wiki = @wiki.dup
+    wiki.instance_variable_set('@hyphened_tag_lookup', true)
+    index = wiki.repo.index
+    index.add('Linked-Relative.md', 'Hobbits are nice')
+    index.add('Foo.md', 'a [[Linked Relative]] b')
+    index.add('Some Spaced Filename.md', 'Hobbits are smart')
+    index.add('Zoo.md', 'a [[Some Spaced Filename]] b')
+    index.commit('Add Foo')
+    
+    page   = wiki.page("Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class="internal present" href="/Linked-Relative.md">Linked Relative</a> b</p>}, output
+    
+    page2   = wiki.page("Zoo")
+    output = Gollum::Markup.new(page2).render
+    assert_html_equal %{<p>a <a class="internal present" href="/Some%20Spaced%20Filename.md">Some Spaced Filename</a> b</p>}, output    
+    
+    assert_not_nil wiki.page('Some Spaced Filename')
+  end
+  
+  test "case insensitive page links" do
+    wiki = @wiki.dup
+    wiki.instance_variable_set('@case_insensitive_tag_lookup', true)
+    index = wiki.repo.index
+    index.add('linked relative.md', 'Hobbits are nice')
+    index.add('Foo.md', 'a [[Linked Relative]] b')
+    index.commit('Add Foo')
+    
+    page   = wiki.page("Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class="internal present" href="/linked%20relative.md">Linked Relative</a> b</p>}, output
+  end
+  
+  test "page link with relative path" do
+    index = @wiki.repo.index
+    index.add('LinkedRelative.md', 'Hobbits are nice')
+    index.add('greek/LinkedRelative.md', 'hi')
+    index.add('greek/Foo.md', 'a [[LinkedRelative]] b')
+    index.commit('Add Foo and Bar')
 
-  test "file link with relative path" do
+    page   = @wiki.page("greek/Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class="internal present" href="/greek/LinkedRelative.md">LinkedRelative</a> b</p>}, output 
+  end
+  
+  test "page link with relative path into subdir" do
+    index = @wiki.repo.index
+    index.add('LinkedRelative.md', 'Hobbits are nice')
+    index.add('greek/Subdir/LinkedRelative.md', 'hi')
+    index.add('greek/Foo.md', 'a [[Subdir/LinkedRelative]] b')
+    index.commit('Add Foo and Bar')
+    
+    page   = @wiki.page("greek/Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class="internal present" href="/greek/Subdir/LinkedRelative.md">LinkedRelative</a> b</p>}, output 
+  end
+  
+  test "page link with absolute path" do
+    index = @wiki.repo.index
+    index.add('LinkedAbsolute.md', 'Hobbits are nice')
+    index.add('greek/LinkedAbsolute.md', 'hi')
+    index.add('greek/Foo.md', 'a [[/LinkedAbsolute]] b')
+    index.commit('Add Foo and Bar')
+    
+    page   = @wiki.page("greek/Foo")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class="internal present" href="/LinkedAbsolute.md">LinkedAbsolute</a> b</p>}, output   
+  end
+
+  test "file link with relative path is relative to root" do
     index = @wiki.repo.index
     index.add("greek/alpha.jpg", "hi")
     index.add("greek/Bilbo-Baggins.md", "a [[Alpha|alpha.jpg]] b")
     index.commit("Add alpha.jpg")
 
-    page   = @wiki.page("Bilbo Baggins")
+    page   = @wiki.page("greek/Bilbo-Baggins")
     output = Gollum::Markup.new(page).render
     assert_html_equal %{<p>a <a href="/greek/alpha.jpg">Alpha</a> b</p>}, output
   end
@@ -607,7 +868,7 @@ org
     index.add("greek/Bilbo-Baggins.md", "a [[Alpha|http://example.com/alpha.jpg]] b")
     index.commit("Add alpha.jpg")
 
-    page = @wiki.page("Bilbo Baggins")
+    page = @wiki.page("greek/Bilbo-Baggins")
     assert_html_equal %{<p>a <a href="http://example.com/alpha.jpg">Alpha</a> b</p>}, page.formatted_data
   end
 
@@ -625,7 +886,7 @@ org
     index.add("Bilbo-Baggins.md", content)
     index.commit("Add alpha.jpg")
 
-    page     = @wiki.page("Bilbo Baggins")
+    page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
     assert_html_equal output, rendered
   end
@@ -638,7 +899,7 @@ org
     index.add("Bilbo-Baggins.md", content)
     index.commit("Add alpha.jpg")
 
-    page     = @wiki.page("Bilbo Baggins")
+    page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
     assert_html_equal output, rendered
   end
@@ -668,7 +929,7 @@ org
     index.add("Bilbo-Baggins.md", content)
     index.commit("Add alpha.jpg")
 
-    page     = @wiki.page("Bilbo Baggins")
+    page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render(false, 'utf-8')
     assert_html_equal output, rendered
   end
@@ -688,9 +949,8 @@ np.array([[2,2],[1,3]],np.float)
 ```
     END
 
-    # rendered with Gollum::Markup
     _page, rendered = render_page(content)
-    assert_markup_highlights_code Gollum::Markup, rendered
+    assert_markup_highlights_code rendered
   end
 
   test "code with trailing whitespace" do
@@ -704,13 +964,13 @@ np.array([[2,2],[1,3]],np.float)
 
     # rendered with Gollum::Markup
     _page, rendered = render_page(content)
-    assert_markup_highlights_code Gollum::Markup, rendered
+    assert_markup_highlights_code rendered
   end
 
-  def assert_markup_highlights_code(markup_class, rendered)
-    assert_match(/pre class="highlight"/, rendered, "#{markup_class} doesn't highlight code\n #{rendered}")
-    assert_match(/span class="n"/, rendered, "#{markup_class} doesn't highlight code\n #{rendered}")
-    assert_match(/\(\[\[/, rendered, "#{markup_class} parses out wiki links\n#{rendered}")
+  def assert_markup_highlights_code(rendered)
+    assert_match(/pre class="highlight"/, rendered, "Gollum::Markup doesn't highlight code\n #{rendered}")
+    assert_match(/span class="n"/, rendered, "Gollum::Markup doesn't highlight code\n #{rendered}")
+    assert_match(/\(\[\[/, rendered, "Gollum::Markup parses out wiki links\n#{rendered}")
   end
 
   test "embed code page absolute link" do
@@ -741,71 +1001,80 @@ np.array([[2,2],[1,3]],np.float)
 
   #########################################################################
   #
-  # Web Sequence Diagrams
+  # YAML Frontmatter
   #
   #########################################################################
 
-  test "sequence diagram blocks" do
-    content = "a\n\n{{{{{{default\nalice->bob: Test\n}}}}}}\n\nb"
-    output  = /.*<img src="\/\/www\.websequencediagrams\.com\/\?img=\w{9}" \/>.*/
+  test "yaml frontmatter" do
+    content = "---\ntitle: YAML in Middle Earth\ntags: [foo, bar]\n---\nSome more content"
+    output = "Some more content\n"
+    result = {'title' => 'YAML in Middle Earth', 'tags' => ['foo', 'bar']}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add sequence diagram")
+    index.commit("Add metadata")    
 
-    page     = @wiki.page("Bilbo Baggins")
+    page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_not_nil rendered.match(output)
-  end
-
-  #########################################################################
-  #
-  # Metadata Blocks
-  #
-  #########################################################################
-
-  test "metadata blocks" do
-    content = "a\n\n<!-- ---\ntags: [foo, bar]\n-->\n\nb"
-    output  = "<p>a</p>\n\n<p>b</p>"
-    result  = { 'tags' => '[foo, bar]' }
-
-    index = @wiki.repo.index
-    index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
-
-    page     = @wiki.page("Bilbo Baggins")
-    rendered = Gollum::Markup.new(page).render
-    assert_html_equal output, rendered
+    assert_equal output, rendered.gsub(/<(\/)?p>/,'')
     assert_equal result, page.metadata
   end
 
-  test "metadata blocks with newline" do
-    content = "a\n\n<!--\n---\ntags: [foo, bar]\n-->\n\nb"
-    output  = "<p>a</p>\n\n<p>b</p>"
-    result  = { 'tags' => '[foo, bar]' }
+
+  test "yaml frontmatter with dots" do
+    content = "---\ntitle: YAML in Middle Earth\ntags: [foo, bar]\n...\nSome more content"
+    output = "Some more content\n"
+    result = {'title' => 'YAML in Middle Earth', 'tags' => ['foo', 'bar']}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
+    index.commit("Add metadata")    
 
-    page     = @wiki.page("Bilbo Baggins")
+    page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_html_equal output, rendered
+    assert_equal output, rendered.gsub(/<(\/)?p>/,'')
     assert_equal result, page.metadata
   end
 
-  test "metadata stripping" do
-    content = "a\n\n<!-- ---\nfoo: <script>alert('');</script>\n-->\n\nb"
-    output  = "<p>a</p>\n\n<p>b</p>"
-    result  = { 'foo' => %{alert('');} }
+  test "yaml sanitation" do
+    content = "---\ntitle: YAML in Middle <script type='text/javascript'>document.write('hello world!');</script>Earth\n...\nSome more content"
+    result = {'title' => 'YAML in Middle Earth'}
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.md", content)
-    index.commit("Add metadata")
+    index.commit("Add metadata")    
 
-    page     = @wiki.page("Bilbo Baggins")
+    page     = @wiki.page("Bilbo-Baggins")
+    assert_equal result, page.metadata
+  end
+
+  test "yaml frontmatter with invalid YAML 1" do
+    content = "---\ntitle: YAML in Middle Earth\nFrodo\n...\nSome more content"
+    output = "Some more content\n"
+
+    index = @wiki.repo.index
+    index.add("Bilbo-Baggins.md", content)
+    index.commit("Add metadata")    
+
+    page     = @wiki.page("Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
-    assert_html_equal output, rendered
+    assert_equal output, rendered.gsub(/<(\/)?p>/,'')
+    assert_equal 1, page.metadata.size
+    assert_match /Failed to load YAML frontmater:/, page.metadata['errors'].first
+  end
+
+  test "yaml frontmatter with invalid YAML 2" do
+    content = "---\ntitle\n...\nSome more content"
+    output = "Some more content\n"
+    result = {}
+
+    index = @wiki.repo.index
+    index.add("Bilbo-Baggins.md", content)
+    index.commit("Add metadata")    
+
+    page     = @wiki.page("Bilbo-Baggins")
+    rendered = Gollum::Markup.new(page).render
+    assert_equal output, rendered.gsub(/<(\/)?p>/,'')
     assert_equal result, page.metadata
   end
 
@@ -880,13 +1149,13 @@ np.array([[2,2],[1,3]],np.float)
 
   test "id with prefix ok" do
     content = "h2(example#wiki-foo). xxxx"
-    output  = "<h2 class=\"example\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"><i class=\"fa fa-link\"></i></a>xxxx</h2>"
+    output  = "<h2 class=\"example editable\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx\" href=\"#xxxx\"></i></a>xxxx</h2>"
     compare(content, output, :textile)
   end
 
   test "id prefix added" do
     content = "h2(#foo). xxxx[1]\n\nfn1.footnote"
-    output  = "<h2 id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx1\" href=\"#xxxx1\"><i class=\"fa fa-link\"></i></a>xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup>\n</h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
+    output  = "<h2 class=\"editable\" id=\"wiki-foo\"><a class=\"anchor\" id=\"xxxx1\" href=\"#xxxx1\"></a>xxxx<sup class=\"footnote\" id=\"wiki-fnr1\"><a href=\"#wiki-fn1\">1</a></sup>\n</h2>\n<p class=\"footnote\" id=\"wiki-fn1\"><a href=\"#wiki-fnr1\"><sup>1</sup></a> footnote</p>"
     compare(content, output, :textile)
   end
 
@@ -900,6 +1169,18 @@ np.array([[2,2],[1,3]],np.float)
     ]
   end
 
+  test "adds editable class to headers in the source document" do
+    content = '# Test'
+    output = '<h1 class="editable"><a class="anchor" id="test" href="#test"></a>Test</h1>'
+    compare(content, output, :markdown)
+  end
+
+  test "does not add editable class to headers in the source document when it contains placeholder" do
+    content = '# Test %SomeFilter%BLA=SomeFilter='
+    output = '<h1><a class="anchor" id="test-somefilter-bla-somefilter" href="#test-somefilter-bla-somefilter"></a>Test %SomeFilter%BLA=SomeFilter=</h1'
+    compare(content, output, :markdown)
+  end
+  
   test "toc with h1_title does not include page title" do
     @wiki.instance_variable_set(:@h1_title, true)
     @wiki.write_page("H1Test", :markdown, "# This is the page title\n\n# Testing\n\nTest", commit_details)
@@ -917,7 +1198,7 @@ __TOC__
 # Summary
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h1><a class=\"anchor\" id=\"1-summary\" href=\"#1-summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary\" href=\"#summary\"></a>Summary</h1>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary-1\" href=\"#summary-1\"></a>Summary</h1>"
     compare(content, output, :markdown)
   end
 
@@ -930,20 +1211,24 @@ __TOC__
 # Summary !@$#%^&*() stuff
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary-stuff\" href=\"#summary-stuff\"><i class=\"fa fa-link\"></i></a>Summary '\"' stuff</h1>\n\n<h1><a class=\"anchor\" id=\"1-summary-stuff\" href=\"#1-summary-stuff\"><i class=\"fa fa-link\"></i></a>Summary !@$#%^&*() stuff</h1>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary-stuff\" href=\"#summary-stuff\"></a>Summary '\"' stuff</h1>\n\n<h1  class=\"editable\"><a class=\"anchor\" id=\"summary-stuff-1\" href=\"#summary-stuff-1\"></a>Summary !@$#%^&*() stuff</h1>"
     compare(content, output, :markdown)
   end
 
-  test 'anchor names contain the ancestor' do
+  test 'anchor names are unique' do
     content = <<-MARKDOWN
 __TOC__
 
 # Summary
 
 ## Horse
+
+# Summary
+
+### Horse
     MARKDOWN
 
-    output = "<p><strong>TOC</strong></p>\n\n<h1><a class=\"anchor\" id=\"summary\" href=\"#summary\"><i class=\"fa fa-link\"></i></a>Summary</h1>\n\n<h2><a class=\"anchor\" id=\"summary_horse\" href=\"#summary_horse\"><i class=\"fa fa-link\"></i></a>Horse</h1>"
+    output = "<p><strong>TOC</strong></p>\n\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary\" href=\"#summary\"></a>Summary</h1>\n\n<h2 class=\"editable\"><a class=\"anchor\" id=\"horse\" href=\"#horse\"></a>Horse</h2>\n<h1 class=\"editable\"><a class=\"anchor\" id=\"summary-1\" href=\"#summary-1\"></a>Summary</h1>\n\n<h3 class=\"editable\"><a class=\"anchor\" id=\"horse-1\" href=\"#horse-1\"></a>Horse</h3>"
     compare(content, output, :markdown)
   end
 
@@ -1002,14 +1287,17 @@ def sub_word(mo):
   end
 
   test "plain text (.txt) is rendered with meta data" do
-    content = "a\n\n<!-- ---\ntags: [foo, bar]\n-->\n\nb"
-    result  = { 'tags' => '[foo, bar]' }
+    content = "---\ntags: [foo, bar]\n---\nb"
+    result  = { 'tags' => ['foo', 'bar'] }
+    output  = "<pre>b</pre>"
 
     index = @wiki.repo.index
     index.add("Bilbo-Baggins.txt", content)
     index.commit("Plain Text with metadata")
 
-    page = @wiki.page("Bilbo Baggins")
+    page = @wiki.page("Bilbo-Baggins")
+    rendered = Gollum::Markup.new(page).render
+    assert_equal output, rendered
     assert_equal result, page.metadata
   end
 
@@ -1017,17 +1305,6 @@ def sub_word(mo):
     content = "Plain text <br/> with a <a href=\"http://example.com\">HTML link</a>"
     output  = "<pre>Plain text &lt;br/&gt; with a &lt;a href=\"http://example.com\"&gt;HTML link&lt;/a&gt;</pre>"
     compare(content, output, "txt")
-  end
-
-  test 'static rendering and font awesome class' do
-    uses_wiki = false
-    markup    = Gollum::Markup.new uses_wiki
-
-    # must expect <i class="fa fa-link">
-    expected = "<h1><a class=\"anchor\" id=\"hi\" href=\"#hi\"><i class=\"fa fa-link\"></i></a>hi</h1>\n\n<p><div class=\"toc\"><div class=\"toc-title\">Table of Contents</div><ul><li><a href=\"#hi\">hi</a></li></ul></div></p>"
-    actual   = markup.render_default "#hi\n[[_TOC_]]"
-
-    assert_html_equal expected, actual
   end
 
   #########################################################################
@@ -1041,7 +1318,7 @@ def sub_word(mo):
     index.add("Bilbo-Baggins.#{ext}", content)
     index.commit("Add baggins")
 
-    page = @wiki.page("Bilbo Baggins")
+    page = @wiki.page("Bilbo-Baggins")
     [page, Gollum::Markup.new(page).render]
   end
 
@@ -1063,7 +1340,7 @@ def sub_word(mo):
     index.commit("Add alpha.jpg")
 
     @wiki.clear_cache
-    page     = @wiki.page("Bilbo Baggins")
+    page     = @wiki.page("greek/Bilbo-Baggins")
     rendered = Gollum::Markup.new(page).render
     assert_html_equal output, rendered
   end

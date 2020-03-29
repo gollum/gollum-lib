@@ -13,7 +13,6 @@ require 'open-uri'
 #
 class Gollum::Filter::RemoteCode < Gollum::Filter
   def extract(data)
-    return data if @markup.format == :txt
     data.gsub(/^[ \t]*``` ?([^:\n\r]+):((http)?[^`\n\r]+)```/) do
       language = Regexp.last_match[1]
       uri      = Regexp.last_match[2]
@@ -21,7 +20,7 @@ class Gollum::Filter::RemoteCode < Gollum::Filter
 
       # Detect local file
       if protocol.nil?
-        if (file = @markup.find_file(uri, @markup.wiki.ref))
+        if (file = @markup.wiki.file(uri, @markup.wiki.ref))
           contents = file.raw_data
         else
           # How do we communicate a render error?
@@ -46,7 +45,8 @@ class Gollum::Filter::RemoteCode < Gollum::Filter
     return "Too many redirects or retries" if cut >= 10
     http         = Net::HTTP.new uri.host, uri.port
     http.use_ssl = true
-    resp         = http.get uri.path, {
+    path         = uri.path.empty? ? '/' : uri.path
+    resp         = http.get path, {
         'Accept'        => 'text/plain',
         'Cache-Control' => 'no-cache',
         'Connection'    => 'keep-alive',

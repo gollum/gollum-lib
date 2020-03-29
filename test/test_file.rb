@@ -7,11 +7,6 @@ context "File" do
     @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"))
   end
 
-  test "new file" do
-    file = Gollum::File.new(@wiki)
-    assert_nil file.raw_data
-  end
-
   test "existing file" do
     commit = @wiki.repo.commits.first
     file   = @wiki.file("Mordor/todo.txt")
@@ -52,20 +47,27 @@ context "File with checkout" do
     path = file.on_disk_path
 
     assert ::File.exist?(path)
-    assert_match(/^# Bilbo Baggins\n\nBilbo Baggins/, IO.read(path))
+    assert_match(/^# Bilbo Baggins[\n\r]+Bilbo Baggins/, IO.read(path))
   end
 
   test "symbolic link, with on-disk" do
     file = @wiki.file("Data-Two.csv", 'master', true)
 
-    assert file.on_disk?
-    assert_match(/Data\.csv$/, file.on_disk_path)
-    assert_match(/^FirstName,LastName\n/, IO.read(file.on_disk_path))
+    if ::Gollum::File::FS_SUPPORT_SYMLINKS
+      assert file.on_disk?
+      assert_match(/Data\.csv$/, file.on_disk_path)
+      assert_match(/^FirstName,LastName\n/, IO.read(file.on_disk_path))
+    else
+      assert !file.on_disk?
+    end
+    assert_match(/^FirstName,LastName\n/, file.raw_data)
   end
 
-  test "on disk file, with symlink, raw_data" do
-    file = @wiki.file("Data-Two.csv")
-
-    assert_match(/^FirstName,LastName\n/, file.raw_data)
+  test "create new file" do
+    file = @wiki.file('bla/NewFile.myblob')
+    assert_nil file
+    @wiki.write_file('/bla/NewFile.myblob', 'MY NEW FILE', {})
+    file = @wiki.file('bla/NewFile.myblob')
+    assert_equal file.raw_data, 'MY NEW FILE'
   end
 end

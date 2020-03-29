@@ -41,7 +41,13 @@ context "Macros" do
 
   test "GlobalTOC macro displays global table of contents" do
     @wiki.write_page("GlobalTOCMacroPage", :markdown, "<<GlobalTOC(Pages in this Wiki)>>", commit_details)
-    assert_match /<div class="toc">(.*)Pages in this Wiki(.*)<li><a href="\/GlobalTOCMacroPage">GlobalTOCMacroPage/, @wiki.pages[0].formatted_data
+    assert_match /<div class="toc">(.*)Pages in this Wiki(.*)<li><a href="\/GlobalTOCMacroPage.md">GlobalTOCMacroPage.md/, @wiki.pages[0].formatted_data
+  end
+
+  test "Navigation macro displays table of contents for subpath" do
+    @wiki.write_page("NavigationMacroPage", :markdown, "<<Navigation()>>", commit_details)
+    @wiki.write_page("ZZZZ/A", :markdown, "content", commit_details)
+    assert_match /<div class="toc"><div class="toc-title">Navigate this directory<\/div><ul><li><a href="\/NavigationMacroPage.md">NavigationMacroPage.md<\/a><\/li><li><a href="\/ZZZZ\/A\.md">ZZZZ\/A\.md<\/a><\/li><\/ul><\/div>/, @wiki.pages[0].formatted_data
   end
 
   test "Series macro displays series links with and without series prefix" do
@@ -126,4 +132,39 @@ context "Macros" do
     @wiki.write_page("ListNamedArgsPage", :markdown, "<<ListNamedArgs(xyzzy=\"Foo\")>>", commit_details)
     assert_match(/@xyzzy = Foo@/, @wiki.pages[0].formatted_data)
   end
+
+  test "Video macro given a name of a file displays an html5 video tag" do
+    file = "/Uploads/foo.mp4"
+    @wiki.write_page("VideoTagTest", :markdown, "<<Video(#{file})>>", commit_details)
+    assert_match /<video (.*) (.*) src="#{file}" (.*)> (.*)<\/video>/, @wiki.pages[0].formatted_data
+  end 
+
+  test "Audio macro given a name of a file displays an audio tag" do
+    file = "/Uploads/foo.mp3"
+    @wiki.write_page("AudioTagTest", :markdown, "<<Audio(#{file})>>", commit_details)
+    assert_match /<audio (.*) (.*) src="#{file}" (.*)> (.*)<\/audio>/, @wiki.pages[0].formatted_data
+  end
+
+  test "Octicon macro given a symbol and dimensions displays octicon" do
+    @wiki.write_page("OcticonMacroPage", :markdown, '<<Octicon("globe", 64, 64)>>', commit_details)
+    assert_match /<div><svg.*class=\"octicon octicon-globe\".*/, @wiki.pages[0].formatted_data
+    assert_match /<div><svg.*height=\"64\"/, @wiki.pages[0].formatted_data
+    assert_match /<div><svg.*width=\"64\"/, @wiki.pages[0].formatted_data
+  end
+
+  test "Note macro given a string displays a regular flash message box" do
+    @wiki.write_page("NoteMacroPage", :markdown, '<<Note("Did you know Bilbo is a Hobbit?")>>', commit_details)
+    assert_match /<div class=\"flash\"><svg.*class=\"octicon octicon-info mr-2\".*Did you know Bilbo.*/, @wiki.pages[0].formatted_data
+  end
+
+  test "Warn macro given a string displays a flash-warning message box" do
+    @wiki.write_page("WarnMacroPage", :markdown, '<<Warn("Be careful not to mention hobbits in conversation too much.")>>', commit_details)
+    assert_match /<div class=\"flash flash-warn\"><svg.*class=\"octicon octicon-alert mr-2\".*Be careful.*/, @wiki.pages[0].formatted_data
+  end
+
+  test "Macro errors are reported in place in a flash-error message box" do
+    @wiki.write_page("OcticonMacroPage", :markdown, '<<Octicon("foobar", 64, 64)>>', commit_details)
+    assert_match /<div class=\"flash flash-error\"><svg.*class=\"octicon octicon-zap mr-2\".*Macro Error for Octicon: Couldn't find octicon symbol for "foobar".*/, @wiki.pages[0].formatted_data
+  end
+
 end

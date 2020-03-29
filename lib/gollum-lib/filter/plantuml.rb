@@ -37,7 +37,7 @@ require 'zlib'
 #
 class Gollum::Filter::PlantUML < Gollum::Filter
 
-  DEFAULT_URL = "http://localhost:8080/plantuml/png"
+  DEFAULT_URL = "http://www.plantuml.com/plantuml/png"
 
   # Configuration class used to change the behaviour of the PlatnUML filter.
   #
@@ -69,9 +69,8 @@ class Gollum::Filter::PlantUML < Gollum::Filter
   # Extract all sequence diagram blocks into the map and replace with
   # placeholders.
   def extract(data)
-    return data if @markup.format == :txt
     data.gsub(/(@startuml\r?\n.+?\r?\n@enduml\r?$)/m) do
-      id       = Digest::SHA1.hexdigest($1)
+      id       = "#{open_pattern}#{Digest::SHA1.hexdigest($1)}#{close_pattern}"
       @map[id] = { :code => $1 }
       id
     end
@@ -115,9 +114,9 @@ class Gollum::Filter::PlantUML < Gollum::Filter
   # Transcoder class in the PlantUML java code.
   def gen_url(text)
     result = ""
-    compressedData = Zlib::Deflate.deflate(text)
+    compressedData = Zlib::Deflate.new(nil, -Zlib::MAX_WBITS).deflate(text, Zlib::FINISH)
+
     compressedData.chars.each_slice(3) do |bytes|
-      #print bytes[0], ' ' , bytes[1] , ' ' , bytes[2]
       b1 = bytes[0].nil? ? 0 : (bytes[0].ord & 0xFF)
       b2 = bytes[1].nil? ? 0 : (bytes[1].ord & 0xFF)
       b3 = bytes[2].nil? ? 0 : (bytes[2].ord & 0xFF)
