@@ -8,7 +8,7 @@ def specification(version, default_adapter, platform = nil)
     s.name              = 'gollum-lib'
     s.version           = version
     s.platform          = platform if platform
-    s.date              = '2020-03-12'
+    s.date              = '2020-03-29'
     s.date              = '2017-04-13'
     s.rubyforge_project = 'gollum-lib'
     s.license           = 'MIT'
@@ -65,8 +65,8 @@ def specification(version, default_adapter, platform = nil)
     HISTORY.md
     LICENSE
     README.md
-    ROADMAP
     Rakefile
+    adapter_dependencies.rb
     docs/sanitization.md
     gemspec.rb
     gollum-lib.gemspec
@@ -99,12 +99,16 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/macro/audio.rb
     lib/gollum-lib/macro/global_toc.rb
     lib/gollum-lib/macro/navigation.rb
+    lib/gollum-lib/macro/note.rb
+    lib/gollum-lib/macro/octicon.rb
     lib/gollum-lib/macro/series.rb
     lib/gollum-lib/macro/video.rb
+    lib/gollum-lib/macro/warn.rb
     lib/gollum-lib/markup.rb
     lib/gollum-lib/markups.rb
     lib/gollum-lib/page.rb
     lib/gollum-lib/pagination.rb
+    lib/gollum-lib/redirects.rb
     lib/gollum-lib/sanitization.rb
     lib/gollum-lib/version.rb
     lib/gollum-lib/wiki.rb
