@@ -62,7 +62,7 @@ module Gollum
       }
     else
       GitHub::Markup::Markdown::MARKDOWN_GEMS['kramdown'] = proc { |content|
-          Kramdown::Document.new(content, :input => "GFM", :auto_ids => false, :math_engine => nil, :smart_quotes => ["'", "'", '"', '"'].map{|char| char.codepoints.first}).to_html
+          Kramdown::Document.new(content, :input => "GFM", :hard_wrap => 'false', :auto_ids => false, :math_engine => nil, :smart_quotes => ["'", "'", '"', '"'].map{|char| char.codepoints.first}).to_html
       }
     end
 

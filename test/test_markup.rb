@@ -301,7 +301,7 @@ context "Markup" do
     @wiki.write_page("Potato", :markdown, "# Test\nWaa\n[[Link Text|#test]] ", commit_details)
     page   = @wiki.page("Potato")
     output = page.formatted_data
-    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"test\" href=\"#test\"></a>Test</h1><p>Waa<br />\n<a class=\"internal anchorlink\" href=\"#test\">Link Text</a></p>", output
+    assert_html_equal "<h1 class=\"editable\"><a class=\"anchor\" id=\"test\" href=\"#test\"></a>Test</h1><p>Waa\n<a class=\"internal anchorlink\" href=\"#test\">Link Text</a></p>", output
   end
 
   test "page link with internal anchorlink only on mediawiki" do
