@@ -3,7 +3,7 @@ def specification(version, default_adapter, platform = nil)
     s.specification_version = 2 if s.respond_to? :specification_version=
     s.required_rubygems_version = Gem::Requirement.new('>= 0') if s.respond_to? :required_rubygems_version=
     s.rubygems_version = '0.0.1'
-    s.required_ruby_version = '>= 2.1'
+    s.required_ruby_version = '>= 2.4'
 
     s.name              = 'gollum-lib'
     s.version           = version
