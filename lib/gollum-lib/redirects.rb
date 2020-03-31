@@ -34,7 +34,7 @@ module Gollum
     end
     
     def get_head_sha
-      @wiki.repo.head.nil? ? nil : @wiki.repo.head.commit.sha
+      @wiki.repo.head ? @wiki.repo.head.commit.sha : nil
     end
     
   end # Redirects Module
