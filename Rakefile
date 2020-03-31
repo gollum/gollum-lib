@@ -51,11 +51,11 @@ def gemspec_file
 end
 
 def gemspecs
-  [RUBY_PLATFORM == 'java' ? "#{name}_java.gemspec" : "#{name}.gemspec"]
+   ["#{name}.gemspec", "#{name}_java.gemspec"]
 end
 
 def gem_files
-  [RUBY_PLATFORM == 'java' ? "#{name}-#{version}-java.gem" : "#{name}-#{version}.gem"]
+ ["#{name}-#{version}.gem", "#{name}-#{version}-java.gem"]
 end
 
 def replace_header(head, header_name)

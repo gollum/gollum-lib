@@ -8,7 +8,7 @@ def specification(version, default_adapter, platform = nil)
     s.name              = 'gollum-lib'
     s.version           = version
     s.platform          = platform if platform
-    s.date              = '2020-03-29'
+    s.date              = '2020-03-31'
     s.date              = '2017-04-13'
     s.rubyforge_project = 'gollum-lib'
     s.license           = 'MIT'
@@ -66,7 +66,6 @@ def specification(version, default_adapter, platform = nil)
     LICENSE
     README.md
     Rakefile
-    adapter_dependencies.rb
     docs/sanitization.md
     gemspec.rb
     gollum-lib.gemspec
