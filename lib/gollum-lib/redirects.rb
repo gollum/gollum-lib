@@ -7,12 +7,12 @@ module Gollum
   module Redirects
         
     def stale?
-      @current_head != @wiki.repo.head.commit.sha
+      @current_head != get_head_sha
     end
 
     def init(wiki)
       @wiki = wiki
-      @current_head = @wiki.repo.head.commit.sha
+      @current_head = get_head_sha
     end
 
     def load
@@ -31,6 +31,10 @@ module Gollum
     
     def dump
       @wiki.overwrite_file(REDIRECTS_FILE, self.to_yaml, {})
+    end
+    
+    def get_head_sha
+      @wiki.repo.head.nil? ? nil : @wiki.repo.head.commit.sha
     end
     
   end # Redirects Module
