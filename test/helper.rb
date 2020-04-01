@@ -68,6 +68,7 @@ end
 
 class MockWiki
   def initialize(bare = false)
+    @base_path = '/'
     @repo_is_bare = bare
   end
 
@@ -83,6 +84,7 @@ class MockWiki
     TEST_DIR
   end
 
+  attr_reader :base_path
   attr_reader :repo_is_bare
 end
 
