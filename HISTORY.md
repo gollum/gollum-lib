@@ -1,3 +1,7 @@
+# v5.0.1
+
+Bugfix release: fix emoji when using base path. Thanks to @heavywatal.
+
 # v5.0
 
 For a detailed overview of changes in 5.0 and a guide to migrating your wiki, see https://github.com/gollum/gollum/wiki/5.0-release-notes
