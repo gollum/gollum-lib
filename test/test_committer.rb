@@ -25,18 +25,23 @@ context "Wiki" do
     committer      = Gollum::Committer.new(@wiki, commit)
     assert_equal name, committer.actor.name
     assert_equal email, committer.actor.email
+    assert_equal nil, committer.actor.time
 
     commit[:name]  = 'bob'
     commit[:email] = nil
+    commit[:time] = nil
     committer      = Gollum::Committer.new(@wiki, commit)
     assert_equal 'bob', committer.actor.name
     assert_equal email, committer.actor.email
+    assert_equal nil, committer.actor.time
 
     commit[:name]  = nil
     commit[:email] = 'foo@bar.com'
+    commit[:time] = Time.parse('2020-02-14')
     committer      = Gollum::Committer.new(@wiki, commit)
     assert_equal name, committer.actor.name
     assert_equal 'foo@bar.com', committer.actor.email
+    assert_equal Time.parse('2020-02-14'), committer.actor.time
   end
 
   test "yield after_commit callback" do
