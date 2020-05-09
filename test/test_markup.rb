@@ -60,6 +60,13 @@ context "Markup" do
     assert Gollum::Markup.formats.size > 1
   end
 
+  test "Gollum::Markup#formats should use .asciidoc and .adoc as file extensions" do
+    asciidoc_format = Gollum::Markup.formats[:asciidoc]
+    assert !asciidoc_format.nil?
+    assert asciidoc_format[:extensions].include?(File.extname("file.adoc").delete('.'))
+    assert asciidoc_format[:extensions].include?(File.extname("file.asciidoc").delete('.'))
+  end
+
   test "knows whether to skip specified filters" do
       Gollum::Markup.stubs(:formats).returns({:markdown => {:skip_filters => [:Render], :extensions => ['md']}})
       @wiki.write_page("Test", :markdown, "abc", commit_details)

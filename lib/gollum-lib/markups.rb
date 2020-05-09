@@ -85,7 +85,8 @@ module Gollum
              :extensions => ['rest', 'rst'])
     register(:asciidoc, "AsciiDoc",
              :skip_filters => [:Tags],
-             :enabled => MarkupRegisterUtils::gem_exists?("asciidoctor"))
+             :enabled => MarkupRegisterUtils::gem_exists?("asciidoctor"),
+             :extensions => ['adoc','asciidoc'])
     register(:mediawiki, "MediaWiki",
              :enabled => MarkupRegisterUtils::gem_exists?("wikicloth"),
              :extensions => ['mediawiki','wiki'], :reverse_links => true)
