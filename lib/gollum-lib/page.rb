@@ -277,7 +277,7 @@ module Gollum
     #
     # Returns the String extension (no leading period).
     def self.format_to_ext(format)
-      format == :markdown ? "md" : format.to_s
+      Gollum::Markup.formats[format] ? Gollum::Markup.formats[format][:extensions].first : nil
     end
 
     # The underlying wiki repo.
