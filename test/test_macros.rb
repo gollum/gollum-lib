@@ -74,6 +74,18 @@ context "Macros" do
     testseries4 = @wiki.page("test-series4")
     assert_no_match /Previous/, testseries4.formatted_data
   end
+
+  test "Series macro in subpage" do
+    @wiki.write_page("test-series1", :markdown, "test1", commit_details)
+    @wiki.write_page("test-series2", :markdown, "test2", commit_details)
+    @wiki.write_page("_Footer", :markdown, "<<Series(test)>>", commit_details)
+    test1 = @wiki.page("test-series1")
+    test2 = @wiki.page("test-series2")
+
+    assert_match /Next(.*)test-series2/, test1.footer.formatted_data
+    assert_match /Previous(.*)test-series1/, test2.footer.formatted_data
+  end
+
   
   test "ListArgs with no args" do
     @wiki.write_page("ListArgsMacroPage", :markdown, "<<ListArgs()>>", commit_details)
