@@ -197,6 +197,15 @@ context "Markup" do
     assert_match(/href="\/Bilbo%20Baggins.md"/, output)
     assert_match(/\>Bilbo Baggins\</, output)
   end
+  
+  test 'page link with dots' do
+    @wiki.write_page('v1.2', :markdown, 'Test', commit_details)
+    @wiki.write_page('Bilbo Baggins', :markdown, '[[v1.2]]', commit_details)
+    
+    page   = @wiki.page('Bilbo Baggins')
+    output = page.formatted_data
+    assert_equal "<p><a class=\"internal present\" href=\"/v1.2.md\">v1.2</a></p>\n", output
+  end
 
   test "adds nofollow to links on historical pages" do
     sha1 = @wiki.write_page("Sauron", :markdown, "a [[b]] c", commit_details)
