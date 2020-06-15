@@ -16,7 +16,7 @@ module Gollum
     # '/opt/local/bin/ruby.ext' -> 'ruby'
     def path_to_link_text(str)
       return nil unless str
-      ::File.basename(str, ::File.extname(str))
+      ::File.basename(str, Page.valid_extension?(str) ? ::File.extname(str) : '')
     end
 
   end
