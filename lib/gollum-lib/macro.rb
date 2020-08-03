@@ -25,6 +25,10 @@ module Gollum
       "<p class=\"gollum-error\">#{s}</p>"
     end
 
+    def active_page
+      return @page.parent_page || @page
+    end
+
     # The special class we reserve for only the finest of screwups.  The
     # underscore is to make sure nobody can define a real, callable macro
     # with the same name, because that would be... exciting.

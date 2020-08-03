@@ -3,7 +3,7 @@ module Gollum
 
     class Series < Gollum::Macro
       def render(series_prefix = "")
-      	raise "This page's name does not match the prefix '#{series_prefix}'" unless @page.name =~ /^#{series_prefix}/
+      	raise "This page's name does not match the prefix '#{series_prefix}'" unless active_page.name =~ /^#{series_prefix}/
       	render_links(*find_series(series_prefix))
       end
 
@@ -21,7 +21,7 @@ module Gollum
       	dir = @wiki.pages.select {|page| ::File.dirname(page.path) == ::File.dirname(@page.path)}
       	dir.select! {|page| page.name =~ /\A#{series_prefix}/ } unless series_prefix.empty?
       	dir.sort_by! {|page| page.name}
-      	self_index = dir.find_index {|page| page.name == @page.name}
+      	self_index = dir.find_index {|page| page.name == active_page.name}
       	if self_index > 0
           return dir[self_index-1], dir[self_index+1]
       	else
