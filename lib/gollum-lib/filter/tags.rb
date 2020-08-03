@@ -230,6 +230,7 @@ class Gollum::Filter::Tags < Gollum::Filter
     else
       name = page ? path_to_link_text(link) : link
     end
+
     link = page ? page.escaped_url_path : ERB::Util.url_encode(link).force_encoding('utf-8')
     generate_link(link, name, extra, presence)
   end
