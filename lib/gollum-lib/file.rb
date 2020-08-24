@@ -171,7 +171,7 @@ module Gollum
       return false if @blob.is_symlink && !FS_SUPPORT_SYMLINKS
 
       # This will try to resolve symbolic links, as well
-      pathname = Pathname.new(::File.expand_path(::File.join(@wiki.repo.path, '..', @path)))
+      pathname = Pathname.new(::File.join(@wiki.repo.path, '..', @path))
       if pathname.symlink?
         source   = ::File.readlink(pathname.to_path)
         realpath = ::File.join(::File.dirname(pathname.to_path), source)

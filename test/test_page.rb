@@ -169,10 +169,26 @@ context "Page" do
   test "normalize_dir" do
     assert_equal "", Gollum::BlobEntry.normalize_dir("")
     assert_equal "", Gollum::BlobEntry.normalize_dir(".")
+    assert_equal "", Gollum::BlobEntry.normalize_dir("..")
     assert_equal "", Gollum::BlobEntry.normalize_dir("/")
+    assert_equal "", Gollum::BlobEntry.normalize_dir("//")
     assert_equal "", Gollum::BlobEntry.normalize_dir("c:/")
-    assert_equal "/foo", Gollum::BlobEntry.normalize_dir("foo")
-    assert_equal "/foo", Gollum::BlobEntry.normalize_dir("/foo")
+    assert_equal "", Gollum::BlobEntry.normalize_dir("C:/")
+
+    assert_equal nil, Gollum::BlobEntry.normalize_dir(nil)
+    assert_equal "/ ", Gollum::BlobEntry.normalize_dir(" ")
+    assert_equal "/\t", Gollum::BlobEntry.normalize_dir("\t")
+
+    assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir("foo/bar")
+    assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir("/foo/bar")
+    assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir("/foo/bar/")
+    assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir("//foo//bar//")
+    assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir("c://foo//bar//")
+
+    assert_equal "/~/foo", Gollum::BlobEntry.normalize_dir("~/foo")
+    assert_equal "/~root/foo", Gollum::BlobEntry.normalize_dir("~root/foo")
+    assert_equal "/~!/foo", Gollum::BlobEntry.normalize_dir("~!/foo")
+    assert_equal "/foo/~", Gollum::BlobEntry.normalize_dir("foo/~")
   end
 
   test 'page has sha id' do

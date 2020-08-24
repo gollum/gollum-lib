@@ -78,13 +78,24 @@ module Gollum
     # Returns a normalized String directory name, or nil if no directory
     # is given.
     def self.normalize_dir(dir)
-      return '' if dir =~ /^.:\/$/
-      if dir
-        dir = ::File.expand_path(dir, '/')
-        dir = dir[2..-1] if dir =~ /^[a-zA-Z]:\// # expand_path may add d:/ on windows
-        dir = '' if dir == '/'
-      end
-      dir
+      return unless dir
+
+      # Return empty string for paths that point to the toplevel
+      # ('.', '/', '..', 'C:/' etc.)
+      return '' if dir =~ %r{\A([a-z]:\/)?[\./]*\z}i
+
+      # Normalize the path:
+      # - Add exactly one leading slash
+      # - Remove trailing slashes
+      # - Remove repeated slashes
+      dir.sub(%r{
+        \A
+        ([a-z]:\/)?   # Windows drive letters
+        /*            # leading slashes
+        (?<path>.*?)  # the actual path
+        /*            # trailing slashes
+        \z
+      }xi, '/\k<path>').gsub(%r{//+}, '/')
     end
   end
 end
