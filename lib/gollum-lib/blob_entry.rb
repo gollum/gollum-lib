@@ -80,22 +80,21 @@ module Gollum
     def self.normalize_dir(dir)
       return unless dir
 
-      # Return empty string for paths that point to the toplevel
-      # ('.', '/', '..', 'C:/' etc.)
-      return '' if dir =~ %r{\A([a-z]:\/)?[\./]*\z}i
+      dir = dir.dup
 
-      # Normalize the path:
-      # - Add exactly one leading slash
-      # - Remove trailing slashes
-      # - Remove repeated slashes
-      dir.sub(%r{
-        \A
-        ([a-z]:\/)?   # Windows drive letters
-        /*            # leading slashes
-        (?<path>.*?)  # the actual path
-        /*            # trailing slashes
-        \z
-      }xi, '/\k<path>').gsub(%r{//+}, '/')
+      # Remove '.' and '..' path segments
+      dir.gsub!(%r{(\A|/)\.{1,2}(/|\z)}, '/')
+
+      # Remove repeated slashes
+      dir.gsub!(%r{//+}, '/')
+
+      # Remove Windows drive letters, trailing slashes, and keep one leading slash
+      dir.sub!(%r{\A([a-z]:)?/*(.*?)/*\z}i, '/\2')
+
+      # Return empty string for paths that point to the toplevel
+      return '' if dir == '/'
+
+      dir
     end
   end
 end

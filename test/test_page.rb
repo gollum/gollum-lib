@@ -167,6 +167,9 @@ context "Page" do
   end
 
   test "normalize_dir" do
+    assert_equal nil, Gollum::BlobEntry.normalize_dir(nil)
+
+    # Toplevel paths
     assert_equal "", Gollum::BlobEntry.normalize_dir("")
     assert_equal "", Gollum::BlobEntry.normalize_dir(".")
     assert_equal "", Gollum::BlobEntry.normalize_dir("..")
@@ -175,20 +178,28 @@ context "Page" do
     assert_equal "", Gollum::BlobEntry.normalize_dir("c:/")
     assert_equal "", Gollum::BlobEntry.normalize_dir("C:/")
 
-    assert_equal nil, Gollum::BlobEntry.normalize_dir(nil)
-    assert_equal "/ ", Gollum::BlobEntry.normalize_dir(" ")
-    assert_equal "/\t", Gollum::BlobEntry.normalize_dir("\t")
-
+    # Normalize slashes
     assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir("foo/bar")
     assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir("/foo/bar")
     assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir("/foo/bar/")
     assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir("//foo//bar//")
     assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir("c://foo//bar//")
 
+    # Don't traverse paths
+    assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir('foo/./bar')
+    assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir('foo/../bar')
+    assert_equal "/foo/bar", Gollum::BlobEntry.normalize_dir('../foo/../bar/..')
+
+    # Don't expand tildes
     assert_equal "/~/foo", Gollum::BlobEntry.normalize_dir("~/foo")
     assert_equal "/~root/foo", Gollum::BlobEntry.normalize_dir("~root/foo")
     assert_equal "/~!/foo", Gollum::BlobEntry.normalize_dir("~!/foo")
     assert_equal "/foo/~", Gollum::BlobEntry.normalize_dir("foo/~")
+
+    # Special values that are still valid paths
+    assert_equal "/ ", Gollum::BlobEntry.normalize_dir(" ")
+    assert_equal "/\t", Gollum::BlobEntry.normalize_dir("\t")
+    assert_equal "/...", Gollum::BlobEntry.normalize_dir("...")
   end
 
   test 'page has sha id' do
