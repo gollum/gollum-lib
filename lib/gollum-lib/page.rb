@@ -360,7 +360,7 @@ module Gollum
     def initialize(wiki, name, data, version, parent_page = nil)
       @wiki           = wiki 
       @path           = name
-      @blob           = OpenStruct.new(:name => name, :data => data, :is_symlink => false)
+      @blob           = OpenStruct.new(:name => name, :data => wiki.normalize(data), :is_symlink => false)
       @version        = version
       @formatted_data = nil
       @doc            = nil
@@ -368,5 +368,6 @@ module Gollum
       @historical     = false
     end
   end
+  
 
 end
