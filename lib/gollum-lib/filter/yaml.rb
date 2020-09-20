@@ -8,7 +8,6 @@ class Gollum::Filter::YAML < Gollum::Filter
 
   def extract(data)
     data.gsub!(YAML_FRONT_MATTER_REGEXP) do
-      $stderr.puts Regexp.last_match[1].inspect
       @markup.metadata ||= {}
       begin
         frontmatter = ::YAML.safe_load(sanitize(Regexp.last_match[1]))
