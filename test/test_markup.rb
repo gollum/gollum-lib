@@ -1076,7 +1076,7 @@ np.array([[2,2],[1,3]],np.float)
     rendered = Gollum::Markup.new(page).render
     assert_equal output, rendered.gsub(/<(\/)?p>/,'')
     assert_equal 1, page.metadata.size
-    assert_match /Failed to load YAML frontmater:/, page.metadata['errors'].first
+    assert_match /Failed to load YAML frontmatter:/, page.metadata['errors'].first
   end
 
   test "yaml frontmatter with invalid YAML 2" do

@@ -14,7 +14,7 @@ class Gollum::Filter::YAML < Gollum::Filter
         @markup.metadata.merge!(frontmatter) if frontmatter.respond_to?(:keys) && frontmatter.respond_to?(:values)
       rescue ::Psych::SyntaxError, ::Psych::DisallowedClass, ::Psych::BadAlias => error
         @markup.metadata['errors'] ||= []
-        @markup.metadata['errors'] << "Failed to load YAML frontmater: #{error.message}"
+        @markup.metadata['errors'] << "Failed to load YAML frontmatter: #{error.message}"
       end
       ''
     end
