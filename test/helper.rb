@@ -83,6 +83,10 @@ class MockWiki
   def path
     TEST_DIR
   end
+  
+  def metadata(val={})
+    val
+  end
 
   attr_reader :repo_is_bare
   attr_reader :base_path
@@ -90,7 +94,7 @@ end
 
 def mock_page(format = nil, data = nil, **wiki_options)
   OpenStruct.new(
-      :wiki => MockWiki.new(nil, wiki_options),
+      :wiki => MockWiki.new(false, wiki_options),
       :filename => 'Name.md',
       :text_data => data || "# Title\nData",
       :version => nil,

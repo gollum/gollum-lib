@@ -14,16 +14,15 @@ class Gollum::Filter::PandocBib < Gollum::Filter
 
   def extract(data)
     return data unless supported_format? && bibliography_metadata_present?
-    bib_metadata = {}
-    bib_metadata.merge!(@markup.metadata.select {|key, _value| BIB_KEYS.include?(key)})
+    @bib_metadata.select! {|key, _value| BIB_KEYS.include?(key)}
 
     BIB_PATH_KEYS.each do |bibliography_key|
       if path = @markup.metadata[bibliography_key]
         next unless file = @markup.wiki.file(path)
-        bib_metadata[bibliography_key] = path_for_bibfile(file)
+        @bib_metadata[bibliography_key] = path_for_bibfile(file)
       end
     end
-    bib_metadata.empty? ? data : "#{bib_metadata.to_yaml}---\n#{data}"
+    @bib_metadata.empty? ? data : "#{@bib_metadata.to_yaml}---\n#{data}"
   end
 
   private
@@ -47,6 +46,8 @@ class Gollum::Filter::PandocBib < Gollum::Filter
   end
 
   def bibliography_metadata_present?
-     @markup.metadata && @markup.metadata.keys.any? {|key| ALL_BIB_KEYS.include?(key)}
+      return false unless @markup.metadata
+      @bib_metadata = @wiki.metadata.merge(@markup.metadata)
+      @bib_metadata.keys.any? {|key| ALL_BIB_KEYS.include?(key)}
   end
 end
