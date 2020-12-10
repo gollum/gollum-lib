@@ -31,7 +31,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_dependency 'loofah', '~> 2.3'
     s.add_dependency 'github-markup', '~> 3.0'
     s.add_dependency 'gemojione', '~> 4.1'
-    s.add_dependency 'octicons', '~> 8.5'
+    s.add_dependency 'octicons', '~> 11.0'
     s.add_dependency 'twitter-text', '1.14.7'
 
     s.add_development_dependency 'org-ruby', '~> 0.9.9'
@@ -41,7 +41,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'mocha', '~> 1.11'
     s.add_development_dependency 'shoulda', '~> 4.0'
     s.add_development_dependency 'wikicloth', '~> 0.8.3'
-    s.add_development_dependency 'bibtex-ruby', '~> 4.3'
+    s.add_development_dependency 'bibtex-ruby', '~> 5.1'
     s.add_development_dependency 'citeproc-ruby', '~> 1.1'
     s.add_development_dependency 'unicode_utils', '~> 1.4.0' # required by citeproc-ruby on ruby < 2.4
     s.add_development_dependency 'rake', '~> 13.0'
