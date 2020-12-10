@@ -47,7 +47,7 @@ class Gollum::Filter::PandocBib < Gollum::Filter
 
   def bibliography_metadata_present?
       return false unless @markup.metadata
-      @bib_metadata = @wiki.metadata.merge(@markup.metadata)
+      @bib_metadata = @markup.wiki.metadata.merge(@markup.metadata)
       @bib_metadata.keys.any? {|key| ALL_BIB_KEYS.include?(key)}
   end
 end
