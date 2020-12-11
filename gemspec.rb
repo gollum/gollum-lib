@@ -37,7 +37,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'org-ruby', '~> 0.9.9'
     s.add_development_dependency 'kramdown', '~> 2.3.0'
     s.add_development_dependency 'kramdown-parser-gfm', '~> 1.1.0'
-    s.add_development_dependency 'RedCloth', '~> 4.3'
+    s.add_development_dependency 'RedCloth', '~> 4.2.9'
     s.add_development_dependency 'mocha', '~> 1.11'
     s.add_development_dependency 'shoulda', '~> 4.0'
     s.add_development_dependency 'wikicloth', '~> 0.8.3'
