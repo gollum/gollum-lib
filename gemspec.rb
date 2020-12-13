@@ -31,34 +31,31 @@ def specification(version, default_adapter, platform = nil)
     s.add_dependency 'loofah', '~> 2.3'
     s.add_dependency 'github-markup', '~> 3.0'
     s.add_dependency 'gemojione', '~> 4.1'
-    s.add_dependency 'octicons', '~> 8.5'
+    s.add_dependency 'octicons', '~> 11.0'
     s.add_dependency 'twitter-text', '1.14.7'
 
     s.add_development_dependency 'org-ruby', '~> 0.9.9'
     s.add_development_dependency 'kramdown', '~> 2.3.0'
     s.add_development_dependency 'kramdown-parser-gfm', '~> 1.1.0'
     s.add_development_dependency 'RedCloth', '~> 4.2.9'
-    s.add_development_dependency 'mocha', '~> 1.2.0'
-    s.add_development_dependency 'shoulda', '~> 3.5.0'
+    s.add_development_dependency 'mocha', '~> 1.11'
+    s.add_development_dependency 'shoulda', '~> 4.0'
     s.add_development_dependency 'wikicloth', '~> 0.8.3'
-    s.add_development_dependency 'bibtex-ruby', '~> 4.3'
+    s.add_development_dependency 'bibtex-ruby', '~> 5.1'
     s.add_development_dependency 'citeproc-ruby', '~> 1.1'
     s.add_development_dependency 'unicode_utils', '~> 1.4.0' # required by citeproc-ruby on ruby < 2.4
-    s.add_development_dependency 'rake', '~> 12.3', '>= 12.3.3'
-    s.add_development_dependency 'pry', '~> 0.10.1'
+    s.add_development_dependency 'rake', '~> 13.0'
+    s.add_development_dependency 'pry', '~> 0.13'
     # required by pry
     s.add_development_dependency 'rb-readline', '~> 0.5.1'
     # updating minitest-reporters requires a new minitest which fails with gollum's tests.
-    s.add_development_dependency 'test-unit', '~> 3.1.5'
+    s.add_development_dependency 'test-unit', '~> 3.3'
     s.add_development_dependency 'minitest-reporters', '~> 1.4'
     s.add_development_dependency 'nokogiri-diff', '~> 0.2.0'
-    # required by guard
-    s.add_development_dependency 'guard', '~> 2.8.2'
-    s.add_development_dependency 'guard-minitest', '~> 2.3.2'
-    s.add_development_dependency 'rb-inotify', '~> 0.9.3'
-    s.add_development_dependency 'rb-fsevent', '~> 0.9.4'
-    s.add_development_dependency 'rb-fchange', '~> 0.0.6'
-    s.add_development_dependency 'twitter_cldr', '~> 3.1.0'
+    s.add_development_dependency 'guard', '~> 2.16'
+    s.add_development_dependency 'guard-minitest', '~> 2.4'
+    s.add_development_dependency 'twitter_cldr', '~> 6.4'
+    
     # = MANIFEST =
   s.files = %w(
     Gemfile
