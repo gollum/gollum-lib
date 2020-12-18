@@ -10,12 +10,21 @@ class Gollum::Filter::TOC < Gollum::Filter
     @toc_doc           = nil
     @anchor_names      = {}
     @current_ancestors = []
-
+    @missing_headers   = []
     toc_str            = ''
     if @markup.sub_page && @markup.parent_page
       toc_str = @markup.parent_page.toc_data
     else
-      @doc.css('h1,h2,h3,h4,h5,h6').each_with_index do |header, i|
+      headers = (1..6).to_a
+
+      headers.each do |header|
+        if @doc.css(make_header_tag(header)).empty?
+          @missing_headers.push header
+        end
+      end
+
+      tags = headers.map { |n| make_header_tag(n) } .join(',')
+      @doc.css(tags).each_with_index do |header, i|
         next if header.content.empty?
         # omit the first H1 (the page title) from the TOC if so configured
         next if (i == 0 && header.name =~ /[Hh]1/) && @markup.wiki && @markup.wiki.h1_title
@@ -59,6 +68,17 @@ class Gollum::Filter::TOC < Gollum::Filter
 
   private
 
+  # Generates header in format "h<level>"
+  def make_header_tag(level)
+    raise "Header should be from 1 to 6" unless level.between?(1, 6)
+    "h#{level}"
+  end
+
+  def find_offset(level)
+    tags_before = @missing_headers.select { |number| number < level }
+    tags_before.length
+  end
+
   # Generates the anchor name from the given header element
   # removing all non alphanumeric characters, replacing them
   # with single dashes.
@@ -101,6 +121,7 @@ class Gollum::Filter::TOC < Gollum::Filter
     @tail_level ||= 0
 
     level = header.name.gsub(/[hH]/, '').to_i
+    level -= find_offset(level)
 
     if @tail_level < level
       while @tail_level < level
