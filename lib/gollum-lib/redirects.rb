@@ -28,9 +28,10 @@ module Gollum
       self.clear
       self.merge!(redirects)
     end
-    
-    def dump
-      @wiki.overwrite_file(REDIRECTS_FILE, self.to_yaml, {})
+
+    def dump(commit=nil)
+      commit = {} if commit.nil?
+      @wiki.overwrite_file(REDIRECTS_FILE, self.to_yaml, commit)
     end
     
     def get_head_sha
