@@ -1,6 +1,21 @@
 # ~*~ encoding: utf-8 ~*~
 require File.expand_path(File.join(File.dirname(__FILE__), "helper"))
 
+context "Wiki initialize" do
+  test "post_wiki_initialize hooks called after initializing" do
+    yielded = nil
+    begin
+      Gollum::Hook.register(:post_wiki_initialize, :hook) do |wiki|
+        yielded = wiki
+      end
+
+      assert_equal Gollum::Wiki.new(testpath("examples/lotr.git")), yielded
+    ensure
+      Gollum::Hook.unregister(:post_wiki_initialize, :hook)
+    end
+  end
+end
+
 context "Wiki" do
   setup do
     @wiki                       = Gollum::Wiki.new(testpath("examples/lotr.git"))

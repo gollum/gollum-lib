@@ -150,6 +150,8 @@ module Gollum
       @filter_chain.delete(:Emoji) unless options.fetch :emoji, false
       @filter_chain.delete(:PandocBib) unless ::Gollum::MarkupRegisterUtils.using_pandoc?
       @filter_chain.delete(:CriticMarkup) unless options.fetch :critic_markup, false
+
+      Hook.execute(:post_wiki_initialize, self)
     end
 
     # Public: check whether the wiki's git repo exists on the filesystem.

@@ -91,7 +91,7 @@ Note that `base_path` just modifies the links.
 Get the latest version of the given human or canonical page name:
 
 ```ruby
-page = wiki.page('/page name') # Finds pages in the root directory of the wiki that are named 'page name' with a valid extension. 
+page = wiki.page('/page name') # Finds pages in the root directory of the wiki that are named 'page name' with a valid extension.
 # => <Gollum::Page>
 
 page = wiki.page('page name') # For convenience, you can leave out the '/' in front. Paths are assumed to be relative to '/'.
@@ -216,6 +216,21 @@ end
 
 Gollum::Hook.unregister(:post_commit, :hook_id)
 ```
+
+Register or unregister a hook to be called after the wiki is initialized:
+
+```ruby
+Gollum::Hook.register(:post_wiki_initialize, :hook_id) do |wiki|
+  # Your code here
+end
+
+Gollum::Hook.unregister(:post_wiki_initialize, :hook_id)
+```
+
+A combination of both hooks can be used to pull from a remote after
+`:post_wiki_initialize` and push to a remote after `:post_commit` which in
+effect keeps the remote in sync both ways. Keep in mind that it may not be
+possible to resolve all conflicts automatically.
 
 ## WINDOWS FILENAME VALIDATION
 
