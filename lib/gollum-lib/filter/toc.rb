@@ -1,5 +1,8 @@
 # Inserts header anchors and creates TOC
 class Gollum::Filter::TOC < Gollum::Filter
+
+  HEADERS = (1..6).to_a
+
   def extract(data)
     data
   end
@@ -10,21 +13,15 @@ class Gollum::Filter::TOC < Gollum::Filter
     @toc_doc           = nil
     @anchor_names      = {}
     @current_ancestors = []
-    @missing_headers   = []
+    @headers_levels    = {}
     toc_str            = ''
     if @markup.sub_page && @markup.parent_page
       toc_str = @markup.parent_page.toc_data
     else
-      headers = (1..6).to_a
+      @headers = @doc.css(headers_selector)
+      get_toc_levels()
 
-      headers.each do |header|
-        if @doc.css(make_header_tag(header)).empty?
-          @missing_headers.push header
-        end
-      end
-
-      tags = headers.map { |n| make_header_tag(n) } .join(',')
-      @doc.css(tags).each_with_index do |header, i|
+      @headers.each_with_index do |header, i|
         next if header.content.empty?
         # omit the first H1 (the page title) from the TOC if so configured
         next if (i == 0 && header.name =~ /[Hh]1/) && @markup.wiki && @markup.wiki.h1_title
@@ -68,15 +65,37 @@ class Gollum::Filter::TOC < Gollum::Filter
 
   private
 
+  def headers_selector
+    HEADERS.map { |n| make_header_tag(n) } .join(',')
+  end
+
+  def get_header_level(header)
+    header.name.match(/[Hh]([1-6])/)[1].to_i
+  end
+
+  # Find level as it should be viewed in TOC for each header
+  # and save hash to @header_levels
+  def get_toc_levels
+    stack = []
+
+    @headers.each do |header|
+      cur_level = get_header_level(header)
+
+      loop do
+        prev_level = stack[-1]
+        break if prev_level.nil? || prev_level < cur_level
+        stack.pop
+      end
+
+      stack.push cur_level
+      @headers_levels[header] = stack.size
+    end
+  end
+
   # Generates header in format "h<level>"
   def make_header_tag(level)
     raise "Header should be from 1 to 6" unless level.between?(1, 6)
     "h#{level}"
-  end
-
-  def find_offset(level)
-    tags_before = @missing_headers.select { |number| number < level }
-    tags_before.length
   end
 
   # Generates the anchor name from the given header element
@@ -120,8 +139,7 @@ class Gollum::Filter::TOC < Gollum::Filter
     @tail ||= @toc_doc.child
     @tail_level ||= 0
 
-    level = header.name.gsub(/[hH]/, '').to_i
-    level -= find_offset(level)
+    level = @headers_levels[header]
 
     if @tail_level < level
       while @tail_level < level
