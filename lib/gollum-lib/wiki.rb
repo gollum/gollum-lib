@@ -551,14 +551,14 @@ module Gollum
       @redirects
     end
 
-    def add_redirect(old_path, new_path)
+    def add_redirect(old_path, new_path, commit=nil)
       redirects[old_path] = new_path
-      redirects.dump
+      redirects.dump(commit)
     end
 
-    def remove_redirect(path)
+    def remove_redirect(path, commit=nil)
       redirects.tap{|k| k.delete(path)}
-      redirects.dump
+      redirects.dump(commit)
     end
 
     #########################################################################
