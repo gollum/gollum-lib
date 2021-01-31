@@ -41,7 +41,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'mocha', '~> 1.11'
     s.add_development_dependency 'shoulda', '~> 4.0'
     s.add_development_dependency 'wikicloth', '~> 0.8.3'
-    s.add_development_dependency 'bibtex-ruby', '~> 5.1'
+    s.add_development_dependency 'bibtex-ruby', '~> 6.0'
     s.add_development_dependency 'citeproc-ruby', '~> 1.1'
     s.add_development_dependency 'unicode_utils', '~> 1.4.0' # required by citeproc-ruby on ruby < 2.4
     s.add_development_dependency 'rake', '~> 13.0'
