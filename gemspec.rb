@@ -31,7 +31,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_dependency 'loofah', '~> 2.3'
     s.add_dependency 'github-markup', '~> 3.0'
     s.add_dependency 'gemojione', '~> 4.1'
-    s.add_dependency 'octicons', '~> 11.0'
+    s.add_dependency 'octicons', '~> 12.0'
     s.add_dependency 'twitter-text', '1.14.7'
 
     s.add_development_dependency 'org-ruby', '~> 0.9.9'
