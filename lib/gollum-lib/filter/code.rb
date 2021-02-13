@@ -1,8 +1,12 @@
 # ~*~ encoding: utf-8 ~*~
-
 # Code
 #
 # Render a block of code using the Rouge syntax-highlighter.
+
+R = :nil
+require 'rinruby'
+RInterface = RinRuby.new
+
 class Gollum::Filter::Code < Gollum::Filter
   def extract(data)
     case @markup.format
@@ -33,9 +37,16 @@ class Gollum::Filter::Code < Gollum::Filter
       end  
     end
     
-
     data.gsub!(/^([ ]{0,3})``` ?([^\r\n]+)?\r?\n(.+?)\r?\n[ ]{0,3}```[ \t]*\r?$/m) do
-      "#{Regexp.last_match[1]}#{cache_codeblock(Regexp.last_match[2].to_s.strip, Regexp.last_match[3], Regexp.last_match[1])}" # print the SHA1 ID with the proper indentation
+      m_indent = Regexp.last_match[1]
+      m_extra   = Regexp.last_match[2]
+      m_code   = Regexp.last_match[3]
+      if m_extra =~ /^\{(\s+)?r(\s.*)?\}/
+        replacement = cache_rblock(m_extra.to_s.strip, m_code, m_indent)
+      else
+        replacement = cache_codeblock(m_extra.to_s.strip, m_code, m_indent)
+      end
+      "#{Regexp.last_match[1]}#{replacement}" # print the SHA1 ID with the proper indentation
     end
     data
   end
@@ -97,7 +108,7 @@ class Gollum::Filter::Code < Gollum::Filter
 
       highlighted << hl_code
     end
-
+    
     @map.each do |id, spec|
       body = spec[:output] || begin
         if (body = highlighted.shift.to_s).size > 0
@@ -111,7 +122,7 @@ class Gollum::Filter::Code < Gollum::Filter
       data.gsub!(/(<p>#{id}<\/p>|#{id})/) { body }
     end
 
-    data
+    render_r(data)
   end
 
   private
@@ -126,14 +137,31 @@ class Gollum::Filter::Code < Gollum::Filter
       code.gsub!(regex) { '' }
     end
   end
+  
+  def generate_placeholder_id(extra, code)
+    id = "#{open_pattern}#{Digest::SHA1.hexdigest("#{extra}.#{code}")}#{close_pattern}"
+  end
+  
+  def cache_rblock(extra, code, indent = '')
+    id = generate_placeholder_id(extra, code)
+    @map[id] = {:output => "#{indent}```#{extra}\n#{code}\n```"}
+    id
+  end
 
-  def cache_codeblock(language, code, indent = "")
+  def cache_codeblock(language, code, indent = '')
     language = language.to_s.empty? ? nil : language
-    id = "#{open_pattern}#{Digest::SHA1.hexdigest("#{language}.#{code}")}#{close_pattern}"
+    id = generate_placeholder_id(language, code)
     cached = @markup.check_cache(:code, id)
     @map[id] = cached ?
       { :output => cached } :
       { :lang => language, :code => code, :indent => indent }
     id
+  end
+  
+  def render_r(content)
+    RInterface.eval 'require(knitr)'
+    RInterface.assign "content", content
+    RInterface.eval "knitr::render_markdown(strict = TRUE)"
+    RInterface.pull "(knitr::knit2html(text = content, fragment.only = TRUE))"
   end
 end
