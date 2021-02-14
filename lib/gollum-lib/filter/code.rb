@@ -158,12 +158,14 @@ class Gollum::Filter::Code < Gollum::Filter
   end
   
   def render_r(content)
-    r = RinRuby.new(:interactive => false)
+    begin
+    r = RinRuby.new(:interactive => false, :echo => false)
     r.eval 'require(knitr)'
     r.assign "content", content
     r.eval "knitr::render_markdown(strict = TRUE)"
-    result = r.pull "(knitr::knit2html(text = content, fragment.only = TRUE))"
-    r.quit
-    result
+    r.pull "(knitr::knit2html(text = content, fragment.only = TRUE))"
+    ensure
+      r.quit
+    end
   end
 end
