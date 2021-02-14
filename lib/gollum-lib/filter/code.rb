@@ -3,9 +3,7 @@
 #
 # Render a block of code using the Rouge syntax-highlighter.
 
-R = :nil
 require 'rinruby'
-RInterface = RinRuby.new
 
 class Gollum::Filter::Code < Gollum::Filter
   def extract(data)
@@ -159,9 +157,9 @@ class Gollum::Filter::Code < Gollum::Filter
   end
   
   def render_r(content)
-    RInterface.eval 'require(knitr)'
-    RInterface.assign "content", content
-    RInterface.eval "knitr::render_markdown(strict = TRUE)"
-    RInterface.pull "(knitr::knit2html(text = content, fragment.only = TRUE))"
+    R.eval 'require(knitr)'
+    R.assign "content", content
+    R.eval "knitr::render_markdown(strict = TRUE)"
+    R.pull "(knitr::knit2html(text = content, fragment.only = TRUE))"
   end
 end
