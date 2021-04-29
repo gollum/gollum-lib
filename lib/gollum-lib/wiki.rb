@@ -499,19 +499,78 @@ module Gollum
         result[:name] = extract_page_file_dir(name)
         result[:filename_count] = result[:name].scan(/#{search_terms_regex}/i).size
         result[:context] = []
+        result[:match_counts] = [0, 0, 0, 0]
         if data
           begin
             data.scan(query) do |match|
               result[:context] << match.first
               result[:count] += match.first.scan(/#{search_terms_regex}/i).size
+              result[:match_counts] = count_matches(match.first, search_terms_regex, result[:match_counts])
             end
           rescue ArgumentError # https://github.com/gollum/gollum/issues/1491
             next
           end
         end
+
+        result[:rank] = weigh_rank(result[:match_counts])
+        result.delete(:match_counts)
+
         ((result[:count] + result[:filename_count]) == 0) ? nil : result
+
       end
       [results, search_terms]
+
+    end
+
+    # Public: get a single rank value based on the rank
+    #
+    # count - an array containing the four count values (as provided by the rank method):
+    #
+    # - main heading matches make up 50% of the rank 100 Points (one main heading match is enough to get the full 50%)
+    # - heading matches make up 25% of the rank (two heading matches are enough to get the full 25%)
+    # - link description matches make up 15% of the rank (two link matches are enough to get the full 15%)
+    # - text matches make up 10% of the rank (five matches are enough to get the full 10%)
+    def weigh_rank(ranks)
+
+      (100.0 * ([0.5, 0.5 * ranks[0]].min \
+      + [0.25, (0.25 / 2) * ranks[1]].min \
+      + [0.15, (0.15 / 2) * ranks[2]].min \
+      + [0.10, (0.10 / 5) * ranks[3]].min)).to_int
+
+    end
+
+    # Public: get a count of matches in a matching line to provide a base for calculating a rank
+    #
+    # match - a matching line (as provided by git-grep)
+    #
+    # search_terms_regex - the regular expression of the used search term
+    #
+    # count - an array of four values which will be increased by this method
+    #
+    # the four values in the returned array represent the following counts:
+    # - the search term matches the main heading
+    # - the search term matches in a heading
+    # - the search term matches the description of a link
+    # - the search term matches in the document
+    def count_matches(match, search_terms_regex, count = nil)
+
+      count = [0, 0, 0, 0] if count.nil?
+
+      if search_terms_regex
+
+        count[0] += 1 if /(^|[^#])# .*#{search_terms_regex}/i.match(match)
+
+        count[1] += 1 if /##+ .*#{search_terms_regex}/i.match(match)
+
+        count[2] += 1 if /\[.*#{search_terms_regex}.*\]/i.match(match)
+
+        # increase the score by the number of times the search term was found in the page
+        count[3] += match.scan(/#{search_terms_regex}/i).size
+
+      end
+
+      count
+
     end
 
     # Public: All of the versions that have touched the Page.
