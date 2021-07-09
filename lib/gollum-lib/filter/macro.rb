@@ -55,6 +55,6 @@ class Gollum::Filter::Macro < Gollum::Filter
       end
     end
 
-    data
+    sanitize(data)
   end
 end
