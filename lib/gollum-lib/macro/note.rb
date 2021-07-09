@@ -12,7 +12,7 @@ module Gollum
           icon.options[:class] << ' mr-2'
           icon = icon.to_svg
         end
-        "<div class='flash'>#{icon}#{notice}</div>"
+        "<div class='flash'>#{icon}#{CGI::escapeHTML(notice)}</div>"
       end
     end
   end

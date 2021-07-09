@@ -8,8 +8,8 @@ module Gollum
       end
 
       def render_links(previous_page, next_page)
-      	result = "Previous: <a href=\"#{::File.join(@wiki.base_path,previous_page.escaped_url_path)}\">#{previous_page.name}</a>" if previous_page
-      	result = "#{result}#{result ? ' | ' : ''}Next: <a href=\"#{::File.join(@wiki.base_path,next_page.escaped_url_path)}\">#{next_page.name}</a>" if next_page
+      	result = "Previous: <a href=\"#{CGI::escapeHTML(::File.join(@wiki.base_path,previous_page.escaped_url_path))}\">#{CGI::escapeHTML(previous_page.name)}</a>" if previous_page
+      	result = "#{result}#{result ? ' | ' : ''}Next: <a href=\"#{CGI::escapeHTML(::File.join(@wiki.base_path,next_page.escaped_url_path))}\">#{CGI::escapeHTML(next_page.name)}</a>" if next_page
       	wrap_result(result)
       end
 
@@ -32,14 +32,14 @@ module Gollum
 
     class SeriesStart < Gollum::Macro::Series
       def render_links(previous_page, next_page)
-        result = "Next: <a href=\"#{::File.join(@wiki.base_path,next_page.escaped_url_path)}\">#{next_page.name}</a>" if next_page
+        result = "Next: <a href=\"#{CGI::escapeHTML(::File.join(@wiki.base_path,next_page.escaped_url_path))}\">#{CGI::escapeHTML(next_page.name)}</a>" if next_page
         wrap_result(result)
       end
     end
 
     class SeriesEnd < Gollum::Macro::Series
       def render_links(previous_page, next_page)
-        result = "Previous: <a href=\"#{::File.join(@wiki.base_path,previous_page.escaped_url_path)}\">#{previous_page.name}</a>" if previous_page
+        result = "Previous: <a href=\"#{CGI::escapeHTML(::File.join(@wiki.base_path,previous_page.escaped_url_path))}\">#{CGI::escapeHTML(previous_page.name)}</a>" if previous_page
         wrap_result(result)
       end
     end
