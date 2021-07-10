@@ -148,13 +148,13 @@ context "Macros" do
   test "Video macro given a name of a file displays an html5 video tag" do
     file = "/Uploads/foo.mp4"
     @wiki.write_page("VideoTagTest", :markdown, "<<Video(#{file})>>", commit_details)
-    assert_match /<video (.*) (.*) src="#{file}"(.*)> (.*)<\/video>/, @wiki.pages[0].formatted_data
+    assert_match /<video (.*) src="#{file}"(.*)> (.*)<\/video>/, @wiki.pages[0].formatted_data
   end 
 
   test "Audio macro given a name of a file displays an audio tag" do
     file = "/Uploads/foo.mp3"
     @wiki.write_page("AudioTagTest", :markdown, "<<Audio(#{file})>>", commit_details)
-    assert_match /<audio (.*) (.*) src="#{file}"(.*)> (.*)<\/audio>/, @wiki.pages[0].formatted_data
+    assert_match /<audio (.*) src="#{file}"(.*)> (.*)<\/audio>/, @wiki.pages[0].formatted_data
   end
 
   test "Octicon macro given a symbol and dimensions displays octicon" do
