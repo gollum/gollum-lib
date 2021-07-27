@@ -14,7 +14,7 @@ module Gollum
           end
           result = "<ul>#{list_items.join}</ul>"
         end
-        "<div class=\"toc\"><div class=\"toc-title\">#{CGI::escapeHTML(title)}</div>#{result}</div>"
+        "<div class=\"toc\"><div class=\"toc-title\">#{title}</div>#{result}</div>"
       end
 
     end
