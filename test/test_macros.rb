@@ -179,8 +179,20 @@ context "Macros" do
     assert_match /<div class=\"flash flash-error\"><svg.*class=\"octicon octicon-zap mr-2\".*Macro Error for Octicon: Couldn't find octicon symbol for "foobar".*/, @wiki.pages[0].formatted_data
   end
 
-  test "escape HTML special characters" do
+  test "Audio macro escapes HTML" do
     @wiki.write_page("AudioXSSTest", :markdown, '<<Audio(a"></audio><input>)>>', commit_details)
     assert_not_match /<input/, @wiki.pages[0].formatted_data
+  end
+
+  test "Note macro renders HTML code" do
+    @wiki.write_page("HTMLNoteMacroPage", :markdown, '<<Note("<span>test</span>")>>', commit_details)
+    assert_match /<div class=\"flash\"><svg.*class=\"octicon octicon-info mr-2\".*<span>test<\/span>.*/, @wiki.pages[0].formatted_data
+  end
+
+  test "Series macro escapes page names" do
+    @wiki.write_page("test-1", :markdown, "test1", commit_details)
+    @wiki.write_page("test-2<span>", :markdown, "test2", commit_details)
+    @wiki.write_page("_Footer", :markdown, "<<Series(test)>>", commit_details)
+    assert_match /Next(.*)test-2&lt;span&gt;/, @wiki.page("test-1").footer.formatted_data
   end
 end
