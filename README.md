@@ -2,7 +2,7 @@ gollum lib -- A wiki built on top of Git
 ========================================
 
 [![Gem Version](https://badge.fury.io/rb/gollum-lib.svg)](http://badge.fury.io/rb/gollum-lib)
-[![Build Status](https://travis-ci.org/gollum/gollum-lib.svg?branch=master)](https://travis-ci.org/gollum/gollum-lib)
+[![Ruby Build](https://github.com/gollum/gollum-lib/actions/workflows/test.yaml/badge.svg)](https://github.com/gollum/gollum-lib/actions/workflows/test.yaml)
 [![Cutting Edge Dependency Status](https://dometto-cuttingedge.herokuapp.com/github/gollum/gollum-lib/svg 'Cutting Edge Dependency Status')](https://dometto-cuttingedge.herokuapp.com/github/gollum/gollum-lib/info)
 
 ## DESCRIPTION
