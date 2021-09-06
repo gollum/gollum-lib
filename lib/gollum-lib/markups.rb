@@ -81,7 +81,7 @@ module Gollum
              :enabled => MarkupRegisterUtils::gem_exists?("creole"),
              :reverse_links => true)
     register(:rst, "reStructuredText",
-             :enabled => MarkupRegisterUtils::executable_exists?("python2"),
+             :enabled => MarkupRegisterUtils::executable_exists?("python3"),
              :extensions => ['rest', 'rst'])
     register(:asciidoc, "AsciiDoc",
              :skip_filters => [:Tags],
