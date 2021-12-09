@@ -26,7 +26,7 @@ class Gollum::Filter::Macro < Gollum::Filter
         if argument =~ /^([a-z0-9_]+)="(.*?)"/
       		opts[Regexp.last_match[1]] = Regexp.last_match[2]
 			  elsif argument =~ /^"(.*)"$/
-          args << Regexp.last_match[1].gsub("\\\"", "\"")
+				  args << Regexp.last_match[1].gsub("\\\"", "\"")
 			  else
 				  args << argument
         end
