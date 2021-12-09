@@ -4,7 +4,7 @@ require 'octicons'
 # Replace specified tokens with dynamically generated content.
 class Gollum::Filter::Macro < Gollum::Filter
   def extract(data)
-    quoted_arg   = %r{".*?(?<!\\)"}
+    quoted_arg   = %r{".*?(?<!\\)"} # use a negative lookbehind to not terminate on a " preceeded by \
     unquoted_arg = %r{[^,)]+}
     named_arg    = %r{[a-z0-9_]+=".*?"}
     
