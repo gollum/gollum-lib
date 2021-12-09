@@ -127,6 +127,11 @@ context "Macros" do
     assert_match(/@\(bar\)@/, @wiki.pages[0].formatted_data)
   end
 
+  test "ListArgs with escaped quotation mark in quoted args" do
+    @wiki.write_page("ListArgsMacroPage", :markdown, '<<ListArgs("Goodbye \"cruel\" world")>>', commit_details)
+    assert_match(/@Goodbye "cruel" world@/, @wiki.pages[0].formatted_data)
+  end
+
   test "ListArgs with a mix or arg styles" do
     @wiki.write_page("ListArgsMacroPage", :markdown, '<<ListArgs("foo, bar, and baz", wombat, funny things)>>', commit_details)
     assert_match(/@foo, bar, and baz@/, @wiki.pages[0].formatted_data)
