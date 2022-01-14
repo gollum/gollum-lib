@@ -2,8 +2,12 @@
 
 # Code
 #
-# Render a block of code using the Rouge syntax-highlighter.
+# Handle code blocks:
+# - in the extractstep, extract them so they don't get rendered by the Render filter
+# - in the process step, apply highlighting and wrapping and reinsert them into the document
+
 class Gollum::Filter::Code < Gollum::Filter
+  
   def extract(data)
     case @markup.format
     when :asciidoc
@@ -63,7 +67,7 @@ class Gollum::Filter::Code < Gollum::Filter
       blocks << [spec[:lang], code]
     end
 
-    highlighted = []
+    wrapped_blocks = []
     blocks.each do |lang, code|
       encoding = @markup.encoding || 'utf-8'
 
@@ -95,22 +99,23 @@ class Gollum::Filter::Code < Gollum::Filter
         end
       end
 
-      highlighted << hl_code
+      wrapped_blocks << hl_code
     end
-
-    @map.each do |id, spec|
-      body = spec[:output] || begin
-        if (body = highlighted.shift.to_s).size > 0
+    
+    # Remove paragraph tags surrounding <pre> blocks, see issue https://github.com/gollum/gollum-lib/issues/97
+    data.gsub!(/(<p>(#{hash_pattern})<\/p>)|(#{hash_pattern})/m) do
+      id = Regexp.last_match[-1] || Regexp.last_match[-2]
+      body = @map[id][:output] || begin
+        if (body = wrapped_blocks.shift.to_s).size > 0
           @markup.update_cache(:code, id, body)
           body
         else
           "<pre><code>#{CGI.escapeHTML(spec[:code])}</code></pre>"
         end
       end
-      # Removes paragraph tags surrounding <pre> blocks, see issue https://github.com/gollum/gollum-lib/issues/97
-      data.gsub!(/(<p>#{id}<\/p>|#{id})/) { body }
+      body
     end
-
+    
     data
   end
 

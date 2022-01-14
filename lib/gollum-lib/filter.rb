@@ -58,9 +58,10 @@ module Gollum
       @map    = {}
       @open_pattern = "%#{self.class.to_s.split('::').last}%"
       @close_pattern = "=#{self.class.to_s.split('::').last}="
+      @hash_pattern = %r{#{open_pattern}[a-f0-9]{40}#{close_pattern}}
     end
 
-    attr_reader :open_pattern, :close_pattern
+    attr_reader :open_pattern, :close_pattern, :hash_pattern
 
     def extract(data)
       raise RuntimeError,
