@@ -2,8 +2,17 @@
 
 # Code
 #
-# Render a block of code using the Rouge syntax-highlighter.
+# Handle code blocks:
+# - in the extractstep, extract them so they don't get rendered by the Render filter
+# - in the process step, apply highlighting and wrapping and reinsert them into the document
+
 class Gollum::Filter::Code < Gollum::Filter
+  
+  @@language_handlers = {
+    /mermaid/ => Proc.new { |lang, code| "<div class=\"mermaid\">\n#{code}\n</div>" },
+    /{.*}/ => Proc.new { |lang, code| "<pre class=\"knitr\"><code class=\"#{lang}\">\n#{code}\n</code></pre>"}
+  }
+
   def extract(data)
     case @markup.format
     when :asciidoc
@@ -63,8 +72,14 @@ class Gollum::Filter::Code < Gollum::Filter
       blocks << [spec[:lang], code]
     end
 
-    highlighted = []
+    wrapped_blocks = []
     blocks.each do |lang, code|
+      
+      if (_pattern, proc = @@language_handlers.find { |pattern, _v| lang =~ pattern }) then
+        wrapped_blocks << proc.call(CGI.escape_html(lang), CGI.escape_html(code))
+        next
+      end
+      
       encoding = @markup.encoding || 'utf-8'
 
       if defined? Pygments
@@ -95,12 +110,12 @@ class Gollum::Filter::Code < Gollum::Filter
         end
       end
 
-      highlighted << hl_code
+      wrapped_blocks << hl_code
     end
 
     @map.each do |id, spec|
       body = spec[:output] || begin
-        if (body = highlighted.shift.to_s).size > 0
+        if (body = wrapped_blocks.shift.to_s).size > 0
           @markup.update_cache(:code, id, body)
           body
         else
