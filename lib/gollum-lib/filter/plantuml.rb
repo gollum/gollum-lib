@@ -37,7 +37,7 @@ require 'zlib'
 #
 class Gollum::Filter::PlantUML < Gollum::Filter
 
-  DEFAULT_URL = "http://www.plantuml.com/plantuml/png"
+  DEFAULT_URL = "http://localhost:8080/plantuml/png"
 
   # Configuration class used to change the behaviour of the PlatnUML filter.
   #
