@@ -30,6 +30,8 @@ class Gollum::Filter::Render < Gollum::Filter
     doc.css('h1,h2,h3,h4,h5,h6').each_with_index do |header, i|
       next if header.content.empty?
       next if header.inner_html.match(PLACEHOLDER_PATTERN)
+      next unless @markup.wiki.allow_editing
+
       klass = header['class']
       if klass
         header['class'] = klass << ' editable'
