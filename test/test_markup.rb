@@ -578,7 +578,6 @@ DATA
     ).each_with_index do |ugly, n|
       @wiki.write_page(name, :textile, "hello\n[[include:#{ugly}]]\n", commit_details)
       page1 = @wiki.page(name)
-      binding.irb
       assert_match("no page name given", page1.formatted_data)
     end
   end
