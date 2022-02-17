@@ -57,6 +57,10 @@ module Gollum
     # Defaults to false
     attr_reader :css
 
+    # Whether or not content is editable.
+    # Defaults to true
+    attr_reader :allow_editing
+
     # Sets page title to value of first h1
     # Defaults to false
     attr_reader :h1_title
@@ -106,6 +110,7 @@ module Gollum
     #           :bar_side      - Where the sidebar should be displayed, may be:
     #                             - :left
     #                             - :right
+    #           :allow_editing - Set whether wiki content can be edited. Default: true
     #           :allow_uploads - Set to true to allow file uploads.
     #           :per_page_uploads - Whether uploads should be stored in a central
     #                            'uploads' directory, or in a directory named for
@@ -142,6 +147,7 @@ module Gollum
       @bar_side             = options.fetch :sidebar, :right
       @user_icons           = ['gravatar', 'identicon'].include?(options[:user_icons]) ?
           options[:user_icons] : 'none'
+      @allow_editing        = options.fetch :allow_editing, true
       @allow_uploads        = options.fetch :allow_uploads, false
       @per_page_uploads     = options.fetch :per_page_uploads, false
       @metadata             = options.fetch :metadata, {}
@@ -594,10 +600,10 @@ module Gollum
 
     # Enable 4.x compatibility behavior for links
     attr_reader :global_tag_lookup
-    
+
     # Enable 4.x compatibility for case-case_insensitive links
     attr_reader :case_insensitive_tag_lookup
-    
+
     # Spaces in tag paths are treated as dashes (-)
     attr_reader :hyphened_tag_lookup
 

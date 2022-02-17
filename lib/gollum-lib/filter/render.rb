@@ -19,8 +19,11 @@ class Gollum::Filter::Render < Gollum::Filter
   end
 
   def process(data)
-    data = add_editable_header_class(data)
-    data
+    if @markup.wiki.allow_editing
+      add_editable_header_class(data)
+    else
+      data
+    end
   end
 
   private
