@@ -574,7 +574,7 @@ DATA
       assert_match("does not exist yet", page1.formatted_data)
     end
     %w(
-      \ \ \
+      \ \ \ 
     ).each_with_index do |ugly, n|
       @wiki.write_page(name, :textile, "hello\n[[include:#{ugly}]]\n", commit_details)
       page1 = @wiki.page(name)
