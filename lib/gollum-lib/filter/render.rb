@@ -19,8 +19,11 @@ class Gollum::Filter::Render < Gollum::Filter
   end
 
   def process(data)
-    data = add_editable_header_class(data)
-    data
+    if @markup.wiki.allow_editing
+      add_editable_header_class(data)
+    else
+      data
+    end
   end
 
   private
@@ -30,8 +33,6 @@ class Gollum::Filter::Render < Gollum::Filter
     doc.css('h1,h2,h3,h4,h5,h6').each_with_index do |header, i|
       next if header.content.empty?
       next if header.inner_html.match(PLACEHOLDER_PATTERN)
-      next unless @markup.wiki.allow_editing
-
       klass = header['class']
       if klass
         header['class'] = klass << ' editable'
