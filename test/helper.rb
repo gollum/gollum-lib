@@ -6,7 +6,7 @@ require 'fileutils'
 # external
 require 'rubygems'
 require 'shoulda'
-require 'mocha/setup'
+require 'mocha/test_unit'
 require 'minitest/reporters'
 require 'twitter_cldr'
 require 'tempfile'
