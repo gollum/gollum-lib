@@ -1,16 +1,11 @@
 def specification(version, default_adapter, platform = nil)
   Proc.new do |s|
-    s.specification_version = 2 if s.respond_to? :specification_version=
     s.required_rubygems_version = Gem::Requirement.new('>= 0') if s.respond_to? :required_rubygems_version=
-    s.rubygems_version = '0.0.1'
     s.required_ruby_version = '>= 2.4'
 
     s.name              = 'gollum-lib'
     s.version           = version
     s.platform          = platform if platform
-    s.date              = '2021-09-06'
-    s.date              = '2017-04-13'
-    s.rubyforge_project = 'gollum-lib'
     s.license           = 'MIT'
 
     s.summary     = 'A simple, Git-powered wiki.'
