@@ -125,7 +125,7 @@ class Gollum::Filter::TOC < Gollum::Filter
   # Creates an anchor element with the given name and adds it before
   # the given header element.
   def add_anchor_to_header(header, name)
-    a = Nokogiri::XML::Node.new('a', @doc)
+    a = Nokogiri::XML::Node.new('a', @doc.document)
     a['class'] = 'anchor'
     a['id'] = name
     a['href'] = "##{name}"
@@ -143,9 +143,9 @@ class Gollum::Filter::TOC < Gollum::Filter
 
     if @tail_level < level
       while @tail_level < level
-        list = Nokogiri::XML::Node.new('ul', @doc)
+        list = Nokogiri::XML::Node.new('ul', @doc.document)
         @tail.add_child(list)
-        @tail = list.add_child(Nokogiri::XML::Node.new('li', @doc))
+        @tail = list.add_child(Nokogiri::XML::Node.new('li', @doc.document))
         @tail_level += 1
       end
     else
@@ -153,7 +153,7 @@ class Gollum::Filter::TOC < Gollum::Filter
         @tail = @tail.parent.parent
         @tail_level -= 1
       end
-      @tail = @tail.parent.add_child(Nokogiri::XML::Node.new('li', @doc))
+      @tail = @tail.parent.add_child(Nokogiri::XML::Node.new('li', @doc.document))
     end
 
     # % -> %25 so anchors work on Firefox. See issue #475
