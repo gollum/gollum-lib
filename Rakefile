@@ -1,6 +1,5 @@
 require 'rubygems'
 require 'rake'
-require 'date'
 
 #############################################################################
 #
@@ -38,24 +37,16 @@ def bump_version
   new_version
 end
 
-def date
-  Date.today.to_s
-end
-
-def rubyforge_project
-  name
-end
-
 def gemspec_file
   "gemspec.rb"
 end
 
 def gemspecs
-   ["#{name}.gemspec", "#{name}_java.gemspec"]
+  ["#{name}.gemspec", "#{name}_java.gemspec"]
 end
 
 def gem_files
- ["#{name}-#{version}.gem", "#{name}-#{version}-java.gem"]
+  ["#{name}-#{version}.gem", "#{name}-#{version}-java.gem"]
 end
 
 def replace_header(head, header_name)
@@ -152,11 +143,8 @@ task :gemspec => :validate do
   spec = File.read(gemspec_file)
   head, _manifest, tail = spec.split("  # = MANIFEST =\n")
 
-  # replace name version and date
+  # replace name
   replace_header(head, :name)
-  replace_header(head, :date)
-  #comment this out if your rubyforge_project has a different name
-  replace_header(head, :rubyforge_project)
 
   # determine file list from git ls-files
   files = `git ls-files`.
