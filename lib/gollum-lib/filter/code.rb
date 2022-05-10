@@ -8,11 +8,15 @@
 
 class Gollum::Filter::Code < Gollum::Filter
   
-  @@language_handlers = {
-    /mermaid/ => Proc.new { |lang, code| "<div class=\"mermaid\">\n#{code}\n</div>" },
-    /{.*}/ => Proc.new { |lang, code| "<pre class=\"knitr\"><code class=\"#{lang}\">\n#{code}\n</code></pre>"}
-  }
-
+  # The @language_handlers Hash can be filled with Regep keys and corresponding Proc values. The Procs will be executed to handle a codeblock whose language definition matches the key.
+  # See the Code Filter tests for an example
+  # Use the Gollum::Filter::Code.language_handlers method to access and modify this class instance variable
+  @language_handlers = {}
+    
+  class << self
+    attr_accessor :language_handlers
+  end
+  
   def extract(data)
     case @markup.format
     when :asciidoc
@@ -75,7 +79,7 @@ class Gollum::Filter::Code < Gollum::Filter
     wrapped_blocks = []
     blocks.each do |lang, code|
       
-      if (_pattern, proc = @@language_handlers.find { |pattern, _v| lang =~ pattern }) then
+      if (_pattern, proc = self.class.language_handlers.find { |pattern, _v| lang =~ pattern }) then
         wrapped_blocks << proc.call(CGI.escape_html(lang), CGI.escape_html(code))
         next
       end

@@ -10,6 +10,18 @@ context "Gollum::Filter::Code" do
     @filter.process(@filter.extract(content))
   end
   
+end
+
+context "Gollum::Filter::Code with language handler" do
+  setup do
+    @filter = Gollum::Filter::Code.new(Gollum::Markup.new(mock_page))
+    Gollum::Filter::Code.language_handlers[/mermaid/] = Proc.new { |lang, code| "<div class=\"mermaid\">\n#{code}\n</div>" }
+  end
+
+  def filter(content)
+    @filter.process(@filter.extract(content))
+  end
+  
   test 'mermaid language handler' do
     markup = <<~EOF
     # Some markup
@@ -29,5 +41,8 @@ context "Gollum::Filter::Code" do
     assert filter(markup), result
   end
   
+  teardown do
+    Gollum::Filter::Code.language_handlers = {}
+  end
   
 end
