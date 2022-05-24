@@ -27,11 +27,11 @@ For a detailed overview of changes in 5.0 and a guide to migrating your wiki, se
   ** New Macro for listing contents of (sub)directories: `Navigation()`
   ** Table of Contents now supports setting max heading level 
 
-# v4.0.2 /2015-0119
+# v4.0.2 / 2015-0119
 
 * Bugfixes
 
-# v4.0.1 /2014-12-04
+# v4.0.1 / 2014-12-04
 
 * Security fix for [remote code execution issue](https://github.com/gollum/gollum/issues/913). Please update!
 
