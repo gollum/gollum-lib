@@ -7,7 +7,7 @@ module Gollum
 
     class << self
       # Sets the default ref for the wiki.
-      attr_writer :default_ref
+      attr_writer :default_refs
 
       # Sets the default name for commits.
       attr_writer :default_committer_name
@@ -19,8 +19,16 @@ module Gollum
       # These defaults can be overridden by options passed directly to initialize()
       attr_writer :default_options
 
-      def default_ref
-        @default_ref || 'master'
+      def find_default_ref(repo)
+        result = repo.find_branch(self.default_refs) || Gollum::Git.global_default_branch || 'main'
+        if result == 'master'
+          puts "DEPRECATION WARNING: Defaulting to discovered branch 'master'. This will be removed as a default branch name in the next major release. Please switch to using 'main' as branch name."
+        end
+        result
+      end
+
+      def default_refs
+        @default_refs || ['main', 'master']
       end
 
       def default_committer_name
@@ -132,7 +140,7 @@ module Gollum
       @access               = options.fetch :access, GitAccess.new(path, @page_file_dir, @repo_is_bare)
       @base_path            = options.fetch :base_path, "/"
       @repo                 = @access.repo
-      @ref                  = options.fetch :ref, self.class.default_ref
+      @ref                  = options.fetch :ref, self.class.find_default_ref(@repo)
       @universal_toc        = options.fetch :universal_toc, false
       @mathjax              = options.fetch :mathjax, false
       @global_tag_lookup    = options.fetch :global_tag_lookup, false
