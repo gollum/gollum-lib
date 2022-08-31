@@ -20,7 +20,7 @@ module Gollum
       attr_writer :default_options
 
       def find_default_ref(repo)
-        result = repo.find_branch(self.default_refs) || Gollum::Git.global_default_branch || 'main'
+        result = repo.find_branch(self.default_refs) || Gollum::Git.global_default_branch || self.default_refs.first
         if result == 'master'
           puts "DEPRECATION WARNING: Defaulting to discovered branch 'master'. This will be removed as a default branch name in the next major release. Please switch to using 'main' as branch name."
         end
@@ -28,7 +28,7 @@ module Gollum
       end
 
       def default_refs
-        @default_refs || ['main', 'master']
+        @default_refs || ['master', 'main']
       end
 
       def default_committer_name
