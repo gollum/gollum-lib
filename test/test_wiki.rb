@@ -100,7 +100,7 @@ context "Wiki" do
     begin
       wiki  = Gollum::Wiki.new(@path)
       index = wiki.repo.index
-      index.read_tree 'main'
+      index.read_tree 'master'
       index.add('Foobar/Elrond.md', 'Baz')
       index.commit 'Add Foobar/Elrond.', [wiki.repo.head.commit], Gollum::Git::Actor.new('Tom Preston-Werner', 'tom@github.com')
 
