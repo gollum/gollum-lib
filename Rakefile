@@ -13,10 +13,6 @@ def name
   "gollum-lib"
 end
 
-def date
-  Time.now.strftime("%Y-%m-%d")
-end
-
 def version
   line = File.read("lib/gollum-lib/version.rb")[/^\s*VERSION\s*=\s*.*/]
   line.match(/.*VERSION\s*=\s*['"](.*)['"]/)[1]
@@ -220,7 +216,7 @@ task :changelog do
   end
   
   temp = Tempfile.new
-  temp.puts("#{version_pattern} / #{date}\n#{body}\n\n")
+  temp.puts("#{version_pattern} / #{date}\n#{body}\n")
   temp.close
   `cat #{history_file} >> #{temp.path}`
   `cat #{temp.path} > #{history_file}`

@@ -52,9 +52,8 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'twitter_cldr', '~> 6.4'
     
     # = MANIFEST =
-  s.files = %w[
+  s.files = %w(
     Gemfile
-    Guardfile
     HISTORY.md
     LICENSE
     README.md
@@ -105,7 +104,7 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/version.rb
     lib/gollum-lib/wiki.rb
     licenses/licenses.txt
-  ]
+  )
   # = MANIFEST =
 
     s.test_files = s.files.select { |path| path =~ /^test\/test_.*\.rb/ }
