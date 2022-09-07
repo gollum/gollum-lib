@@ -225,21 +225,3 @@ task :changelog do
   `cat #{history_file} >> #{temp.path}`
   `cat #{temp.path} > #{history_file}`
 end
-
-desc 'Precompile assets'
-task :precompile do
-  require './lib/gollum/app.rb'
-  Precious::App.set(:environment, :production)
-  env = Precious::Assets.sprockets
-  path = ENV.fetch('GOLLUM_ASSETS_PATH', ::File.join(File.dirname(__FILE__), 'lib/gollum/public/assets'))
-  manifest = Sprockets::Manifest.new(env, path)
-  Sprockets::Helpers.configure do |config|
-    config.environment = env
-    config.prefix      = Precious::Assets::ASSET_URL
-    config.digest      = true
-    config.public_path = path
-    config.manifest    = manifest
-  end
-  puts "Precompiling assets to #{path}..."
-  manifest.compile(Precious::Assets::MANIFEST)
-end
