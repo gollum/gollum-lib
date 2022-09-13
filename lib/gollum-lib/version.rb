@@ -1,5 +1,5 @@
 module Gollum
   module Lib
-    VERSION = '5.2'
+    VERSION = '5.2.1'
   end
 end
