@@ -200,4 +200,10 @@ context "Macros" do
     @wiki.write_page("_Footer", :markdown, "<<Series(test)>>", commit_details)
     assert_match /Next(.*)test-2&lt;span&gt;/, @wiki.page("test-1").footer.formatted_data
   end
+
+  test "Control attributes for Audio and Video are not sanitized" do
+    @wiki.write_page("AudioTagTest", :markdown, "<<Audio(foo)>>\n<<Video(bar)>>", commit_details)
+    # The Macros must return controls=true until https://github.com/flavorjones/loofah/issues/242 is resolved
+    assert_match /<audio (.*)controls(.*)>(.*)<video (.*)controls(.*)>/m, @wiki.pages[0].formatted_data
+  end
 end
