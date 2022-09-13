@@ -1,4 +1,5 @@
 ::Loofah::HTML5::SafeList::ACCEPTABLE_PROTOCOLS.add('apt')
+::Loofah::HTML5::SafeList::ALLOWED_ATTRIBUTES.add('controls')
 
 module Gollum
   class Sanitization
