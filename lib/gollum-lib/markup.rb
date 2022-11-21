@@ -61,7 +61,9 @@ module Gollum
           :extensions => new_extension,
           :reverse_links => options.fetch(:reverse_links, false),
           :skip_filters => options.fetch(:skip_filters, nil),
-          :enabled => options.fetch(:enabled, true) }
+          :enabled => options.fetch(:enabled, true),
+          :render => options.fetch(:render, nil)
+        }
         @extensions.concat(new_extension)
       end
     end
@@ -102,6 +104,10 @@ module Gollum
       self.class.formats[@format][:reverse_links]
     end
 
+    def custom_renderer
+      self.class.formats[@format].fetch(:render, nil)
+    end
+
     # Whether or not a particular filter should be skipped for this format.
     def skip_filter?(filter)
       if self.class.formats[@format][:skip_filters].respond_to?(:include?)
@@ -119,7 +125,7 @@ module Gollum
     # filter_chain - the chain to process
     #
     # Returns the formatted data
-    def process_chain(data, filter_chain)
+    def process_chain(data, filter_chain, &block)
       # First we extract the data through the chain...
       filter_chain.each do |filter|
         data = filter.extract(data)
