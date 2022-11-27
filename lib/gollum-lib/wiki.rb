@@ -156,7 +156,7 @@ module Gollum
       @per_page_uploads     = options.fetch :per_page_uploads, false
       @metadata             = options.fetch :metadata, {}
       @filter_chain         = options.fetch :filter_chain,
-                                            [:YAML, :BibTeX, :PlainText, :CriticMarkup, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :PlantUML, :Tags, :PandocBib, :Render]
+                                            [:YAML, :BibTeX, :PlainText, :CriticMarkup, :TOC, :Sanitize, :RemoteCode, :Code, :Macro, :Emoji, :PlantUML, :Tags, :PandocBib, :Render]
       @filter_chain.delete(:Emoji) unless options.fetch :emoji, false
       @filter_chain.delete(:PandocBib) unless ::Gollum::MarkupRegisterUtils.using_pandoc?
       @filter_chain.delete(:CriticMarkup) unless options.fetch :critic_markup, false
