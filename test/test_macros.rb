@@ -200,7 +200,7 @@ context "Macros" do
     assert_match /<div class=\"flash flash-error\"><svg.*class=\"octicon octicon-zap mr-2\".*Macro Error for Octicon: Couldn't find octicon symbol for "foobar".*/, @wiki.pages[0].formatted_data
   end
 
-  test "Audio macro escapes HTML" do
+  test "Macros escape HTML" do
     @wiki.write_page("AudioXSSTest", :markdown, '<<Audio(a"></audio><input>)>>', commit_details)
     assert_not_match /<input/, @wiki.pages[0].formatted_data
   end
