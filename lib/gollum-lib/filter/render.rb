@@ -6,7 +6,11 @@ class Gollum::Filter::Render < Gollum::Filter
       working_dir = Pathname.new(@markup.wiki.path).join(@markup.dir)
       working_dir = working_dir.exist? ? working_dir.to_s : '.'
       Dir.chdir(working_dir) do
-        data = GitHub::Markup.render_s(@markup.format, data)
+        if block = @markup.custom_renderer
+          data = block.call(data)
+        else
+          data = GitHub::Markup.render_s(@markup.format, data)
+        end
       end
       if data.nil?
         raise "There was an error converting #{@markup.name} to HTML."
