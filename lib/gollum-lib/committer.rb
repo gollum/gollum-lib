@@ -18,6 +18,7 @@ module Gollum
     #           :message   - The String commit message.
     #           :name      - The String author full name.
     #           :email     - The String email address.
+    #           :note      - Optional String containing info about the commit. Not used, but can be accessed from inside the :post_commit Hook.
     #           :parent    - Optional Gollum::Git::Commit parent to this update.
     #           :tree      - Optional String SHA of the tree to create the
     #                        index from.
