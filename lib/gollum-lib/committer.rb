@@ -129,6 +129,7 @@ module Gollum
       @callbacks.each do |cb|
         cb.call(self, sha1)
       end
+      @wiki.repo.commit(sha1).note=@options[:note] if @options[:note]
       Hook.execute(:post_commit, self, sha1)
       sha1
     end
