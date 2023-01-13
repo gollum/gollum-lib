@@ -72,7 +72,7 @@ module Gollum
     def initialize(wiki, blob, path, version, try_on_disk = false)
       @wiki         = wiki
       @blob         = blob
-      @path         = path.empty? ? blob.name : ::File.join(path, blob.name)
+      @path         = Pathname.new(::File.join('/', path, blob.name)).cleanpath.to_s[1..-1]
       @version      = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
       get_disk_reference if try_on_disk
     end
