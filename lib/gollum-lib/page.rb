@@ -22,6 +22,7 @@ module Gollum
       end
 
       def path_compare(query, match_path, hyphened_tags, case_insensitive)
+        return false unless valid_extension?(match_path)
         cmp = valid_extension?(query) ? match_path : strip_filename(match_path)
         super(query, cmp, hyphened_tags, case_insensitive)
       end
