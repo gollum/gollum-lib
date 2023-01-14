@@ -7,6 +7,16 @@ module Gollum
     FS_SUPPORT_SYMLINKS = !Gem.win_platform?
 
     class << self
+
+    # Get a canonical path to a file, removing leading slashes.
+    #
+    # path           - One or more String path elements to join together
+    def canonical_path(*path)
+      # First create a clean path (e.g. no '..'), then remove leading slash.
+      result = Pathname.new(::File.join(['/', path.compact])).cleanpath.to_s
+      result.sub!(/^\/+/, '') # On Windows, Pathname#cleanpath will leave double slashes at the start of a path, so replace all (not just the first) leading slashes
+      result
+    end
       
       # For use with self.path_match: returns true if 'query' and 'match_path' match, strictly or taking account of the following parameters:
       # hyphened_tags  - If true, replace spaces in match_path with hyphens.
@@ -36,17 +46,16 @@ module Gollum
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
     def self.find(wiki, path, version, try_on_disk = false, global_match = false)
-      query_path = Pathname.new(::File.join(['/', wiki.page_file_dir, path].compact)).cleanpath.to_s
-      query_path.sub!(/^\/+/, '') # On Windows, Pathname#cleanpath will leave double slashes at the start of a path, so replace all (not just the first) leading slashes
-      segments = query_path.split('/')
-      filename = segments.last
-      dir = segments[0..-2].join('/')
+      path_segments =  self.canonical_path(wiki.page_file_dir, path).split('/')
+      filename = path_segments.last
+      dir = path_segments[0..-2].join('/')
+
 
       if global_match
         return nil
       else
         begin
-          root = wiki.repo.git.commit_from_ref(version.to_s)
+          root = wiki.commit_for(version.to_s)
           return nil unless root
           tree = dir.empty? ? root.tree : root.tree / dir
           return nil unless tree
@@ -72,7 +81,7 @@ module Gollum
     def initialize(wiki, blob, path, version, try_on_disk = false)
       @wiki         = wiki
       @blob         = blob
-      @path         = Pathname.new(::File.join('/', path, blob.name)).cleanpath.to_s[1..-1]
+      @path         = self.class.canonical_path(path, blob.name)
       @version      = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
       get_disk_reference if try_on_disk
     end
