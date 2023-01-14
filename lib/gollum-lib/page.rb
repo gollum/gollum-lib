@@ -21,6 +21,18 @@ module Gollum
         path_compare(query, match_path, hyphened_tags, case_insensitive)
       end
 
+      def global_find(wiki, version, query, try_on_disk)
+        map = wiki.tree_map_for(version.to_s)
+        begin
+          entry = map.detect do |entry|
+            global_path_match(query, entry, wiki.hyphened_tag_lookup, wiki.case_insensitive_tag_lookup)
+          end
+          entry ? self.new(wiki, entry.blob(wiki.repo), entry.dir, version, try_on_disk) : nil
+        rescue Gollum::Git::NoSuchShaFound
+          nil
+        end
+      end
+
       def path_compare(query, match_path, hyphened_tags, case_insensitive)
         return false unless valid_extension?(match_path)
         cmp = valid_extension?(query) ? match_path : strip_filename(match_path)

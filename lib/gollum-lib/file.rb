@@ -40,19 +40,19 @@ module Gollum
     # version - The String version ID to find.
     # try_on_disk - If true, try to return just a reference to a file
     #               that exists on the disk.
-    # global_match - If true, find a File matching path's filename, but not it's directory (so anywhere in the repo)
+    # global_match - If true, find a File matching path's filename, but not its directory (so anywhere in the repo)
     #
     # Returns a Gollum::File or nil if the file could not be found. Note
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
     def self.find(wiki, path, version, try_on_disk = false, global_match = false)
-      path_segments =  self.canonical_path(wiki.page_file_dir, path).split('/')
+      query_path =  self.canonical_path(wiki.page_file_dir, path)
+      path_segments = query_path.split('/')
       filename = path_segments.last
       dir = path_segments[0..-2].join('/')
 
-
-      if global_match
-        return nil
+      if global_match && self.respond_to?(:global_find) # Only implemented for Gollum::Page
+        return self.global_find(wiki, version, query_path, try_on_disk) 
       else
         begin
           root = wiki.commit_for(version.to_s)
