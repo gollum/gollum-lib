@@ -14,6 +14,8 @@ context "File" do
     assert_equal Gollum::File.canonical_path(dir, file, page_file_dir: page_file_dir), ''
     page_file_dir = 'pages'
     assert_equal Gollum::File.canonical_path(dir, file, page_file_dir: page_file_dir), 'pages'
+    # also removes leading slashes
+    assert_equal Gollum::File.canonical_path('/foo/bar', page_file_dir: page_file_dir), 'pages/foo/bar'
   end
 
   test "existing file" do

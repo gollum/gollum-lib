@@ -9,7 +9,8 @@ module Gollum
     class << self
 
     # Get a canonical path to a file.
-    # Ensures that the result is always under page_file_dir (prevents path traversal).
+    # Ensures that the result is always under page_file_dir (prevents path traversal), if set.
+    # Removes leading slashes.
     #
     # path           - One or more String path elements to join together. `nil` values are ignored.
     # page_file_dir  - kwarg String, default: nil
