@@ -7,6 +7,15 @@ context "File" do
     @wiki = Gollum::Wiki.new(testpath("examples/lotr.git"))
   end
 
+  test 'canonical_path method does not allow path traversal exploit' do
+    page_file_dir = nil
+    dir = 'pages'
+    file = '../../'
+    assert_equal Gollum::File.canonical_path(dir, file, page_file_dir: page_file_dir), ''
+    page_file_dir = 'pages'
+    assert_equal Gollum::File.canonical_path(dir, file, page_file_dir: page_file_dir), 'pages'
+  end
+
   test "existing file" do
     commit = @wiki.repo.commits.first
     file   = @wiki.file("Mordor/todo.txt")

@@ -8,13 +8,16 @@ module Gollum
 
     class << self
 
-    # Get a canonical path to a file, removing leading slashes.
+    # Get a canonical path to a file.
+    # Ensures that the result is always under page_file_dir (prevents path traversal).
     #
-    # path           - One or more String path elements to join together
-    def canonical_path(*path)
-      # First create a clean path (e.g. no '..'), then remove leading slash.
-      result = Pathname.new(::File.join(['/', path.compact])).cleanpath.to_s
-      result.sub!(/^\/+/, '') # On Windows, Pathname#cleanpath will leave double slashes at the start of a path, so replace all (not just the first) leading slashes
+    # path           - One or more String path elements to join together. `nil` values are ignored.
+    # page_file_dir  - kwarg String, default: nil
+    def canonical_path(*path, page_file_dir: nil)
+      prefix = Pathname.new(::File.join('/', page_file_dir.to_s))
+      rest = Pathname.new(::File.join('/', path.compact)).cleanpath
+      result = Pathname.new(::File.join(prefix, rest)).cleanpath.to_s[1..-1]
+      result.sub!(/^\/+/, '') if Gem.win_platform? # On Windows, Pathname#cleanpath will leave double slashes at the start of a path, so replace all (not just the first) leading slashes
       result
     end
       
@@ -46,7 +49,7 @@ module Gollum
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
     def self.find(wiki, path, version, try_on_disk = false, global_match = false)
-      query_path =  self.canonical_path(wiki.page_file_dir, path)
+      query_path =  self.canonical_path(path, page_file_dir: wiki.page_file_dir)
       path_segments = query_path.split('/')
       filename = path_segments.last
       dir = path_segments[0..-2].join('/')
