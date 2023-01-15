@@ -162,7 +162,7 @@ module Gollum
       tree.each do |entry|
         if entry[:type] == 'blob'
           next if @page_file_dir && !entry[:path].start_with?("#{@page_file_dir}/")
-          items << BlobEntry.new(entry[:sha], entry[:path], entry[:size], entry[:mode].to_i(8))
+          items << BlobEntry.new(entry[:sha], entry[:path], entry[:size], entry[:mode])
         end
       end
       items
