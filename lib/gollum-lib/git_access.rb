@@ -161,15 +161,11 @@ module Gollum
       items = []
       tree.each do |entry|
         if entry[:type] == 'blob'
+          next if @page_file_dir && !entry[:path].start_with?("#{@page_file_dir}/")
           items << BlobEntry.new(entry[:sha], entry[:path], entry[:size], entry[:mode].to_i(8))
         end
       end
-      if (dir = @page_file_dir)
-        regex = /^#{dir}\//
-        items.select { |i| i.path =~ regex }
-      else
-        items
-      end
+      items
     end
 
     # Reads the content from the Git db at the given SHA.
