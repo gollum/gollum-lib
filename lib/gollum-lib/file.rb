@@ -63,8 +63,8 @@ module Gollum
           return nil unless root
           tree = dir.empty? ? root.tree : root.tree / dir
           return nil unless tree
-          entry = tree.blobs.find do |blob|
-            path_compare(filename, blob.name, wiki.hyphened_tag_lookup, wiki.case_insensitive_tag_lookup)
+          entry = tree.find_blob do |blob_name|
+            path_compare(filename, blob_name, wiki.hyphened_tag_lookup, wiki.case_insensitive_tag_lookup)
           end
           entry ? self.new(wiki, entry, dir, version, try_on_disk) : nil
         rescue Gollum::Git::NoSuchShaFound
