@@ -1,3 +1,8 @@
+# 5.2.2 / 2023-01-18
+
+* Bugfix release: set Nokogiri default XHTML conversion options more relaibly. See https://github.com/sparklemotion/nokogiri/issues/2761
+
+
 # 5.2.1 / 2022-09-13
 
 * Fixed: 'controls' attribute in audio and video tags should not be sanitized. #430 (@dometto)
