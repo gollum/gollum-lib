@@ -23,7 +23,7 @@ module Gollum
     class << self
 
       def to_xml_opts
-        { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML ^ 1, :indent => 0, :encoding => 'UTF-8' }
+        { :save_with => Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML & (~Nokogiri::XML::Node::SaveOptions::FORMAT), :indent => 0, :encoding => 'UTF-8' }
       end
 
       # Only use the formats that are specified in config.rb
