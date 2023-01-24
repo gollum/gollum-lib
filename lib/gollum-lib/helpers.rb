@@ -7,8 +7,7 @@ module Gollum
     def trim_leading_slashes(url)
       return nil if url.nil?
       url.gsub!('%2F', '/')
-      return '/' + url.gsub(/^\/+/, '') if url[0, 1] == '/'
-      url
+      (Pathname.new('/') + url).cleanpath.to_s
     end
     
     # Take a link path and turn it into a string for display as link text.
