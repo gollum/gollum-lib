@@ -368,6 +368,5 @@ module Gollum
       @historical     = false
     end
   end
-  
 
 end

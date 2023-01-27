@@ -3,16 +3,15 @@ module Gollum
     class Note < Gollum::Macro
       def render(notice, octicon = 'info')
         icon = ""
+        defaults = {width: 24, height: 24, class: 'mr-2'}
         unless octicon.empty?
           begin
-            icon = Octicons::Octicon.new(octicon, {width: 24, height: 24})
+            icon = Gollum::Icon.get_icon(octicon, defaults)
           rescue RuntimeError
-            icon = Octicons::Octicon.new('info', {width: 24, height: 24})
+            icon = Gollum::Icon.get_icon('info', defaults)
           end
-          icon.options[:class] << ' mr-2'
-          icon = icon.to_svg
         end
-        "<div class='flash'>#{icon}#{notice}</div>"
+        "<div class='flash my-2'>#{icon}#{notice}</div>"
       end
     end
   end

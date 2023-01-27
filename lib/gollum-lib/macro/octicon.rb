@@ -5,7 +5,7 @@ module Gollum
         parameters = {}
         parameters[:height] = height if height
         parameters[:width]  = width if width
-        "<div>#{Octicons::Octicon.new(symbol, parameters).to_svg}</div>"
+        "<div>#{Gollum::Icon.get_icon(symbol, parameters)}</div>"
       end
     end
   end

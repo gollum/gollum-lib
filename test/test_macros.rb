@@ -1,6 +1,7 @@
 # ~*~ encoding: utf-8 ~*~
 require File.expand_path('../helper', __FILE__)
 require File.expand_path('../wiki_factory', __FILE__)
+require 'rubygems/commands/install_command'
 
 class Gollum::Macro::ListArgs < Gollum::Macro
   def render(*args)
@@ -171,12 +172,12 @@ context "Macros" do
 
   test "Note macro given a string displays a regular flash message box" do
     @wiki.write_page("NoteMacroPage", :markdown, '<<Note("Did you know Bilbo is a Hobbit?")>>', commit_details)
-    assert_match /<div class=\"flash\"><svg.*class=\"octicon octicon-info mr-2\".*Did you know Bilbo.*/, @wiki.pages[0].formatted_data
+    assert_match /<div class=\"flash my-2\"><svg.*class=\"octicon octicon-info mr-2\".*Did you know Bilbo.*/, @wiki.pages[0].formatted_data
   end
 
   test "Warn macro given a string displays a flash-warning message box" do
     @wiki.write_page("WarnMacroPage", :markdown, '<<Warn("Be careful not to mention hobbits in conversation too much.")>>', commit_details)
-    assert_match /<div class=\"flash flash-warn\"><svg.*class=\"octicon octicon-alert mr-2\".*Be careful.*/, @wiki.pages[0].formatted_data
+    assert_match /<div class=\"flash flash-warn my-2\"><svg.*class=\"octicon octicon-alert mr-2\".*Be careful.*/, @wiki.pages[0].formatted_data
   end
 
   test "Macro errors are reported in place in a flash-error message box" do
@@ -191,8 +192,23 @@ context "Macros" do
 
   test "Note macro renders HTML code" do
     @wiki.write_page("HTMLNoteMacroPage", :markdown, '<<Note("<span>test</span>")>>', commit_details)
-    assert_match /<div class=\"flash\"><svg.*class=\"octicon octicon-info mr-2\".*<span>test<\/span>.*/, @wiki.pages[0].formatted_data
+    assert_match /<div class=\"flash my-2\"><svg.*class=\"octicon octicon-info mr-2\".*<span>test<\/span>.*/, @wiki.pages[0].formatted_data
   end
+
+  test "Macros use fallback icon if Ocitcons gem is not available" do
+    Gollum::Icon.class_variable_set(:@@octicons, false)
+    @wiki.write_page("GollumIconPage", :markdown, '<<Octicon("bell")>>', commit_details)
+    assert_match /<div><svg.*class=\"octicon octicon-alert \".*/, @wiki.pages[0].formatted_data
+    Gollum::Icon.class_variable_set(:@@octicons, true)
+  end
+
+  test "Macro fallback icon respects dimension options" do
+    Gollum::Icon.class_variable_set(:@@octicons, false)
+    @wiki.write_page("GollumIconPage", :markdown, '<<Octicon("bell", 64, 64)>>', commit_details)
+    assert_match /<div><svg height=\"64\" width=\"64\".*class=\"octicon octicon-alert \".*/, @wiki.pages[0].formatted_data
+    Gollum::Icon.class_variable_set(:@@octicons, true)
+  end
+
 
   test "Series macro escapes page names" do
     @wiki.write_page("test-1", :markdown, "test1", commit_details)

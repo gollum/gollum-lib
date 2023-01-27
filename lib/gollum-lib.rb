@@ -27,12 +27,14 @@ require File.expand_path('../gollum-lib/wiki', __FILE__)
 require File.expand_path('../gollum-lib/redirects', __FILE__)
 require File.expand_path('../gollum-lib/file', __FILE__)
 require File.expand_path('../gollum-lib/page', __FILE__)
+require File.expand_path('../gollum-lib/icon', __FILE__)
 require File.expand_path('../gollum-lib/macro', __FILE__)
 require File.expand_path('../gollum-lib/file_view', __FILE__)
 require File.expand_path('../gollum-lib/markup', __FILE__)
 require File.expand_path('../gollum-lib/markups', __FILE__)
 require File.expand_path('../gollum-lib/sanitization', __FILE__)
 require File.expand_path('../gollum-lib/filter', __FILE__)
+
 
 module Gollum
 
