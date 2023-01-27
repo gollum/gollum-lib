@@ -1,7 +1,6 @@
 # ~*~ encoding: utf-8 ~*~
 require File.expand_path('../helper', __FILE__)
 require File.expand_path('../wiki_factory', __FILE__)
-require 'rubygems/commands/install_command'
 
 class Gollum::Macro::ListArgs < Gollum::Macro
   def render(*args)
