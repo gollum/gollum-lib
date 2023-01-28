@@ -26,7 +26,6 @@ def specification(version, default_adapter, platform = nil)
     s.add_dependency 'loofah', '~> 2.3'
     s.add_dependency 'github-markup', '~> 4.0'
     s.add_dependency 'gemojione', '~> 4.1'
-    s.add_dependency 'octicons', '~> 12.0'
     s.add_dependency 'twitter-text', '1.14.7'
 
     s.add_development_dependency 'org-ruby', '~> 0.9.9'
@@ -92,7 +91,7 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/macro/global_toc.rb
     lib/gollum-lib/macro/navigation.rb
     lib/gollum-lib/macro/note.rb
-    lib/gollum-lib/macro/octicon.rb
+    lib/gollum-lib/macro/icon.rb
     lib/gollum-lib/macro/series.rb
     lib/gollum-lib/macro/video.rb
     lib/gollum-lib/macro/warn.rb
