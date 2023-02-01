@@ -48,7 +48,7 @@ class Gollum::Filter::Macro < Gollum::Filter
         begin
           Gollum::Macro.instance(macro, @markup.wiki, @markup.page).render(*args)
         rescue StandardError => e
-          %Q(<div class="flash flash-error" data-gollum-icon="zap">Macro Error for #{macro}: #{e.message}</div>)
+          %Q(<div class="flash flash-error gollum-macro-error my-2">Macro Error for #{macro}: #{e.message}</div>)
         end
       end
     end

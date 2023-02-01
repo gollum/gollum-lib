@@ -169,17 +169,17 @@ context "Macros" do
 
   test "Note macro given a string displays a regular flash message box" do
     @wiki.write_page("NoteMacroPage", :markdown, '<<Note("Did you know Bilbo is a Hobbit?")>>', commit_details)
-    assert_match /<div class=\"flash\" data-gollum-icon=\"info\">.*Did you know Bilbo.*/, @wiki.pages[0].formatted_data
+    assert_match /<div class=\"flash gollum-note my-2\">.*Did you know Bilbo.*/, @wiki.pages[0].formatted_data
   end
 
   test "Warn macro given a string displays a flash-warning message box" do
     @wiki.write_page("WarnMacroPage", :markdown, '<<Warn("Be careful not to mention hobbits in conversation too much.")>>', commit_details)
-    assert_match /<div class=\"flash flash-warn\" data-gollum-icon=\"alert\">.*Be careful.*/, @wiki.pages[0].formatted_data
+    assert_match /<div class=\"flash flash-warn gollum-warning my-2\">.*Be careful.*/, @wiki.pages[0].formatted_data
   end
 
   test "Macro errors are reported in place in a flash-error message box" do
     @wiki.write_page("IconMacroPage", :markdown, '<<Note("foobar", 64, 64)>>', commit_details)
-    assert_match /<div class=\"flash flash-error\" data-gollum-icon=\"zap\">Macro Error for Note: wrong number of arguments.*/, @wiki.pages[0].formatted_data
+    assert_match /<div class=\"flash flash-error gollum-macro-error my-2\">Macro Error for Note: wrong number of arguments.*/, @wiki.pages[0].formatted_data
   end
 
   test "Audio macro escapes HTML" do
@@ -189,7 +189,7 @@ context "Macros" do
 
   test "Note macro renders HTML code" do
     @wiki.write_page("HTMLNoteMacroPage", :markdown, '<<Note("<span>test</span>")>>', commit_details)
-    assert_match /<div class=\"flash\".*<span>test<\/span>.*/, @wiki.pages[0].formatted_data
+    assert_match /<div class=\"flash gollum-note my-2\".*<span>test<\/span>.*/, @wiki.pages[0].formatted_data
   end
 
   test "Series macro escapes page names" do
