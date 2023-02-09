@@ -1,5 +1,5 @@
 ::Loofah::HTML5::SafeList::ACCEPTABLE_PROTOCOLS.add('apt')
-::Loofah::HTML5::SafeList::ALLOWED_ATTRIBUTES.add('controls')
+::Loofah::HTML5::SafeList::ALLOWED_ATTRIBUTES.merge(%w[controls loop muted playsinline autoplay])
 
 module Gollum
   class Sanitization
