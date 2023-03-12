@@ -7,4 +7,8 @@
 
 * Default to local PlantUML server for security. #412. (@manofstick)
 * Allow use of default branch name `main` or `master. Resolves https://github.com/gollum/gollum/issues/1813. (@dometto)
+<<<<<<< HEAD
 >>>>>>> 462ce53 (Implement default branch detection, move away from master as default. (#424))
+=======
+* Support use of commit notes in Gollum::Committer. (@dometto, @bartkamphorst)
+>>>>>>> 8384b51 (Support for git notes (#435))
