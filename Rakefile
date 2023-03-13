@@ -189,7 +189,7 @@ end
 desc 'Build changlog'
 task :changelog do
   [latest_changes_file, history_file].each do |f|
-    unless File.exists?(f)
+    unless File.exist?(f)
       puts "#{f} does not exist but is required to build a new release."
       exit!
     end
