@@ -1,4 +1,4 @@
-# 5.2.2 / 2023-01-18
+# 5.2.3 / 2023-03-13
 
-* Bugfix release: set Nokogiri default XHTML conversion options more reliably. See https://github.com/sparklemotion/nokogiri/issues/2761
+* Bugfix release: update adapter dependencies for Ruby 3.2 support.
 

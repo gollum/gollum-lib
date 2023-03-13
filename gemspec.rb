@@ -56,6 +56,7 @@ def specification(version, default_adapter, platform = nil)
     Gemfile
     Guardfile
     HISTORY.md
+    LATEST_CHANGES.md
     LICENSE
     README.md
     Rakefile
