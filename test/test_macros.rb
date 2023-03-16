@@ -150,11 +150,27 @@ context "Macros" do
     assert_match(/@xyzzy = Foo@/, @wiki.pages[0].formatted_data)
   end
 
-  test "Video macro given a name of a file displays an html5 video tag" do
+  test "Video macro given a name of a file renders an html5 video tag" do
     file = "/Uploads/foo.mp4"
     @wiki.write_page("VideoTagTest", :markdown, "<<Video(#{file})>>", commit_details)
-    assert_match /<video (.*) src="#{file}"(.*)> (.*)<\/video>/, @wiki.pages[0].formatted_data
+    assert_match /<video (.*) src="#{file}"(.*)>(.*)<\/video>/, @wiki.pages[0].formatted_data
   end 
+
+  test "Video macro auto play mode adds required attributes; removes controls" do
+    # also take the opportunity to check that URL encoding is OK
+    file = "/Uploads/foo .mp4"
+    @wiki.write_page("VideoTagTest", :markdown, "<<Video(#{file}, auto=true)>>", commit_details)
+
+    assert_match /<video (.*)src="\/Uploads\/foo%20.mp4"(.*)>(.*)<\/video>/, @wiki.pages[0].formatted_data
+
+    attributes = ["autoplay", "playsinline", "muted", "loop"]
+
+    attributes.each do |attribute|
+      assert_match /<video(.*)#{attribute}="true"(.*)<\/video>/, @wiki.pages[0].formatted_data
+    end
+
+    assert_not_match /<video(.*)controls="true(.*)<\/video>/, @wiki.pages[0].formatted_data
+  end
 
   test "Audio macro given a name of a file displays an audio tag" do
     file = "/Uploads/foo.mp3"
