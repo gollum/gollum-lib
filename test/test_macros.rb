@@ -158,10 +158,10 @@ context "Macros" do
 
   test "Video macro auto play mode adds required attributes; removes controls" do
     # also take the opportunity to check that URL encoding is OK
-    file = "/Uploads/foo .mp4"
+    file = "/Uploads/foo<script>.mp4"
     @wiki.write_page("VideoTagTest", :markdown, "<<Video(#{file}, auto=true)>>", commit_details)
 
-    assert_match /<video (.*)src="\/Uploads\/foo%20.mp4"(.*)>(.*)<\/video>/, @wiki.pages[0].formatted_data
+    assert_match /<video (.*)src="\/Uploads\/foo&lt;script&gt;.mp4"(.*)>(.*)<\/video>/, @wiki.pages[0].formatted_data
 
     attributes = ["autoplay", "playsinline", "muted", "loop"]
 
