@@ -157,7 +157,7 @@ class Gollum::Filter::TOC < Gollum::Filter
     end
 
     # % -> %25 so anchors work on Firefox. See issue #475
-    @tail.add_child(%Q{<a href="##{name}">#{header.content}</a>})
+    @tail.add_child(%Q{<a href="##{name}">#{CGI.escapeHTML(header.content)}</a>})
   end
 
   # Increments the number of anchors with the given name
