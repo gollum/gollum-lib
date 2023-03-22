@@ -379,6 +379,22 @@ DATA
     assert_html_equal expected, output
   end
 
+  test 'backtick code blocks no xss' do
+    page = 'test_xss'
+    markup = <<EOF
+[[_TOC_]]
+
+```
+<svg><script>alert(1)</script></svg>
+```
+---
+EOF
+    @wiki.write_page(page, :markdown, markup, commit_details)
+    output   = @wiki.page(page).formatted_data
+    puts output.inspect
+    assert_no_match /\<script\>/, output
+  end
+
   test "backtick code blocks must have no more than three space indents" do
     page = 'test_rgx'
     @wiki.write_page(page, :markdown,
