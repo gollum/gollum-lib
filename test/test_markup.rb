@@ -391,7 +391,6 @@ DATA
 EOF
     @wiki.write_page(page, :markdown, markup, commit_details)
     output   = @wiki.page(page).formatted_data
-    puts output.inspect
     assert_no_match /\<script\>/, output
   end
 
