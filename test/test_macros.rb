@@ -50,7 +50,7 @@ context "Macros" do
     assert_match /<div class="toc"><div class="toc-title">Navigate this directory<\/div><ul><li><a href="\/NavigationMacroPage.md" rel="nofollow">NavigationMacroPage.md<\/a><\/li><li><a href="\/ZZZZ\/A\.md" rel="nofollow">ZZZZ\/A\.md<\/a><\/li><\/ul><\/div>/, @wiki.pages[0].formatted_data
   end
 
-  test "Navigation macro does not show fullpath if last parameter is full_path is set to false" do
+  test "Navigation macro does not show full path if parameter full_path is set to false" do
     # This is also a regression test against https://github.com/gollum/gollum-lib/issues/446
     @wiki.write_page("NavigationMacroPage", :markdown, '<<Navigation("My TOC", "ZZZZ", false)>>', commit_details)
     @wiki.write_page("ZZZZ/A", :markdown, "content", commit_details)
