@@ -11,4 +11,11 @@
 >>>>>>> 462ce53 (Implement default branch detection, move away from master as default. (#424))
 =======
 * Support use of commit notes in Gollum::Committer. (@dometto, @bartkamphorst)
+<<<<<<< HEAD
 >>>>>>> 8384b51 (Support for git notes (#435))
+=======
+
+### Bugfixes
+
+* Fix the use of boolean arguments in Macros. #441. (@dometto)
+>>>>>>> 0db2ff5 (Ensure boolean Macro arguments are parsed as boolean. Resolves #441 (#447))
