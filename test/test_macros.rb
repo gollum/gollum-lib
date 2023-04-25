@@ -169,6 +169,11 @@ context "Macros" do
     assert_match /<div class=\"gollum-icon\".*data-gollum-icon=\"globe\".*/, @wiki.pages[0].formatted_data
   end
 
+  test "Flash macro given a type and icon name renders gollum-flash with data-* attributes" do
+    @wiki.write_page("FlashMacroPage", :markdown, '<<Flash("Not all those who wander are lost", "bell", "success")>>', commit_details)
+    assert_match /<div class=\"flash flash-success my-2\".*data-gollum-icon=\"bell\".*/, @wiki.pages[0].formatted_data
+  end
+
   test "Note macro given a string displays a regular flash message box" do
     @wiki.write_page("NoteMacroPage", :markdown, '<<Note("Did you know Bilbo is a Hobbit?")>>', commit_details)
     assert_match /<div class=\"flash gollum-note my-2\">.*Did you know Bilbo.*/, @wiki.pages[0].formatted_data
