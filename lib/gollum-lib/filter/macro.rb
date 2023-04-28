@@ -22,13 +22,18 @@ class Gollum::Filter::Macro < Gollum::Filter
       argstr.scan(/,?\s*(#{arg})\s*/) do |arguments|
       	# Stabstabstab
       	argument = arguments.first
-      	
-        if argument =~ /^([a-z0-9_]+)="(.*?)"/
-      		opts[Regexp.last_match[1]] = Regexp.last_match[2]
-			  elsif argument =~ /^"(.*)"$/
-				  args << Regexp.last_match[1].gsub("\\\"", "\"")
-			  else
-				  args << argument
+
+        case argument
+        in /^([a-z0-9_]+)="(.*?)"/
+          opts[Regexp.last_match[1]] = Regexp.last_match[2]
+        in /^"(.*)"$/
+          args << Regexp.last_match[1].gsub("\\\"", "\"")
+        in /\s*false\s*/
+          args << false
+        in /\s*true\s*/
+          args << true
+        else
+          args << argument
         end
       end
 		  
@@ -53,6 +58,6 @@ class Gollum::Filter::Macro < Gollum::Filter
       end
     end
 
-    sanitize(data)
+    data
   end
 end

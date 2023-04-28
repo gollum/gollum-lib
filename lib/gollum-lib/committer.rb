@@ -18,6 +18,7 @@ module Gollum
     #           :message   - The String commit message.
     #           :name      - The String author full name.
     #           :email     - The String email address.
+    #           :note      - Optional String containing info about the commit. Not used, but can be accessed from inside the :post_commit Hook.
     #           :parent    - Optional Gollum::Git::Commit parent to this update.
     #           :tree      - Optional String SHA of the tree to create the
     #                        index from.
@@ -128,6 +129,7 @@ module Gollum
       @callbacks.each do |cb|
         cb.call(self, sha1)
       end
+      @wiki.repo.commit(sha1).note=@options[:note] if @options[:note]
       Hook.execute(:post_commit, self, sha1)
       sha1
     end

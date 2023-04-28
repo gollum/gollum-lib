@@ -7,7 +7,7 @@ module Gollum
 
     class << self
       # Sets the default ref for the wiki.
-      attr_writer :default_ref
+      attr_writer :default_refs
 
       # Sets the default name for commits.
       attr_writer :default_committer_name
@@ -19,8 +19,12 @@ module Gollum
       # These defaults can be overridden by options passed directly to initialize()
       attr_writer :default_options
 
-      def default_ref
-        @default_ref || 'master'
+      def find_default_ref(repo)
+        repo.find_branch(self.default_refs) || Gollum::Git.global_default_branch || self.default_refs.first
+      end
+
+      def default_refs
+        @default_refs || ['master', 'main']
       end
 
       def default_committer_name
@@ -132,7 +136,7 @@ module Gollum
       @access               = options.fetch :access, GitAccess.new(path, @page_file_dir, @repo_is_bare)
       @base_path            = options.fetch :base_path, "/"
       @repo                 = @access.repo
-      @ref                  = options.fetch :ref, self.class.default_ref
+      @ref                  = options.fetch :ref, self.class.find_default_ref(@repo)
       @universal_toc        = options.fetch :universal_toc, false
       @mathjax              = options.fetch :mathjax, false
       @global_tag_lookup    = options.fetch :global_tag_lookup, false
@@ -152,7 +156,7 @@ module Gollum
       @per_page_uploads     = options.fetch :per_page_uploads, false
       @metadata             = options.fetch :metadata, {}
       @filter_chain         = options.fetch :filter_chain,
-                                            [:YAML, :BibTeX, :PlainText, :CriticMarkup, :TOC, :RemoteCode, :Code, :Macro, :Emoji, :Sanitize, :PlantUML, :Tags, :PandocBib, :Render]
+                                            [:YAML, :BibTeX, :PlainText, :CriticMarkup, :TOC, :Sanitize, :RemoteCode, :Code, :Macro, :Emoji, :PlantUML, :Tags, :PandocBib, :Render]
       @filter_chain.delete(:Emoji) unless options.fetch :emoji, false
       @filter_chain.delete(:PandocBib) unless ::Gollum::MarkupRegisterUtils.using_pandoc?
       @filter_chain.delete(:CriticMarkup) unless options.fetch :critic_markup, false

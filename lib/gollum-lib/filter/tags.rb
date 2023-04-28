@@ -231,7 +231,13 @@ class Gollum::Filter::Tags < Gollum::Filter
       name = page ? path_to_link_text(link) : link
     end
 
-    link = page ? page.escaped_url_path : ERB::Util.url_encode(link).force_encoding('utf-8')
+    if page
+      link = page.escaped_url_path
+    else
+      link = Pathname.new(link).relative? ? "#{@markup.dir.to_s}/#{link}" : link
+      link = ERB::Util.url_encode(link).force_encoding('utf-8')
+    end
+
     generate_link(link, name, extra, presence)
   end
 
