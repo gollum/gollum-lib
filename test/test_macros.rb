@@ -162,10 +162,8 @@ context "Macros" do
     assert_match /<audio (.*) src="#{file}"(.*)> (.*)<\/audio>/, @wiki.pages[0].formatted_data
   end
 
-  test "Icon macro given a symbol and dimensions renders gollum-icon div with data-* attributes" do
-    @wiki.write_page("IconMacroPage", :markdown, '<<Icon("globe", 64, 64)>>', commit_details)
-    assert_match /<div class=\"gollum-icon\".*data-gollum-icon-height=\"64\".*/, @wiki.pages[0].formatted_data
-    assert_match /<div class=\"gollum-icon\".*data-gollum-icon-width=\"64\".*/, @wiki.pages[0].formatted_data
+  test "Icon macro given a symbol renders gollum-icon div with data-gollum-icon attribute" do
+    @wiki.write_page("IconMacroPage", :markdown, '<<Icon("globe")>>', commit_details)
     assert_match /<div class=\"gollum-icon\".*data-gollum-icon=\"globe\".*/, @wiki.pages[0].formatted_data
   end
 
