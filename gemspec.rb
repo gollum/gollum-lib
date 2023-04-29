@@ -44,7 +44,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'rb-readline', '~> 0.5.1'
     # updating minitest-reporters requires a new minitest which fails with gollum's tests.
     s.add_development_dependency 'test-unit', '~> 3.3'
-    s.add_development_dependency 'minitest-reporters', '~> 1.4'
+    s.add_development_dependency 'minitest-reporters', '~> 1.5'
     s.add_development_dependency 'nokogiri-diff', '~> 0.2.0'
     s.add_development_dependency 'guard', '~> 2.16'
     s.add_development_dependency 'guard-minitest', '~> 2.4'
