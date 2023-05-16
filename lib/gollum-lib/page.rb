@@ -6,7 +6,7 @@ module Gollum
     SUBPAGENAMES = [:header, :footer, :sidebar]
 
     class << self
-      # For use with self.find: returns true if the given query corresponds to the in-repo path of the BlobEntry. 
+      # For use with self.global_find: returns true if the given query corresponds to the in-repo path of the BlobEntry. 
       #
       # query     - The String path to match.
       # entry     - The BlobEntry to check against.

@@ -15,14 +15,14 @@ module Gollum
     # path           - One or more String path elements to join together. `nil` values are ignored.
     # page_file_dir  - kwarg String, default: nil
     def canonical_path(*path, page_file_dir: nil)
-      prefix = Pathname.new(::File.join('/', page_file_dir.to_s))
-      rest = Pathname.new(::File.join('/', path.compact)).cleanpath
-      result = Pathname.new(::File.join(prefix, rest)).cleanpath.to_s[1..-1]
+      prefix = Pathname.new('/') + page_file_dir.to_s
+      rest = Pathname.new('/').join(*path.compact).cleanpath.to_s[1..-1]
+      result = (prefix + rest).cleanpath.to_s[1..-1]
       result.sub!(/^\/+/, '') if Gem.win_platform? # On Windows, Pathname#cleanpath will leave double slashes at the start of a path, so replace all (not just the first) leading slashes
       result
     end
       
-      # For use with self.path_match: returns true if 'query' and 'match_path' match, strictly or taking account of the following parameters:
+      # For use with self.find: returns true if 'query' and 'match_path' match, strictly or taking account of the following parameters:
       # hyphened_tags  - If true, replace spaces in match_path with hyphens.
       # case_insensitive - If true, compare query and match_path case-insensitively
       def path_compare(query, match_path, hyphened_tags, case_insensitive)
@@ -51,9 +51,8 @@ module Gollum
     # for which on_disk? is actually true.
     def self.find(wiki, path, version, try_on_disk = false, global_match = false)
       query_path =  self.canonical_path(path, page_file_dir: wiki.page_file_dir)
-      path_segments = query_path.split('/')
-      filename = path_segments.last
-      dir = path_segments[0..-2].join('/')
+      dir, filename = Pathname.new(query_path).split
+      dir = dir.to_s
 
       if global_match && self.respond_to?(:global_find) # Only implemented for Gollum::Page
         return self.global_find(wiki, version, query_path, try_on_disk) 
@@ -61,10 +60,10 @@ module Gollum
         begin
           root = wiki.commit_for(version.to_s)
           return nil unless root
-          tree = dir.empty? ? root.tree : root.tree / dir
+          tree = dir == '.' ? root.tree : root.tree / dir
           return nil unless tree
           entry = tree.find_blob do |blob_name|
-            path_compare(filename, blob_name, wiki.hyphened_tag_lookup, wiki.case_insensitive_tag_lookup)
+            path_compare(filename.to_s, blob_name, wiki.hyphened_tag_lookup, wiki.case_insensitive_tag_lookup)
           end
           entry ? self.new(wiki, entry, dir, version, try_on_disk) : nil
         rescue Gollum::Git::NoSuchShaFound
