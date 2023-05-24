@@ -13,11 +13,11 @@ module Gollum
       def global_path_match(query, entry, hyphened_tags = false, case_insensitive = false)
         return false if "#{entry.name}".empty?
         return false unless valid_extension?(entry.name)
-        match_path = ::File.join([
-          '/', 
+        match_path = Pathname.new('/').join(*[
           entry.dir,
-        entry.name
-        ].compact)
+          entry.name
+          ].compact
+        ).to_s
         path_compare(query, match_path, hyphened_tags, case_insensitive)
       end
 
