@@ -8,18 +8,21 @@ module Gollum
 
     class << self
 
-      # For use with self.find: returns true if the given query corresponds to the in-repo path of the BlobEntry.
-      #
-      # query     - The String path to match.
-      # entry     - The BlobEntry to check against.
-      # global_match - (Not implemented for File, see Page.path_match)
-      # hyphened_tags  - If true, replace spaces in match_path with hyphens.
-      # case_insensitive - If true, compare query and match_path case-insensitively
-      def path_match(query, entry, global_match = false, hyphened_tags = false, case_insensitive = false)
-        path_compare(query, ::File.join('/', entry.path), hyphened_tags, case_insensitive)
-      end
+    # Get a canonical path to a file.
+    # Ensures that the result is always under page_file_dir (prevents path traversal), if set.
+    # Removes leading slashes.
+    #
+    # path           - One or more String path elements to join together. `nil` values are ignored.
+    # page_file_dir  - kwarg String, default: nil
+    def canonical_path(*path, page_file_dir: nil)
+      prefix = Pathname.new('/') + page_file_dir.to_s
+      rest = Pathname.new('/').join(*path.compact).cleanpath.to_s[1..-1]
+      result = (prefix + rest).cleanpath.to_s[1..-1]
+      result.sub!(/^\/+/, '') if Gem.win_platform? # On Windows, Pathname#cleanpath will leave double slashes at the start of a path, so replace all (not just the first) leading slashes
+      result
+    end
       
-      # For use with self.path_match: returns true if 'query' and 'match_path' match, strictly or taking account of the following parameters:
+      # For use with self.find: returns true if 'query' and 'match_path' match, strictly or taking account of the following parameters:
       # hyphened_tags  - If true, replace spaces in match_path with hyphens.
       # case_insensitive - If true, compare query and match_path case-insensitively
       def path_compare(query, match_path, hyphened_tags, case_insensitive)
@@ -41,24 +44,31 @@ module Gollum
     # version - The String version ID to find.
     # try_on_disk - If true, try to return just a reference to a file
     #               that exists on the disk.
-    # global_match - If true, find a File matching path's filename, but not it's directory (so anywhere in the repo)
+    # global_match - If true, find a File matching path's filename, but not its directory (so anywhere in the repo)
     #
     # Returns a Gollum::File or nil if the file could not be found. Note
     # that if you specify try_on_disk=true, you may or may not get a file
     # for which on_disk? is actually true.
     def self.find(wiki, path, version, try_on_disk = false, global_match = false)
-      map = wiki.tree_map_for(version.to_s)
+      query_path =  self.canonical_path(path, page_file_dir: wiki.page_file_dir)
+      dir, filename = Pathname.new(query_path).split
+      dir = dir.to_s
 
-      query_path = Pathname.new(::File.join(['/', wiki.page_file_dir, path].compact)).cleanpath.to_s
-      query_path.sub!(/^\/\//, '/') if Gem.win_platform? # On Windows, Pathname#cleanpath will leave double slashes at the start of a path intact, so sub them out.
-
-      begin
-        entry = map.detect do |entry|
-          path_match(query_path, entry, global_match, wiki.hyphened_tag_lookup, wiki.case_insensitive_tag_lookup)
+      if global_match && self.respond_to?(:global_find) # Only implemented for Gollum::Page
+        return self.global_find(wiki, version, query_path, try_on_disk) 
+      else
+        begin
+          root = wiki.commit_for(version)
+          return nil unless root
+          tree = dir == '.' ? root.tree : root.tree / dir
+          return nil unless tree
+          entry = tree.find_blob do |blob_name|
+            path_compare(filename.to_s, blob_name, wiki.hyphened_tag_lookup, wiki.case_insensitive_tag_lookup)
+          end
+          entry ? self.new(wiki, entry, dir, version, try_on_disk) : nil
+        rescue Gollum::Git::NoSuchShaFound
+          nil
         end
-        entry ? self.new(wiki, entry.blob(wiki.repo), entry.dir, version, try_on_disk) : nil
-      rescue Gollum::Git::NoSuchShaFound
-        nil
       end
     end
 
@@ -74,7 +84,7 @@ module Gollum
     def initialize(wiki, blob, path, version, try_on_disk = false)
       @wiki         = wiki
       @blob         = blob
-      @path         = "#{path}/#{blob.name}"[1..-1]
+      @path         = self.class.canonical_path(path, blob.name)
       @version      = version.is_a?(Gollum::Git::Commit) ? version : @wiki.commit_for(version)
       get_disk_reference if try_on_disk
     end

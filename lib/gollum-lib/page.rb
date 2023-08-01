@@ -6,22 +6,39 @@ module Gollum
     SUBPAGENAMES = [:header, :footer, :sidebar]
 
     class << self
-      # For use with self.find: returns true if the given query corresponds to the in-repo path of the BlobEntry. 
+      # For use with self.global_find: returns true if the given query corresponds to the in-repo path of the BlobEntry. 
       #
       # query     - The String path to match.
       # entry     - The BlobEntry to check against.
-      # global_match - If true, find a File matching path's filename, but not its directory (so anywhere in the repo)
-      def path_match(query, entry, global_match = false, hyphened_tags = false, case_insensitive = false)
+      def global_path_match(query, entry, hyphened_tags = false, case_insensitive = false)
         return false if "#{entry.name}".empty?
         return false unless valid_extension?(entry.name)
-        entry_name = valid_extension?(query) ? entry.name : strip_filename(entry.name)     
-        match_path = ::File.join([
-          '/',
-          global_match ? nil : entry.dir,
-        entry_name
-        ].compact)
+        match_path = Pathname.new('/').join(*[
+          entry.dir,
+          entry.name
+          ].compact
+        ).to_s
         path_compare(query, match_path, hyphened_tags, case_insensitive)
       end
+
+      def global_find(wiki, version, query, try_on_disk)
+        map = wiki.tree_map_for(version.to_s)
+        begin
+          entry = map.detect do |entry|
+            global_path_match(query, entry, wiki.hyphened_tag_lookup, wiki.case_insensitive_tag_lookup)
+          end
+          entry ? self.new(wiki, entry.blob(wiki.repo), entry.dir, version, try_on_disk) : nil
+        rescue Gollum::Git::NoSuchShaFound
+          nil
+        end
+      end
+
+      def path_compare(query, match_path, hyphened_tags, case_insensitive)
+        return false unless valid_extension?(match_path)
+        cmp = valid_extension?(query) ? match_path : strip_filename(match_path)
+        super(query, cmp, hyphened_tags, case_insensitive)
+      end
+
     end
 
     # Checks if a filename has a valid, registered extension
