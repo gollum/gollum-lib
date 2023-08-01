@@ -120,8 +120,12 @@ class Gollum::Filter::Tags < Gollum::Filter
   def process_include_tag(tag)
     len = INCLUDE_TAG.length
     return html_error('Cannot process include directive: no page name given') if tag.length <= len
-    page_name          = tag[len..-1]
-    resolved_page_name = ::File.join(@markup.dir, page_name)
+    page_path = Pathname.new(tag[len..-1])
+    if page_path.relative?
+      resolved_page_name = (Pathname.new(@markup.dir) + page_path).to_s
+    else
+      resolved_page_name = page_path.cleanpath.to_s
+    end
     if @markup.include_levels > 0
       page = find_page_or_file_from_path(resolved_page_name)
       if page
