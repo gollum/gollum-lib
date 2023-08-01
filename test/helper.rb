@@ -6,8 +6,8 @@ require 'fileutils'
 # external
 require 'rubygems'
 require 'shoulda'
-require 'mocha/test_unit'
 require 'minitest/reporters'
+require 'mocha/test_unit'
 require 'twitter_cldr'
 require 'tempfile'
 
@@ -24,7 +24,7 @@ require File.expand_path('../assertions', __FILE__)
 require 'i18n'
 I18n.enforce_available_locales = false
 
-MiniTest::Reporters.use!
+Minitest::Reporters.use!
 
 dir = File.dirname(File.expand_path(__FILE__))
 $LOAD_PATH.unshift(File.join(dir, '..', 'lib'))

@@ -100,6 +100,7 @@ context "Markup" do
 
   test 'github-markup knows about gollum markups' do
     markups_with_render_filter = Gollum::Markup.formats.select do |k, v|
+      return false if v[:render]
       case v[:skip_filters]
       when Array
         !v[:skip_filters].include?(:Render)
@@ -112,6 +113,16 @@ context "Markup" do
     markups_with_render_filter.each do |name, info|
       assert ::GitHub::Markup.markups.key?(name), "GitHub::Markup does not know about format #{name}"
     end
+  end
+
+  test 'formats can define custom rendering block' do
+    Gollum::Markup.register(
+        :xyz, "Xyz", :extensions => ['xyz'],
+        :enabled => true,
+        :render => proc {|content| content.upcase },
+    )
+    page = @wiki.write_page('XyzTest', :xyz, 'helloworld', commit_details)
+    assert_equal 'HELLOWORLD', @wiki.page('XyzTest').formatted_data
   end
 
   #########################################################################
@@ -216,6 +227,27 @@ context "Markup" do
     assert_match regx, @wiki.page(page.name, sha1).formatted_data
     assert_match regx, @wiki.page(page.name, sha2).formatted_data
   end
+  
+  test "absent relative page link from subdirectory" do
+    index = @wiki.repo.index
+    index.add("subdir/Bilbo-Baggins.md", "a [[Foo|Doesntexist]] b")
+    index.commit("Add files")
+
+    page   = @wiki.page("subdir/Bilbo-Baggins")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class=\"internal absent\" href="/subdir/Doesntexist">Foo</a> b</p>}, output
+  end
+
+  test "absent absolute page link from subdirectory" do
+    index = @wiki.repo.index
+    index.add("subdir/Bilbo-Baggins.md", "a [[Foo|/Doesntexist]] b")
+    index.commit("Add files")
+
+    page   = @wiki.page("subdir/Bilbo-Baggins")
+    output = Gollum::Markup.new(page).render
+    assert_html_equal %{<p>a <a class=\"internal absent\" href="/Doesntexist">Foo</a> b</p>}, output
+  end
+
 
   test "absent page link" do
     @wiki.write_page("Tolkien", :markdown, "a [[J. R. R. Tolkien]]'s b", commit_details)

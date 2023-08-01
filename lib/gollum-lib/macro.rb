@@ -38,7 +38,7 @@ module Gollum
       end
 
       def render(*_args)
-        "!!!Unknown macro: #{@macro_name}!!!"
+        html_error("Unknown macro: #{@macro_name}")
       end
     end
   end

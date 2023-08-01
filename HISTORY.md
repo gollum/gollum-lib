@@ -2,12 +2,9 @@
 
 * Bugfix release: address XSS vulnerability ( @6661620a, @dometto)
 
-
 # 5.2.3 / 2023-03-13
 
 * Bugfix release: update adapter dependencies for Ruby 3.2 support.
-
-
 
 # 5.2.2 / 2023-01-18
 

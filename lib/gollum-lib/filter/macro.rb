@@ -1,5 +1,5 @@
 # ~*~ encoding: utf-8 ~*~
-require 'octicons'
+
 
 # Replace specified tokens with dynamically generated content.
 class Gollum::Filter::Macro < Gollum::Filter
@@ -22,13 +22,18 @@ class Gollum::Filter::Macro < Gollum::Filter
       argstr.scan(/,?\s*(#{arg})\s*/) do |arguments|
       	# Stabstabstab
       	argument = arguments.first
-      	
-        if argument =~ /^([a-z0-9_]+)="(.*?)"/
-      		opts[Regexp.last_match[1]] = Regexp.last_match[2]
-			  elsif argument =~ /^"(.*)"$/
-				  args << Regexp.last_match[1].gsub("\\\"", "\"")
-			  else
-				  args << argument
+
+        case argument
+        in /^([a-z0-9_]+)="(.*?)"/
+          opts[Regexp.last_match[1]] = Regexp.last_match[2]
+        in /^"(.*)"$/
+          args << Regexp.last_match[1].gsub("\\\"", "\"")
+        in /\s*false\s*/
+          args << false
+        in /\s*true\s*/
+          args << true
+        else
+          args << argument
         end
       end
 		  
@@ -48,13 +53,11 @@ class Gollum::Filter::Macro < Gollum::Filter
         begin
           Gollum::Macro.instance(macro, @markup.wiki, @markup.page).render(*args)
         rescue StandardError => e
-          icon = Octicons::Octicon.new('zap', {width: 24, height: 24})
-          icon.options[:class] << ' mr-2'
-          "<div class='flash flash-error'>#{icon.to_svg}Macro Error for #{macro}: #{e.message}</div>"
+          %Q(<div class="flash flash-error gollum-macro-error my-2">Macro Error for #{macro}: #{e.message}</div>)
         end
       end
     end
 
-    sanitize(data)
+    data
   end
 end

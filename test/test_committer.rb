@@ -135,3 +135,20 @@ context "Wiki" do
     @wiki.update_page(page, page.name, format, "# Elrond", commit_details())
   end
 end
+
+context "Committer with a writable wiki" do
+  setup do
+    @path = cloned_testpath("examples/lotr.git")
+    @wiki = Gollum::Wiki.new(@path)
+  end
+
+  test "supports notes" do
+    committer = Gollum::Committer.new(@wiki, note: 'My notes')
+    committer.commit
+    assert_equal @wiki.repo.head.commit.note, 'My notes'
+  end
+
+  teardown do
+    FileUtils.rm_rf(@path)
+  end
+end
