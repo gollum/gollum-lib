@@ -578,6 +578,13 @@ EOF
     assert_html_equal("<p>hello<br /></p><p>&lt;java</p><p>script&gt;alert(99);</p>", page1.formatted_data)
   end
 
+  test "include directive with absolute path from subdir" do
+    @wiki.write_page("/subdir/page1", :textile, "hello\n[[include:/a/very/long/path/to/page2]]\n", commit_details)
+    @wiki.write_page("/a/very/long/path/to/page2", :textile, "success", commit_details)
+    page1 = @wiki.page("/subdir/page1")
+    assert_html_equal("<p>hello<br/></p><p>success</p>", page1.formatted_data)
+  end
+
   test "include directive with very long absolute path and relative include" do
     @wiki.write_page("page1", :textile, "hello\n[[include:/a/very/long/path/to/page2]]\n", commit_details)
     @wiki.write_page("/a/very/long/path/to/page2", :textile, "goodbye\n[[include:object]]", commit_details)
