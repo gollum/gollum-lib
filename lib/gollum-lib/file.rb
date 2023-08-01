@@ -58,7 +58,7 @@ module Gollum
         return self.global_find(wiki, version, query_path, try_on_disk) 
       else
         begin
-          root = wiki.commit_for(version.to_s)
+          root = wiki.commit_for(version)
           return nil unless root
           tree = dir == '.' ? root.tree : root.tree / dir
           return nil unless tree
