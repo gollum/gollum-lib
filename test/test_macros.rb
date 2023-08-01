@@ -185,26 +185,29 @@ context "Macros" do
     assert_match /<audio (.*) src="#{file}"(.*)> (.*)<\/audio>/, @wiki.pages[0].formatted_data
   end
 
-  test "Octicon macro given a symbol and dimensions displays octicon" do
-    @wiki.write_page("OcticonMacroPage", :markdown, '<<Octicon("globe", 64, 64)>>', commit_details)
-    assert_match /<div><svg.*class=\"octicon octicon-globe\".*/, @wiki.pages[0].formatted_data
-    assert_match /<div><svg.*height=\"64\"/, @wiki.pages[0].formatted_data
-    assert_match /<div><svg.*width=\"64\"/, @wiki.pages[0].formatted_data
+  test "Icon macro given a symbol renders gollum-icon div with data-gollum-icon attribute" do
+    @wiki.write_page("IconMacroPage", :markdown, '<<Icon("globe")>>', commit_details)
+    assert_match /<div class=\"gollum-icon\".*data-gollum-icon=\"globe\".*/, @wiki.pages[0].formatted_data
+  end
+
+  test "Flash macro given a type and icon name renders gollum-flash with data-* attributes" do
+    @wiki.write_page("FlashMacroPage", :markdown, '<<Flash("Not all those who wander are lost", "bell", "success")>>', commit_details)
+    assert_match /<div class=\"flash flash-success my-2\".*data-gollum-icon=\"bell\".*/, @wiki.pages[0].formatted_data
   end
 
   test "Note macro given a string displays a regular flash message box" do
     @wiki.write_page("NoteMacroPage", :markdown, '<<Note("Did you know Bilbo is a Hobbit?")>>', commit_details)
-    assert_match /<div class=\"flash\"><svg.*class=\"octicon octicon-info mr-2\".*Did you know Bilbo.*/, @wiki.pages[0].formatted_data
+    assert_match /<div class=\"flash gollum-note my-2\">.*Did you know Bilbo.*/, @wiki.pages[0].formatted_data
   end
 
   test "Warn macro given a string displays a flash-warning message box" do
     @wiki.write_page("WarnMacroPage", :markdown, '<<Warn("Be careful not to mention hobbits in conversation too much.")>>', commit_details)
-    assert_match /<div class=\"flash flash-warn\"><svg.*class=\"octicon octicon-alert mr-2\".*Be careful.*/, @wiki.pages[0].formatted_data
+    assert_match /<div class=\"flash flash-warn gollum-warning my-2\">.*Be careful.*/, @wiki.pages[0].formatted_data
   end
 
   test "Macro errors are reported in place in a flash-error message box" do
-    @wiki.write_page("OcticonMacroPage", :markdown, '<<Octicon("foobar", 64, 64)>>', commit_details)
-    assert_match /<div class=\"flash flash-error\"><svg.*class=\"octicon octicon-zap mr-2\".*Macro Error for Octicon: Couldn't find octicon symbol for "foobar".*/, @wiki.pages[0].formatted_data
+    @wiki.write_page("IconMacroPage", :markdown, '<<Note("foobar", 64, 64)>>', commit_details)
+    assert_match /<div class=\"flash flash-error gollum-macro-error my-2\">Macro Error for Note: wrong number of arguments.*/, @wiki.pages[0].formatted_data
   end
 
   test "Macros escape HTML" do
@@ -214,7 +217,7 @@ context "Macros" do
 
   test "Note macro renders HTML code" do
     @wiki.write_page("HTMLNoteMacroPage", :markdown, '<<Note("<span>test</span>")>>', commit_details)
-    assert_match /<div class=\"flash\"><svg.*class=\"octicon octicon-info mr-2\".*<span>test<\/span>.*/, @wiki.pages[0].formatted_data
+    assert_match /<div class=\"flash gollum-note my-2\".*<span>test<\/span>.*/, @wiki.pages[0].formatted_data
   end
 
   test "Series macro escapes page names" do

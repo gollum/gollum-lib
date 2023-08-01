@@ -26,7 +26,6 @@ def specification(version, default_adapter, platform = nil)
     s.add_dependency 'loofah', '~> 2.3'
     s.add_dependency 'github-markup', '~> 4.0'
     s.add_dependency 'gemojione', '~> 4.1'
-    s.add_dependency 'octicons', '~> 17.0'
     s.add_dependency 'twitter-text', '1.14.7'
 
     s.add_development_dependency 'org-ruby', '~> 0.9.9'
@@ -45,7 +44,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'rb-readline', '~> 0.5.1'
     # updating minitest-reporters requires a new minitest which fails with gollum's tests.
     s.add_development_dependency 'test-unit', '~> 3.3'
-    s.add_development_dependency 'minitest-reporters', '~> 1.4'
+    s.add_development_dependency 'minitest-reporters', '~> 1.5'
     s.add_development_dependency 'nokogiri-diff', '~> 0.2.0'
     s.add_development_dependency 'guard', '~> 2.16'
     s.add_development_dependency 'guard-minitest', '~> 2.4'
@@ -93,7 +92,7 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/macro/global_toc.rb
     lib/gollum-lib/macro/navigation.rb
     lib/gollum-lib/macro/note.rb
-    lib/gollum-lib/macro/octicon.rb
+    lib/gollum-lib/macro/icon.rb
     lib/gollum-lib/macro/series.rb
     lib/gollum-lib/macro/video.rb
     lib/gollum-lib/macro/warn.rb
