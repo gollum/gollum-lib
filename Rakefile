@@ -126,7 +126,7 @@ task :release => :build do
   Rake::Task[:changelog].execute
   sh "git commit --allow-empty -a -m 'Release #{version}'"
   sh "git pull --rebase origin master"
-  sh "git tag v#{version}"
+  sh "git tag -n v#{version}"
   sh "git push origin master"
   sh "git push origin v#{version}"
   sh "gem push pkg/#{name}-#{version}.gem"
@@ -224,22 +224,4 @@ task :changelog do
   temp.close
   `cat #{history_file} >> #{temp.path}`
   `cat #{temp.path} > #{history_file}`
-end
-
-desc 'Precompile assets'
-task :precompile do
-  require './lib/gollum/app.rb'
-  Precious::App.set(:environment, :production)
-  env = Precious::Assets.sprockets
-  path = ENV.fetch('GOLLUM_ASSETS_PATH', ::File.join(File.dirname(__FILE__), 'lib/gollum/public/assets'))
-  manifest = Sprockets::Manifest.new(env, path)
-  Sprockets::Helpers.configure do |config|
-    config.environment = env
-    config.prefix      = Precious::Assets::ASSET_URL
-    config.digest      = true
-    config.public_path = path
-    config.manifest    = manifest
-  end
-  puts "Precompiling assets to #{path}..."
-  manifest.compile(Precious::Assets::MANIFEST)
 end
