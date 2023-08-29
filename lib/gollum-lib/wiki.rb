@@ -355,7 +355,7 @@ module Gollum
       committer    = multi_commit ? commit[:committer] : Committer.new(self, commit)
 
       if !rename
-        committer.add(page.path, normalize(data))
+        committer.add_to_index(page.path, data, {normalize: true}, true)
       else
         committer.delete(page.path)
         committer.add_to_index(new_path, data)

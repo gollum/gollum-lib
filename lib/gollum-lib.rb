@@ -54,5 +54,6 @@ module Gollum
   class InvalidGitRepositoryError < StandardError; end
   class NoSuchPathError < StandardError; end
   class IllegalDirectoryPath < StandardError; end
+  class WorkdirModifiedError < StandardError; end
 
 end
