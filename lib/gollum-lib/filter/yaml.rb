@@ -10,7 +10,7 @@ class Gollum::Filter::YAML < Gollum::Filter
     data.gsub!(YAML_FRONT_MATTER_REGEXP) do
       @markup.metadata ||= {}
       begin
-        frontmatter = ::YAML.safe_load(sanitize(Regexp.last_match[1]))
+        frontmatter = sanitize_frontmatter(::YAML.safe_load(Regexp.last_match[1]))
         @markup.metadata.merge!(frontmatter) if frontmatter.respond_to?(:keys) && frontmatter.respond_to?(:values)
       rescue ::Psych::SyntaxError, ::Psych::DisallowedClass, ::Psych::BadAlias => error
         @markup.metadata['errors'] ||= []
@@ -23,5 +23,24 @@ class Gollum::Filter::YAML < Gollum::Filter
 
   def process(data)
     data
+  end
+
+  private
+
+  def sanitize_frontmatter(obj)
+    case obj
+    when Hash
+      obj.map do |k, v|
+        [sanitize(k.to_s), sanitize_frontmatter(v)]
+      end.to_h
+    when Array
+      obj.map! do |v|
+        sanitize_frontmatter(v)
+      end
+    when String
+      sanitize(obj)
+    else
+      obj
+    end
   end
 end
