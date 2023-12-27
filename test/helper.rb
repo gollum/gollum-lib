@@ -88,6 +88,10 @@ class MockWiki
     val
   end
 
+  def sanitizer
+    Gollum::Sanitization.new(Gollum::Markup.to_xml_opts)
+  end
+
   attr_reader :repo_is_bare
   attr_reader :base_path
 end
