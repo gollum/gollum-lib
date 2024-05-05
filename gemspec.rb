@@ -49,7 +49,7 @@ def specification(version, default_adapter, platform = nil)
     s.add_development_dependency 'guard', '~> 2.16'
     s.add_development_dependency 'guard-minitest', '~> 2.4'
     s.add_development_dependency 'twitter_cldr', '~> 6.4'
-    
+
     # = MANIFEST =
   s.files = %w[
     Gemfile
@@ -67,7 +67,6 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/blob_entry.rb
     lib/gollum-lib/committer.rb
     lib/gollum-lib/file.rb
-    lib/gollum-lib/file_view.rb
     lib/gollum-lib/filter.rb
     lib/gollum-lib/filter/bibtex.rb
     lib/gollum-lib/filter/code.rb
