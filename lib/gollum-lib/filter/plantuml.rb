@@ -69,7 +69,8 @@ class Gollum::Filter::PlantUML < Gollum::Filter
   # Extract all sequence diagram blocks into the map and replace with
   # placeholders.
   def extract(data)
-    data.gsub(/(@start(uml|json|yaml|salt|mindmap|wbs|math|latex)\r?\n.+?\r?\n@end\2\r?$)/m) do
+    pu_pat = /(@start(uml|json|yaml|ebnf|regex|salt|ditaa|gantt|chronology|mindmap|wbs|math|latex|chen)([ \t\f\v]+[^\r\n]+|[ \t\r\f\v]*)\n.+?\r?\n@end\2\r?$)/m
+    data.gsub(pu_pat) do
       id       = "#{open_pattern}#{Digest::SHA1.hexdigest($1)}#{close_pattern}"
       @map[id] = { :code => $1 }
       id
