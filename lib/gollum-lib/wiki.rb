@@ -32,7 +32,7 @@ module Gollum
       end
 
       def default_committer_email
-        @default_committer_email || 'anon@anon.com'
+        @default_committer_email || 'anon@anonymous.invalid'
       end
 
       def default_options
