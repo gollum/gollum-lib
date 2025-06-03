@@ -48,9 +48,9 @@ module Gollum
     # ref - A String Git reference or Git SHA to a commit.
     #
     # Returns an Array of BlobEntry instances.
-    def tree(ref)
+    def tree(ref, path = '/', recursive = true)
       if (sha = ref_to_sha(ref))
-        get_cache(:tree, sha) { tree!(sha) }
+        get_cache(:tree, "#{sha}#{path}") { tree!(sha, path, recursive) }
       else
         []
       end
@@ -156,16 +156,19 @@ module Gollum
     # sha - String commit SHA.
     #
     # Returns an Array of BlobEntry instances.
-    def tree!(sha)
-      tree  = @repo.lstree(sha, { :recursive => true })
-      items = []
-      tree.each do |entry|
-        if entry[:type] == 'blob'
-          next if @page_file_dir && !entry[:path].start_with?("#{@page_file_dir}/")
-          items << BlobEntry.new(entry[:sha], entry[:path], entry[:size], entry[:mode])
+    def tree!(sha, path = '/', recursive = true)
+      tree  = @repo.lstree(sha, (Pathname.new(@page_file_dir.to_s) + path).to_s, recursive: recursive )
+      tree.reduce([]) do |accumulator, entry|
+        if !@page_file_dir || entry[:path].start_with?("#{@page_file_dir}/") # guard against directory traversal
+          accumulator << case entry[:type]
+          when 'blob'
+            BlobEntry.new(entry[:sha], entry[:path], entry[:size], entry[:mode])
+          when 'tree'
+            TreeEntry.new(entry[:sha], entry[:path])
+          end
         end
+        accumulator
       end
-      items
     end
 
     # Reads the content from the Git db at the given SHA.
