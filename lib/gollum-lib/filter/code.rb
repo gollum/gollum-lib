@@ -92,7 +92,7 @@ class Gollum::Filter::Code < Gollum::Filter
         lexer = Pygments::Lexer[(lang)] || Pygments::Lexer['text']
 
         # must set startinline to true for php to be highlighted without <?
-        hl_code = lexer.highlight(code, :options => { :encoding => encoding.to_s, :startinline => true })
+        hl_code = lexer.highlight(code, :options => { :encoding => encoding.to_s, :wrapcode => true, :startinline => true })
       else # Rouge
         begin
           # if `lang` was not defined then assume plaintext
