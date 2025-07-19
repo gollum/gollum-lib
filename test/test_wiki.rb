@@ -79,7 +79,7 @@ context "Wiki" do
   end
 
   test "latest changes in repo" do
-    assert_equal @wiki.latest_changes({:max_count => 1}).first.id, "324396c422678622ca16524424161429ee673bb9"
+    assert_equal @wiki.latest_changes({:max_count => 1}).first.id, "1b6a36a7ac19f260fcf02bee1b962edb2cec6176"
   end
 
   test "text_data" do

@@ -36,8 +36,9 @@ require 'zlib'
 # at: http://plantuml.sourceforge.net/
 #
 class Gollum::Filter::PlantUML < Gollum::Filter
-
-  DEFAULT_URL = "http://localhost:8080/plantuml/png"
+  UML_KINDS = ['uml', 'json', 'yaml', 'ebnf', 'regex', 'salt', 'ditaa', 'gantt', 'chronology', 'mindmap', 'wbs', 'math', 'latex', 'chen']
+  UML_REGEX = /\s*(@start(#{Regexp.union(UML_KINDS)})([ \t\f\v]+[^\r\n]+|[ \t\r\f\v]*)\n.+?\r?\n@end\2\r?$)/m
+  DEFAULT_URL = 'http://localhost:8080/plantuml/png'
 
   # Configuration class used to change the behaviour of the PlatnUML filter.
   #
@@ -69,7 +70,7 @@ class Gollum::Filter::PlantUML < Gollum::Filter
   # Extract all sequence diagram blocks into the map and replace with
   # placeholders.
   def extract(data)
-    data.gsub(/(@start(uml|json|yaml|salt|mindmap|wbs|math|latex)\r?\n.+?\r?\n@end\2\r?$)/m) do
+    data.gsub(UML_REGEX) do
       id       = "#{open_pattern}#{Digest::SHA1.hexdigest($1)}#{close_pattern}"
       @map[id] = { :code => $1 }
       id
@@ -81,10 +82,19 @@ class Gollum::Filter::PlantUML < Gollum::Filter
   def process(data)
     @map.each do |id, spec|
       data.gsub!(id) do
-        render_plantuml(id, spec[:code])
+        render_plantuml(spec[:code])
       end
     end
     data
+  end
+
+  def render_plantuml(code)
+    if check_server
+      plantuml_url = gen_url(code)
+      "<img src=\"#{gen_url(code)}\" />"
+    else
+      html_error("Sorry, unable to render PlantUML diagram at this time")
+    end
   end
 
   private
@@ -99,15 +109,6 @@ class Gollum::Filter::PlantUML < Gollum::Filter
 
   def verify_ssl?
     PlantUML::configuration.verify_ssl
-  end
-
-  def render_plantuml(id, code)
-    if check_server
-      plantuml_url = gen_url(code)
-      "<img src=\"#{gen_url(code)}\" />"
-    else
-      html_error("Sorry, unable to render PlantUML diagram at this time")
-    end
   end
 
   # Compression code used to generate PlantUML URLs. Taken directly from the
@@ -153,9 +154,9 @@ class Gollum::Filter::PlantUML < Gollum::Filter
     c3 = ((b2 & 0xF) << 2) | (b3 >> 6)
     c4 = b3 & 0x3F
     return encode6bit(c1 & 0x3F).chr +
-           encode6bit(c2 & 0x3F).chr +
-           encode6bit(c3 & 0x3F).chr +
-           encode6bit(c4 & 0x3F).chr
+            encode6bit(c2 & 0x3F).chr +
+            encode6bit(c3 & 0x3F).chr +
+            encode6bit(c4 & 0x3F).chr
   end
 
   # Make a call to the PlantUML server with the simplest diagram possible to
@@ -173,3 +174,7 @@ class Gollum::Filter::PlantUML < Gollum::Filter
     return false
   end
 end
+
+Gollum::Filter::Code.language_handlers[/plantuml/] = Proc.new {
+  |lang, code| Gollum::Filter::PlantUML.new(code).render_plantuml("@startuml\n#{code}\n@enduml\n")
+}

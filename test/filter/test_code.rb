@@ -14,6 +14,7 @@ end
 
 context "Gollum::Filter::Code with language handler" do
   setup do
+    @old_filters = Gollum::Filter::Code.language_handlers
     @filter = Gollum::Filter::Code.new(Gollum::Markup.new(mock_page))
     Gollum::Filter::Code.language_handlers[/mermaid/] = Proc.new { |lang, code| "<div class=\"mermaid\">\n#{code}\n</div>" }
   end
@@ -42,7 +43,7 @@ context "Gollum::Filter::Code with language handler" do
   end
   
   teardown do
-    Gollum::Filter::Code.language_handlers = {}
+    Gollum::Filter::Code.language_handlers = @old_filters
   end
   
 end
