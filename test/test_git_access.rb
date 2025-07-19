@@ -18,7 +18,7 @@ context "GitAccess" do
     assert @access.ref_map.empty?
     assert @access.tree_map.empty?
     @access.tree 'master'
-    assert_equal({ "master" => "324396c422678622ca16524424161429ee673bb9" }, @access.ref_map)
+    assert_equal({ "master" => "1b6a36a7ac19f260fcf02bee1b962edb2cec6176" }, @access.ref_map)
 
     @access.tree '1db89ebba7e2c14d93b94ff98cfa3708a4f0d4e3'
     map = @access.tree_map['1db89ebba7e2c14d93b94ff98cfa3708a4f0d4e3']
