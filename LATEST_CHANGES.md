@@ -1,13 +1,15 @@
-# 6.0
+# 6.1.0
 
-* Default to local PlantUML server for security. #412. (@manofstick)
-* Allow use of default branch name `main` or `master. Resolves https://github.com/gollum/gollum/issues/1813. (@dometto)
-* Feature: [support for custom rendering of languages in codeblocks](https://github.com/gollum/gollum/wiki/Custom-language-handlers). #433. (@dometto)
-* Support use of commit notes in Gollum::Committer. #435. (@dometto, @bartkamphorst)
-* Remove octicons from gollum-lib. Icon macros must now be styled independently. #441. (@bartkamphorst)
-* Huge performance increase for large wikis! :rocket: #437. (@dometto)
+This is largely a bugfix release.
 
-### Bugfixes
+New features:
 
-* Fix the use of boolean arguments in Macros. #441. (@dometto)
-* Fix broken relative links: these were previously not rendered as relative. #443. (@dometto)
+- Added support for GitLab style PlantUML blocks and additional diagram types. #461 (@dometto)
+
+Bugfixes:
+
+- Ensured "copy to clipboard" button appears normally when Pygments is enabled. #460 (@x789034)
+- Don't use real `anon.com` domain in anonymous git committer emails. #458 (@jmtd)
+- Removed dead code, `Gollum::FileView`. #455 (@benjaminwil)
+- HTML escape YAML after parsing to prevent invalidating YAML string #454 (@dometto)
+- Ensured `[[include:<path>]]` helper works with absolute paths. Note that this was meant to be included in the 6.0 release but was not. Sorry for any confusion. #452 (@dometto)

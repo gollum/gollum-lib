@@ -194,10 +194,10 @@ task :changelog do
       exit!
     end
   end
-  
+
   latest_changes = File.open(latest_changes_file)
   version_pattern = "# #{version}"
-  
+
   if !`grep "#{version_pattern}" #{history_file}`.empty?
     puts "#{version} is already described in #{history_file}"
     exit!
@@ -212,13 +212,13 @@ task :changelog do
     puts "#{latest_changes_file} is empty!"
     exit!
   end
-  
+
   body = latest_changes.read
   body.scan(/\s*#\s+\d\.\d.*/) do |match|
     puts "#{latest_changes_file} may not contain multiple markdown headers!"
     exit!
   end
-  
+
   temp = Tempfile.new
   temp.puts("#{version_pattern} / #{date}\n#{body}\n\n")
   temp.close
