@@ -7,7 +7,7 @@
 * Remove octicons from gollum-lib. Icon macros must now be styled independently. #441. (@bartkamphorst)
 * Huge performance increase for large wikis! :rocket: #437. (@dometto)
 
-### Bugfixes
+## Bugfixes
 
 * Fix the use of boolean arguments in Macros. #441. (@dometto)
 * Fix broken relative links: these were previously not rendered as relative. #443. (@dometto)
@@ -64,7 +64,7 @@ For a detailed overview of changes in 5.0 and a guide to migrating your wiki, se
   ** Dependency updates
   ** Bugfixes
   ** New Macro for listing contents of (sub)directories: `Navigation()`
-  ** Table of Contents now supports setting max heading level 
+  ** Table of Contents now supports setting max heading level
 
 # v4.0.2 / 2015-01-19
 
