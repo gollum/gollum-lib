@@ -148,6 +148,20 @@ context "Committer with a writable wiki" do
     assert_equal @wiki.repo.head.commit.note, 'My notes'
   end
 
+  test "raise WorkdirModifiedError when the workdir contains changes" do
+    committer = Gollum::Committer.new(@wiki)
+    path = 'Bilbo-Baggins.md'
+    filepath = File.join(@wiki.path, path)
+
+    f = File.open(filepath, 'w') { |f| f.puts "Workdir no longer clean" }
+    assert_raises Gollum::WorkdirModifiedError do
+      committer.add_to_index(path, 'content', {}, true)
+    end
+
+    File.delete(filepath)
+    assert_equal 'content', committer.add_to_index(path, 'content', {}, true)
+  end
+
   teardown do
     FileUtils.rm_rf(@path)
   end

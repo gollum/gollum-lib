@@ -79,12 +79,15 @@ module Gollum
     # Raises Gollum::DuplicatePageError if a matching filename already exists, unless force_overwrite is explicitly enabled.
     # This way, pages are not inadvertently overwritten.
     #
+    # Even if force_overwrite is enabled, this throws a WorkdirModifiedError if the workdir path contains modifications that are not in the repository.
+    #
     # Returns nothing (modifies the Index in place).
     def add_to_index(path, data, options = {}, force_overwrite = false)
       if tree = index.current_tree
         unless page_path_scheduled_for_deletion?(index.tree, path) || force_overwrite
           raise DuplicatePageError.new(path) if tree / path
         end
+        raise WorkdirModifiedError.new(path) if index.workdir_path_modified?(path)
       end
 
       unless options[:normalize] == false
