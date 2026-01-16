@@ -488,7 +488,7 @@ module Gollum
     # Returns a Fixnum
     def size(ref = nil)
       tree_map_for(ref || @ref).inject(0) do |num, entry|
-        num + (::Gollum::Page.valid_page_name?(entry.name) ? 1 : 0)
+        num + (entry.is_a?(BlobEntry) && ::Gollum::Page.valid_page_name?(entry.name) ? 1 : 0)
       end
     rescue Gollum::Git::NoSuchShaFound
       0
@@ -637,7 +637,7 @@ module Gollum
       format.nil? ? name : "#{name}.#{::Gollum::Page.format_to_ext(format)}"
     end
 
-    # Fill an array with a list of pages and files in the wiki.
+    # Fill an array with a list of all pages and files in the wiki.
     #
     # ref - A String ref that is either a commit SHA or references one.
     #
@@ -645,16 +645,39 @@ module Gollum
     def tree_list(ref = @ref, pages=true, files=true)
       if (sha = @access.ref_to_sha(ref))
         commit = @access.commit(sha)
-        tree_map_for(sha).inject([]) do |list, entry|
+        wrap_tree_entries(tree_map_for(sha), commit, pages, files, false)
+      else
+        []
+      end
+    end
+
+    # Fill an array with a list of pages, files, and directories at a specific path in the wiki.
+    #
+    # path - A String path in the wiki.
+    # ref - A String ref that is either a commit SHA or references one.
+    #
+    # Returns a flat Array of Gollum::Page and Gollum::File instances.
+    def path_list(path, ref = @ref)
+      if (sha = @access.ref_to_sha(ref))
+        commit = @access.commit(sha)
+        wrap_tree_entries(tree_map_for(sha, false, path, false), commit, true, true, true)
+      else
+        []
+      end
+    end
+
+    def wrap_tree_entries(entries, commit, pages, files, trees)
+      entries.inject([]) do |list, entry|
+        if entry.is_a?(TreeEntry)
+          list << entry if trees
+        else
           if ::Gollum::Page.valid_page_name?(entry.name)
             list << entry.page(self, commit) if pages
           elsif files && !entry.name.start_with?('_') && !::Gollum::Page.protected_files.include?(entry.name)
             list << entry.file(self, commit)
           end
-          list
         end
-      else
-        []
+        list
       end
     end
 
@@ -690,17 +713,21 @@ module Gollum
     #
     # ref - A String ref that is either a commit SHA or references one.
     # ignore_page_file_dir - Boolean, if true, searches all files within the git repo, regardless of dir/subdir
+    # path - A String path to a directory that should be listed.
+    # recursive - Boolean. Whether to recursively list all contents or not.
     #
     # Returns an Array of BlobEntry instances.
-    def tree_map_for(ref, ignore_page_file_dir = false)
+    def tree_map_for(ref, ignore_page_file_dir = false, path = '/', recursive = true)
       if ignore_page_file_dir && !@page_file_dir.nil?
         @root_access ||= GitAccess.new(path, nil, @repo_is_bare)
         @root_access.tree(ref)
       else
-        @access.tree(ref)
+        begin
+          @access.tree(ref, path, recursive)
+        rescue Gollum::Git::NoSuchShaFound
+          []
+        end
       end
-    rescue Gollum::Git::NoSuchShaFound
-      []
     end
 
     def inspect

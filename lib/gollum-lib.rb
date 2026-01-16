@@ -23,6 +23,7 @@ require File.expand_path('../gollum-lib/hook', __FILE__)
 require File.expand_path('../gollum-lib/committer', __FILE__)
 require File.expand_path('../gollum-lib/pagination', __FILE__)
 require File.expand_path('../gollum-lib/blob_entry', __FILE__)
+require File.expand_path('../gollum-lib/tree_entry', __FILE__)
 require File.expand_path('../gollum-lib/wiki', __FILE__)
 require File.expand_path('../gollum-lib/redirects', __FILE__)
 require File.expand_path('../gollum-lib/file', __FILE__)
@@ -31,6 +32,7 @@ require File.expand_path('../gollum-lib/macro', __FILE__)
 require File.expand_path('../gollum-lib/markup', __FILE__)
 require File.expand_path('../gollum-lib/markups', __FILE__)
 require File.expand_path('../gollum-lib/sanitization', __FILE__)
+
 require File.expand_path('../gollum-lib/filter', __FILE__)
 
 module Gollum
