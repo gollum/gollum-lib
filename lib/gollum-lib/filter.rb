@@ -49,6 +49,8 @@ module Gollum
 
     PLACEHOLDER_PATTERN = /%(\S+)%.+=\1=/
 
+    attr_reader :scripts
+
     # Setup the object.  Sets `@markup` to be the instance of Gollum::Markup that
     # is running this filter chain, and sets `@map` to be an empty hash (for use
     # in your extract/process operations).
@@ -58,6 +60,7 @@ module Gollum
       @map    = {}
       @open_pattern = "%#{self.class.to_s.split('::').last}%"
       @close_pattern = "=#{self.class.to_s.split('::').last}="
+      @scripts = Set.new
     end
 
     attr_reader :open_pattern, :close_pattern
@@ -70,6 +73,10 @@ module Gollum
     def process(data)
       raise RuntimeError,
             "#{self.class} has not implemented ##process!"
+    end
+
+    def add_javascript(script)
+      @scripts.add(script) if script
     end
 
     protected

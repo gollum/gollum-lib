@@ -19,7 +19,9 @@ module Gollum
             "#{self.class} does not implement #render.  "+
             "This is a bug in #{self.class}."
     end
-    
+
+    def javascript; end
+
     protected
     def html_error(s)
       "<p class=\"gollum-error\">#{s}</p>"

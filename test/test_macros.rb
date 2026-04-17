@@ -6,6 +6,20 @@ class Gollum::Macro::ListArgs < Gollum::Macro
   def render(*args)
     args.map { |a| "@#{a}@" }.join("\n")
   end
+
+  def javascript
+    'alert("</script>")'
+  end
+end
+
+class Gollum::Macro::Javascript < Gollum::Macro
+  def render(*args)
+    ''
+  end
+
+  def javascript
+    'alert("</script>")'
+  end
 end
 
 class Gollum::Macro::ListNamedArgs < Gollum::Macro
@@ -145,11 +159,21 @@ context "Macros" do
     assert_match(/@wombat@/, @wiki.pages[0].formatted_data)
     assert_match(/@funny things@/, @wiki.pages[0].formatted_data)
   end
-  
+
   test "Args parser doesn't overstep its boundaries" do
     @wiki.write_page("MultiMacroPage", :markdown, "<<ListArgs(Foo)>>\n\n<<NonExistentMacro()>>", commit_details)
     assert_match(/@Foo@/, @wiki.pages[0].formatted_data)
     assert_match(/Unknown macro: NonExistentMacro/, @wiki.pages[0].formatted_data)
+  end
+
+  test "Javascript provided by the macro is added to the page" do
+    @wiki.write_page("JavascriptMacroPage", :markdown, "<<Javascript()>>", commit_details)
+    assert_match("<script>alert(\"\\u003c\/script>\")</script>\n", @wiki.pages[0].formatted_data)
+  end
+
+  test "Javascript is not duplicated when the macro is uses multiple times" do
+    @wiki.write_page("JavascriptMacroPage", :markdown, "<<Javascript()>> <<Javascript()>>", commit_details)
+    assert_match("<script>alert(\"\\u003c\/script>\")</script><p> </p>\n", @wiki.pages[0].formatted_data)
   end
 
   test "Args parser handles named args" do
