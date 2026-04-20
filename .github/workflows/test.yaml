@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: ['3.2.1', '3.3', '4.0.2']
+        ruby: ['3.2.1', '3.3', '3.6', '4.0.2']
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
