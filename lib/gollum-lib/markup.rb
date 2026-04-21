@@ -137,11 +137,17 @@ module Gollum
       yield Nokogiri::HTML::DocumentFragment.parse(data) if block_given?
 
       # Then we process the data through the chain *backwards*
+      scripts = Set.new
       filter_chain.reverse.each do |filter|
         data = filter.process(data)
+        scripts |= filter.scripts
       end
-
-      data
+      output = ''
+      if scripts.any?
+        all_script = scripts.map {|script| script.gsub('<', '\u003c')}.join("\n")
+        output += "<script>#{all_script}</script>"
+      end
+      output + data
     end
 
     # Render the content with Gollum wiki syntax on top of the file's own
