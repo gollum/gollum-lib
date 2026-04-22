@@ -95,6 +95,7 @@ def specification(version, default_adapter, platform = nil)
     lib/gollum-lib/macro/navigation.rb
     lib/gollum-lib/macro/note.rb
     lib/gollum-lib/macro/series.rb
+    lib/gollum-lib/macro/structured_global_toc.rb
     lib/gollum-lib/macro/video.rb
     lib/gollum-lib/macro/warn.rb
     lib/gollum-lib/markup.rb
