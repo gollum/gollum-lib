@@ -48,6 +48,11 @@ context "Wiki" do
     assert_equal commits, @wiki.log(:page_num => 2).map(&:id)
   end
 
+  test "list specific directory in the wiki" do
+    puts @wiki.path_list('Mordor').inspect
+    assert false
+  end
+
   test "list files and pages" do
     contents = @wiki.tree_list
     pages = contents.select {|x| x.is_a?(::Gollum::Page)}
