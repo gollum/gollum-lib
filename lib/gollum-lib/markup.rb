@@ -1,7 +1,6 @@
 # ~*~ encoding: utf-8 ~*~
 require 'digest/sha1'
 require 'rouge'
-require 'base64'
 
 require File.expand_path '../helpers', __FILE__
 
